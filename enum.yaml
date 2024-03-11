@@ -1,0 +1,13 @@
+institution_category: UMUM, SD/MI/MDTA, TK/KB, SMP/MTS, SMA/SMK
+employee_role: Operasional, Keuangan, Marketing, Manager
+gender: Wanita, Pria
+bus_type: Big Bus, Medium
+bus_status: Tersedia, Dalam Perjalanan, Dibatalkan
+order_payment_status: Booked - DP, Booked - Non DP, Lunas - Transfer, Lunas - Cash
+banner_status: Tercetak, Belum Dibikin, Tidak Ada
+order_status: Belum Berangkat, Dalam Perjalanan, Selesai, Dibatalkan
+payemnt_metode: Transfer, Cash, Kredit
+payment_status: Belum Bayar, Lunas
+tax_status: Belum Bayar, Lunas
+incident_status: Selesai, Dalam Proses
+meeting_status: Belum Mulai, Sedang Berlangsung, Selesai

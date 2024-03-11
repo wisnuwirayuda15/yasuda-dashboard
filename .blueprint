@@ -1,0 +1,99 @@
+created:
+    - database/factories/ProvinceFactory.php
+    - database/factories/CityFactory.php
+    - database/factories/DistrictFactory.php
+    - database/factories/VillageFactory.php
+    - database/factories/CompanyFactory.php
+    - database/factories/EmployeeFactory.php
+    - database/factories/DebtFactory.php
+    - database/factories/ReceivableFactory.php
+    - database/factories/TourPackageFactory.php
+    - database/factories/CustomerFactory.php
+    - database/factories/TourLeaderFactory.php
+    - database/factories/BusFactory.php
+    - database/factories/BusAvailabilityFactory.php
+    - database/factories/OrderFactory.php
+    - database/factories/OrderBusFactory.php
+    - database/factories/PaymentFactory.php
+    - database/factories/RevenueFactory.php
+    - database/factories/TaxFactory.php
+    - database/factories/EmployeeSalaryFactory.php
+    - database/factories/TourLeaderSalaryFactory.php
+    - database/factories/IncidentFactory.php
+    - database/factories/FeedbackFactory.php
+    - database/factories/MeetingFactory.php
+    - database/factories/BrochureFactory.php
+    - database/migrations/2024_03_11_141030_create_provinces_table.php
+    - database/migrations/2024_03_11_141031_create_cities_table.php
+    - database/migrations/2024_03_11_141032_create_districts_table.php
+    - database/migrations/2024_03_11_141033_create_villages_table.php
+    - database/migrations/2024_03_11_141034_create_companies_table.php
+    - database/migrations/2024_03_11_141035_create_employees_table.php
+    - database/migrations/2024_03_11_141036_create_debts_table.php
+    - database/migrations/2024_03_11_141037_create_receivables_table.php
+    - database/migrations/2024_03_11_141038_create_tour_packages_table.php
+    - database/migrations/2024_03_11_141039_create_customers_table.php
+    - database/migrations/2024_03_11_141040_create_tour_leaders_table.php
+    - database/migrations/2024_03_11_141041_create_buses_table.php
+    - database/migrations/2024_03_11_141042_create_bus_availabilities_table.php
+    - database/migrations/2024_03_11_141043_create_orders_table.php
+    - database/migrations/2024_03_11_141044_create_order_buses_table.php
+    - database/migrations/2024_03_11_141045_create_payments_table.php
+    - database/migrations/2024_03_11_141046_create_revenues_table.php
+    - database/migrations/2024_03_11_141047_create_taxes_table.php
+    - database/migrations/2024_03_11_141048_create_employee_salaries_table.php
+    - database/migrations/2024_03_11_141049_create_tour_leader_salaries_table.php
+    - database/migrations/2024_03_11_141050_create_incidents_table.php
+    - database/migrations/2024_03_11_141051_create_feedback_table.php
+    - database/migrations/2024_03_11_141052_create_meetings_table.php
+    - database/migrations/2024_03_11_141053_create_brochures_table.php
+    - app/Models/Province.php
+    - app/Models/City.php
+    - app/Models/District.php
+    - app/Models/Village.php
+    - app/Models/Company.php
+    - app/Models/Employee.php
+    - app/Models/Debt.php
+    - app/Models/Receivable.php
+    - app/Models/TourPackage.php
+    - app/Models/Customer.php
+    - app/Models/TourLeader.php
+    - app/Models/Bus.php
+    - app/Models/BusAvailability.php
+    - app/Models/Order.php
+    - app/Models/OrderBus.php
+    - app/Models/Payment.php
+    - app/Models/Revenue.php
+    - app/Models/Tax.php
+    - app/Models/EmployeeSalary.php
+    - app/Models/TourLeaderSalary.php
+    - app/Models/Incident.php
+    - app/Models/Feedback.php
+    - app/Models/Meeting.php
+    - app/Models/Brochure.php
+models:
+    User: { name: string, avatar_url: 'string nullable', email: string, email_verified_at: 'datetime nullable', password: string, remember_token: 'string:100 nullable' }
+    Province: { name: 'string unique', relationships: { hasMany: City } }
+    City: { province_id: 'foreign constrained onDelete:cascade', name: 'string unique', relationships: { hasMany: District, belongsTo: Province } }
+    District: { city_id: 'foreign constrained onDelete:cascade', name: 'string unique', relationships: { hasMany: village, belongsTo: City } }
+    Village: { district_id: 'foreign constrained onDelete:cascade', name: 'string unique', relationships: { belongsTo: District } }
+    Company: { name: 'string default:Yasuda Jaya Tour & Travel', logo: 'string default:logo.png', email: 'string nullable default:yasudajaya@gmail.com', phone: 'string default:08123456789', balance: 'bigInteger default:0' }
+    Employee: { user_id: 'foreign constrained onDelete:cascade', name: 'string index', photo: string, phone: string, address: string, role: 'string:50', relationships: { belongsTo: User } }
+    Debt: { debtor: string, date: datetime, due_date: 'datetime nullable', amount: bigInteger, status: 'string:50' }
+    Receivable: { creditor: string, date: datetime, due_date: 'datetime nullable', amount: bigInteger, status: 'string:50' }
+    TourPackage: { image: 'string nullable', name: 'string unique', city: string, description: longText, order_total: 'integer default:0', price: bigInteger }
+    Customer: { name: string, institution: 'string index', category: 'string:50', email: 'string unique nullable', phone: string }
+    TourLeader: { name: 'string index', photo: string, email: 'string unique nullable', phone: 'string unique', gender: 'string:50', address: string, relationships: { belongsTo: OrderBus } }
+    Bus: { image: 'string nullable', name: 'string index', description: longText, seat_total: integer, type: 'string:50', price: bigInteger }
+    BusAvailability: { bus_id: 'foreign constrained onDelete:cascade', status: 'string:50', date: datetime, relationships: { belongsTo: Bus } }
+    Order: { customer_id: 'foreign constrained onDelete:cascade', number_of_people: integer, tour_package_id: 'foreign constrained onDelete:cascade', payment_status: 'string:50', banner_status: 'string:50', status: 'string:50', start_date: datetime, end_date: 'datetime nullable', relationships: { hasMany: OrderBus } }
+    OrderBus: { order_id: 'foreign constrained onDelete:cascade', tour_leader_id: 'foreign constrained onDelete:cascade', bus_availability_id: 'foreign constrained onDelete:cascade', relationships: { belongsTo: 'Order TourLeader', hasOne: TourLeader } }
+    Payment: { order_id: 'foreign constrained onDelete:cascade', amount: bigInteger, total: bigInteger, method: 'string:50', status: 'string:50' }
+    Revenue: { order_id: 'foreign constrained onDelete:cascade', payment_id: 'foreign constrained onDelete:cascade', restaurant: 'bigInteger nullable', souvenir: 'bigInteger nullable', shirt: 'bigInteger nullable', hotel: 'bigInteger nullable', snack: 'bigInteger nullable', catering: 'bigInteger nullable', gross_income: bigInteger, net_income: bigInteger }
+    Tax: { institution: string, date: datetime, status: 'string:50', amount: bigInteger }
+    EmployeeSalary: { user_id: 'foreign constrained onDelete:cascade', amount: bigInteger, date: datetime, working_day: integer }
+    TourLeaderSalary: { tour_leader_id: 'foreign constrained onDelete:cascade', amount: bigInteger, date: datetime }
+    Incident: { name: string, date: datetime, description: longText, loss: 'bigInteger nullable', status: 'string:50' }
+    Feedback: { order_id: 'foreign constrained onDelete:cascade', text: longText }
+    Meeting: { customer_id: 'foreign constrained onDelete:cascade', name: string, date: datetime, status: 'string:50' }
+    Brochure: { institution: string, category: 'string:50', date: datetime, status: 'string:50' }

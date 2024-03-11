@@ -1,0 +1,4 @@
+1. Bikin table karyawan yang ada user_id nya ()
+2. Ganti type data enum jadi string biasa ()
+3. Bikin halaman setting
+4. Test spatie role and permission
