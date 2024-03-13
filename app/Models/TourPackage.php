@@ -19,6 +19,7 @@ class TourPackage extends Model
         'name',
         'city',
         'description',
+        'duration',
         'order_total',
         'price',
     ];

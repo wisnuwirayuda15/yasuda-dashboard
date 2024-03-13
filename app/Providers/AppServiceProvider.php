@@ -4,13 +4,11 @@ namespace App\Providers;
 
 use Carbon\Carbon;
 use Filament\Pages\Page;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\ServiceProvider;
 use Filament\Notifications\Notification;
 use Illuminate\Validation\ValidationException;
 use BezhanSalleh\FilamentLanguageSwitch\LanguageSwitch;
-use BezhanSalleh\FilamentLanguageSwitch\Enums\Placement;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -31,24 +29,22 @@ class AppServiceProvider extends ServiceProvider
     Carbon::setLocale(env('APP_LOCALE', 'en'));
 
     //Unguard model
-    (bool) env('UNGUARD_MODEL') && Model::unguard();
-
-    //Register the ENUM type mapping
-    // DB::connection()
-    //   ->getDoctrineSchemaManager()
-    //   ->getDatabasePlatform()
-    //   ->registerDoctrineTypeMapping('enum', 'string');
+    if ((bool) env('UNGUARD_MODEL', false)) {
+      Model::unguard();
+    }
 
     //Sending validation notifications
-    if ((bool) env('USE_NOTIFICATION')) {
+    if ((bool) env('USE_NOTIFICATION', true)) {
       Page::$reportValidationErrorUsing = function (ValidationException $exception) {
         Notification::make()
           ->title($exception->getMessage())
           ->danger()
-          ->send();
+          ->send()
+          ->sendToDatabase(auth()->user());
       };
     }
 
+    //Languages selector
     LanguageSwitch::configureUsing(function (LanguageSwitch $switch) {
       $switch
         ->locales(['id', 'en'])

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\BusStatus;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -30,6 +31,7 @@ class BusAvailability extends Model
         'id' => 'integer',
         'bus_id' => 'integer',
         'date' => 'datetime',
+        'status' => BusStatus::class
     ];
 
     public function bus(): BelongsTo

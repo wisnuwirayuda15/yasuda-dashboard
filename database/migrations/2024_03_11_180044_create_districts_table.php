@@ -13,14 +13,10 @@ return new class extends Migration
     {
         Schema::disableForeignKeyConstraints();
 
-        Schema::create('tour_packages', function (Blueprint $table) {
+        Schema::create('districts', function (Blueprint $table) {
             $table->id();
-            $table->string('image')->nullable();
-            $table->string('name')->unique();
-            $table->string('city');
-            $table->longText('description');
-            $table->integer('order_total')->default(0);
-            $table->bigInteger('price');
+            $table->foreignId('regency_id')->constrained()->cascadeOnDelete();
+            $table->string('name');
             $table->timestamps();
         });
 
@@ -32,6 +28,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('tour_packages');
+        Schema::dropIfExists('districts');
     }
 };

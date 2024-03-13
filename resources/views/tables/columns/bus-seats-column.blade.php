@@ -1,0 +1,1 @@
+{{ $getState() }} ({{ $getRecord()->left_seat }}-{{ $getRecord()->right_seat }})

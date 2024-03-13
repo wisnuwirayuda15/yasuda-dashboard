@@ -21,6 +21,7 @@ return new class extends Migration
             $table->string('payment_status', 50);
             $table->string('banner_status', 50);
             $table->string('status', 50);
+            $table->longText('detail');
             $table->dateTime('start_date');
             $table->dateTime('end_date')->nullable();
             $table->timestamps();

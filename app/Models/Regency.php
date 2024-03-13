@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-class City extends Model
+class Regency extends Model
 {
     use HasFactory;
 
@@ -17,6 +17,7 @@ class City extends Model
      * @var array
      */
     protected $fillable = [
+        'id',
         'province_id',
         'name',
     ];

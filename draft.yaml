@@ -1,24 +1,24 @@
 models:
   # Region
   Province:
-    name: string unique
+    name: string
     relationships:
-      hasMany: City
-  City:
+      hasMany: Regency
+  Regency:
     province_id: foreign constrained onDelete:cascade
-    name: string unique
+    name: string
     relationships:
       hasMany: District
       belongsTo: Province
   District:
-    city_id: foreign constrained onDelete:cascade
-    name: string unique
+    regency_id: foreign constrained onDelete:cascade
+    name: string
     relationships:
       hasMany: village
-      belongsTo: City
+      belongsTo: Regency
   Village:
     district_id: foreign constrained onDelete:cascade
-    name: string unique
+    name: string
     relationships:
       belongsTo: District
 
@@ -26,7 +26,7 @@ models:
     name: string default:Yasuda Jaya Tour & Travel
     logo: string default:logo.png
     email: string nullable default:yasudajaya@gmail.com
-    phone: string default:08123456789
+    phone: string default:+628123456789
     balance: bigInteger default:0
 
   # User (for login):
@@ -67,6 +67,7 @@ models:
     name: string unique
     city: string
     description: longText
+    duration: integer
     order_total: integer default:0
     price: bigInteger
 
@@ -76,6 +77,8 @@ models:
     category: string:50
     email: string unique nullable
     phone: string
+    relationships:
+      hasMany: Order
     
   TourLeader:
     name: string index
@@ -92,8 +95,12 @@ models:
     name: string index
     description: longText
     seat_total: integer
+    left_seat: tinyInteger
+    right_seat: tinyInteger
     type: string:50
     price: bigInteger
+    relationships:
+      hasMany: BusAvailability
 
   BusAvailability:
     bus_id: foreign constrained onDelete:cascade
@@ -111,15 +118,17 @@ models:
     status: string:50
     start_date: datetime
     end_date: datetime nullable
+    detail: longText
     relationships:
       hasMany: OrderBus
+      belongsTo: Customer
 
   OrderBus:
     order_id: foreign constrained onDelete:cascade
     tour_leader_id: foreign constrained onDelete:cascade
     bus_availability_id: foreign constrained onDelete:cascade
     relationships:
-      belongsTo: Order TourLeader
+      belongsTo: Order,TourLeader
       hasOne: TourLeader
 
   Payment:

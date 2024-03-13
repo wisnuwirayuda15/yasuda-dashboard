@@ -20,7 +20,10 @@ class DatabaseSeeder extends Seeder
       'name' => 'Super Admin',
       'email' => 'superadmin@yasuda.com',
       'password' => bcrypt('12345678'),
-      'remember_token' => Str::random(10),
     ]);
+
+    // $this->call([
+    //   RegionSeeder::class,
+    // ]);
   }
 }

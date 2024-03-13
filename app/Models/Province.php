@@ -16,6 +16,7 @@ class Province extends Model
      * @var array
      */
     protected $fillable = [
+        'id',
         'name',
     ];
 
@@ -28,8 +29,8 @@ class Province extends Model
         'id' => 'integer',
     ];
 
-    public function cities(): HasMany
+    public function regencies(): HasMany
     {
-        return $this->hasMany(City::class);
+        return $this->hasMany(Regency::class);
     }
 }

@@ -3,8 +3,9 @@
 namespace App\Models;
 
 use App\Enums\BusType;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Bus extends Model
 {
@@ -20,6 +21,8 @@ class Bus extends Model
         'name',
         'description',
         'seat_total',
+        'left_seat',
+        'right_seat',
         'type',
         'price',
     ];
@@ -34,4 +37,9 @@ class Bus extends Model
         'price' => 'integer',
         'type' => BusType::class
     ];
+
+    public function busAvailability(): HasMany
+    {
+        return $this->hasMany(BusAvailability::class);
+    }
 }

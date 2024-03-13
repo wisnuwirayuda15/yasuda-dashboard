@@ -23,6 +23,7 @@ class Order extends Model
         'payment_status',
         'banner_status',
         'status',
+        'detail',
         'start_date',
         'end_date',
     ];

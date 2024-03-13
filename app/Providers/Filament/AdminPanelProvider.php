@@ -17,7 +17,9 @@ use Illuminate\View\Middleware\ShareErrorsFromSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
+use Njxqlus\FilamentProgressbar\FilamentProgressbarPlugin;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
+use SolutionForest\FilamentSimpleLightBox\SimpleLightBoxPlugin;
 
 class AdminPanelProvider extends PanelProvider
 {
@@ -25,17 +27,16 @@ class AdminPanelProvider extends PanelProvider
   {
     return $panel
       ->default()
-      ->sidebarCollapsibleOnDesktop(true)
       ->id('admin')
       ->path('admin')
       ->login()
       ->colors([
-        'primary' => Color::Indigo,
-        'success' => Color::Emerald,
-        'warning' => Color::Orange,
-        'danger' => Color::Rose,
-        'gray' => Color::Gray,
-        'info' => Color::Blue,
+        'primary' => Color::Sky,
+        // 'success' => Color::Emerald,
+        // 'warning' => Color::Orange,
+        // 'danger' => Color::Red,
+        // 'gray' => Color::Gray,
+        // 'info' => Color::Blue,
       ])
       ->font('Poppins')
       ->discoverResources(app_path('Filament/Resources'), 'App\\Filament\\Resources')
@@ -62,14 +63,22 @@ class AdminPanelProvider extends PanelProvider
       ->authMiddleware([
         Authenticate::class,
       ])
-      ->plugin(
-        BreezyCore::make()->myProfile(
-          shouldRegisterUserMenu: true, // Sets the 'account' link in the panel User Menu (default = true)
-          shouldRegisterNavigation: false, // Adds a main navigation item for the My Profile page (default = false)
-          navigationGroup: 'Settings', // Sets the navigation group for the My Profile page (default = null)
-          hasAvatars: true, // Enables the avatar upload form component (default = false)
-          slug: 'profile' // Sets the slug for the profile page (default = 'my-profile')
-        )
-      );
+      ->plugins([
+        BreezyCore::make()
+          ->avatarUploadComponent(fn($fileUpload) => $fileUpload->disableLabel())
+          ->myProfile(
+            shouldRegisterUserMenu: true,
+            shouldRegisterNavigation: false,
+            navigationGroup: 'Settings',
+            hasAvatars: true,
+            slug: 'profile'
+          )
+          ->enableTwoFactorAuthentication(),
+        FilamentProgressbarPlugin::make()->color('#0096c7'),
+        SimpleLightBoxPlugin::make(),
+      ])
+      ->sidebarCollapsibleOnDesktop(true)
+      ->databaseNotifications()
+      ->databaseNotificationsPolling('30s');
   }
 }

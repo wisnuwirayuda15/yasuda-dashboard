@@ -4,8 +4,8 @@ namespace Database\Factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
-use App\Models\City;
 use App\Models\District;
+use App\Models\Regency;
 
 class DistrictFactory extends Factory
 {
@@ -22,7 +22,7 @@ class DistrictFactory extends Factory
     public function definition(): array
     {
         return [
-            'city_id' => City::factory(),
+            'regency_id' => Regency::factory(),
             'name' => $this->faker->name(),
         ];
     }

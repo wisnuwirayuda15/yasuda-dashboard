@@ -2,16 +2,19 @@
 
 namespace App\Filament\Resources;
 
-use App\Filament\Resources\OrderResource\Pages;
-use App\Filament\Resources\OrderResource\RelationManagers;
-use App\Models\Order;
 use Filament\Forms;
-use Filament\Forms\Form;
-use Filament\Resources\Resource;
 use Filament\Tables;
+use App\Models\Order;
+use Filament\Forms\Form;
 use Filament\Tables\Table;
+use Filament\Resources\Resource;
+use App\Enums\InstitutionCategory;
 use Illuminate\Database\Eloquent\Builder;
+use App\Filament\Resources\OrderResource\Pages;
+use Ysfkaya\FilamentPhoneInput\Forms\PhoneInput;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use App\Filament\Resources\OrderResource\RelationManagers;
+use Ysfkaya\FilamentPhoneInput\PhoneInputNumberType;
 
 class OrderResource extends Resource
 {
@@ -43,7 +46,32 @@ class OrderResource extends Resource
           ->prefixIcon('heroicon-s-user-group')
           ->relationship('customer', 'name')
           ->native(false)
-          ->searchable(),
+          ->searchable()
+          ->preload()
+          ->createOptionForm(schema: [
+            Forms\Components\TextInput::make('name')
+              ->required()
+              ->maxLength(255),
+            Forms\Components\TextInput::make('institution')
+              ->required()
+              ->maxLength(255),
+            Forms\Components\Select::make('category')
+              ->required()
+              ->options(InstitutionCategory::class)
+              ->native(false),
+            Forms\Components\TextInput::make('email')
+              ->email()
+              ->maxLength(255),
+            PhoneInput::make('phone')
+              ->focusNumberFormat(PhoneInputNumberType::E164)
+              ->defaultCountry('ID')
+              ->initialCountry('id')
+              ->columnSpanFull()
+              ->showSelectedDialCode(true)
+              ->formatAsYouType(false)
+              ->required()
+              ->rules('phone:mobile')
+          ]),
         Forms\Components\Select::make('tour_package_id')
           ->required()
           ->relationship('tourPackage', 'name')

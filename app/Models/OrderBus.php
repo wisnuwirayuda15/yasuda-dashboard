@@ -36,11 +36,6 @@ class OrderBus extends Model
         'order_tour_leader_id' => 'integer',
     ];
 
-    public function orderTourLeader(): BelongsTo
-    {
-        return $this->belongsTo(OrderTourLeader::class);
-    }
-
     public function order(): BelongsTo
     {
         return $this->belongsTo(Order::class);
@@ -54,10 +49,5 @@ class OrderBus extends Model
     public function busAvailability(): BelongsTo
     {
         return $this->belongsTo(BusAvailability::class);
-    }
-
-    public function tourLeader(): HasOne
-    {
-        return $this->hasOne(TourLeader::class);
     }
 }

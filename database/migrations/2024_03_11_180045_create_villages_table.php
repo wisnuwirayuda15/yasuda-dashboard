@@ -13,10 +13,10 @@ return new class extends Migration
     {
         Schema::disableForeignKeyConstraints();
 
-        Schema::create('cities', function (Blueprint $table) {
+        Schema::create('villages', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('province_id')->constrained()->cascadeOnDelete();
-            $table->string('name')->unique();
+            $table->foreignId('district_id')->constrained()->cascadeOnDelete();
+            $table->string('name');
             $table->timestamps();
         });
 
@@ -28,6 +28,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('cities');
+        Schema::dropIfExists('villages');
     }
 };

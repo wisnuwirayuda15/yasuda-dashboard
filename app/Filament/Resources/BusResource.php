@@ -9,20 +9,24 @@ use App\Enums\BusType;
 use Filament\Forms\Form;
 use Filament\Tables\Table;
 use Filament\Resources\Resource;
+use Filament\Support\Colors\Color;
+use App\Tables\Columns\BusSeatsColumn;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Database\Eloquent\Builder;
+use Filament\Tables\Columns\Summarizers\Sum;
 use App\Filament\Resources\BusResource\Pages;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use App\Filament\Resources\BusResource\RelationManagers;
+use App\Filament\Resources\BusResource\RelationManagers\BusAvailabilityRelationManager;
 
 class BusResource extends Resource
 {
   protected static ?string $model = Bus::class;
 
   protected static ?string $navigationGroup = 'Master Data';
-  
+
   protected static ?string $recordTitleAttribute = 'name';
-  
+
   protected static ?string $modelLabel = 'Bus';
 
   protected static ?string $navigationLabel = 'Bus';
@@ -60,11 +64,23 @@ class BusResource extends Resource
         Forms\Components\RichEditor::make('description')
           ->required()
           ->columnSpanFull(),
-        Forms\Components\TextInput::make('seat_total')
-          ->label('Kursi')
-          ->required()
-          ->numeric()
-          ->columnSpanFull(),
+        Forms\Components\Section::make()
+          ->columns(['xl' => 2])
+          ->schema([
+            Forms\Components\TextInput::make('seat_total')
+              ->label('Jumlah Kursi')
+              ->required()
+              ->numeric()
+              ->columnSpanFull(),
+            Forms\Components\TextInput::make('left_seat')
+              ->label('Kiri')
+              ->required()
+              ->numeric(),
+            Forms\Components\TextInput::make('right_seat')
+              ->label('Kanan')
+              ->required()
+              ->numeric(),
+          ]),
         Forms\Components\Select::make('type')
           ->label('Tipe')
           ->required()
@@ -84,14 +100,13 @@ class BusResource extends Resource
   {
     return $table
       ->columns([
-        Tables\Columns\ImageColumn::make('image'),
+        Tables\Columns\ImageColumn::make('image')
+          ->simpleLightbox(),
         Tables\Columns\TextColumn::make('name')
           ->label('Armada')
           ->searchable(),
-        Tables\Columns\TextColumn::make('seat_total')
-          ->label('Kursi')
-          ->numeric()
-          ->sortable(),
+        BusSeatsColumn::make('seat_total')
+          ->label('Kursi'),
         Tables\Columns\TextColumn::make('type')
           ->label('Tipe')
           ->searchable()
@@ -99,6 +114,7 @@ class BusResource extends Resource
         Tables\Columns\TextColumn::make('price')
           ->label('Harga')
           ->money('idr')
+          // ->summarize(Sum::make()->money('IDR'))
           ->sortable(),
         Tables\Columns\TextColumn::make('created_at')
           ->dateTime()
@@ -113,19 +129,21 @@ class BusResource extends Resource
         //
       ])
       ->actions([
-        Tables\Actions\ViewAction::make(),
-        Tables\Actions\EditAction::make()
-          ->after(function (Bus $record) {
-            if ($record->isDirty('image')) {
-              Storage::disk('public')->delete($record->image);
-            }
-          }),
-        Tables\Actions\DeleteAction::make()
-          ->after(function (Bus $record) {
-            if ($record->image) {
-              Storage::disk('public')->delete($record->image);
-            }
-          })
+        Tables\Actions\ActionGroup::make([
+          Tables\Actions\ViewAction::make()->color('info'),
+          Tables\Actions\EditAction::make()
+            ->after(function (Bus $record) {
+              if ($record->isDirty('image')) {
+                Storage::disk('public')->delete($record->image);
+              }
+            }),
+          Tables\Actions\DeleteAction::make()
+            ->after(function (Bus $record) {
+              if ($record->image) {
+                Storage::disk('public')->delete($record->image);
+              }
+            })
+        ])
       ])
       ->bulkActions([
         Tables\Actions\BulkActionGroup::make([
@@ -137,7 +155,7 @@ class BusResource extends Resource
   public static function getRelations(): array
   {
     return [
-      //
+      BusAvailabilityRelationManager::class
     ];
   }
 

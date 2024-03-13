@@ -16,7 +16,11 @@
         "laravel/framework": "^10.10",
         "laravel/sanctum": "^3.3",
         "laravel/tinker": "^2.8",
-        "mallardduck/blade-boxicons": "^2.4"
+        "mallardduck/blade-boxicons": "^2.4",
+        "njxqlus/filament-progressbar": "^1.0",
+        "postare/blade-mdi": "^1.1",
+        "solution-forest/filament-simplelightbox": "^0.0.5",
+        "ysfkaya/filament-phone-input": "^2.3"
     },
     "require-dev": {
         "fakerphp/faker": "^1.9.1",

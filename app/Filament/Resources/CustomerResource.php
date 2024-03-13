@@ -9,9 +9,13 @@ use Filament\Forms\Form;
 use Filament\Tables\Table;
 use Filament\Resources\Resource;
 use App\Enums\InstitutionCategory;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Database\Eloquent\Builder;
+use Ysfkaya\FilamentPhoneInput\Forms\PhoneInput;
 use App\Filament\Resources\CustomerResource\Pages;
+use Ysfkaya\FilamentPhoneInput\Tables\PhoneColumn;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Ysfkaya\FilamentPhoneInput\PhoneInputNumberType;
 use App\Filament\Resources\CustomerResource\RelationManagers;
 
 class CustomerResource extends Resource
@@ -39,21 +43,30 @@ class CustomerResource extends Resource
       ->schema([
         Forms\Components\TextInput::make('name')
           ->required()
+          ->columnSpanFull()
           ->maxLength(255),
         Forms\Components\TextInput::make('institution')
           ->required()
+          ->columnSpanFull()
           ->maxLength(255),
         Forms\Components\Select::make('category')
           ->required()
           ->options(InstitutionCategory::class)
+          ->columnSpanFull()
           ->native(false),
         Forms\Components\TextInput::make('email')
           ->email()
+          ->columnSpanFull()
           ->maxLength(255),
-        Forms\Components\TextInput::make('phone')
-          ->tel()
+        PhoneInput::make('phone')
+          ->focusNumberFormat(PhoneInputNumberType::E164)
+          ->defaultCountry('ID')
+          ->initialCountry('id')
+          ->columnSpanFull()
+          ->showSelectedDialCode(true)
+          ->formatAsYouType(false)
           ->required()
-          ->maxLength(255),
+          ->rules('phone:mobile')
       ]);
   }
 
@@ -70,7 +83,8 @@ class CustomerResource extends Resource
           ->badge(),
         Tables\Columns\TextColumn::make('email')
           ->searchable(),
-        Tables\Columns\TextColumn::make('phone')
+        PhoneColumn::make('phone')
+          ->displayFormat(PhoneInputNumberType::NATIONAL)
           ->searchable(),
         Tables\Columns\TextColumn::make('created_at')
           ->dateTime()
@@ -85,9 +99,11 @@ class CustomerResource extends Resource
         //
       ])
       ->actions([
-        Tables\Actions\ViewAction::make(),
-        Tables\Actions\EditAction::make(),
-        Tables\Actions\DeleteAction::make(),
+        Tables\Actions\ActionGroup::make([
+          Tables\Actions\ViewAction::make(),
+          Tables\Actions\EditAction::make(),
+          Tables\Actions\DeleteAction::make()
+        ])
       ])
       ->bulkActions([
         Tables\Actions\BulkActionGroup::make([

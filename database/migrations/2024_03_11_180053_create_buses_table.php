@@ -19,6 +19,8 @@ return new class extends Migration
             $table->string('name')->index();
             $table->longText('description');
             $table->integer('seat_total');
+            $table->tinyInteger('left_seat');
+            $table->tinyInteger('right_seat');
             $table->string('type', 50);
             $table->bigInteger('price');
             $table->timestamps();

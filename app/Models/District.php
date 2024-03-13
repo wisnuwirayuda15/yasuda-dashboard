@@ -17,7 +17,8 @@ class District extends Model
      * @var array
      */
     protected $fillable = [
-        'city_id',
+        'id',
+        'regency_id',
         'name',
     ];
 
@@ -28,7 +29,7 @@ class District extends Model
      */
     protected $casts = [
         'id' => 'integer',
-        'city_id' => 'integer',
+        'regency_id' => 'integer',
     ];
 
     public function villages(): HasMany
@@ -36,8 +37,8 @@ class District extends Model
         return $this->hasMany(Village::class);
     }
 
-    public function city(): BelongsTo
+    public function regency(): BelongsTo
     {
-        return $this->belongsTo(City::class);
+        return $this->belongsTo(Regency::class);
     }
 }
