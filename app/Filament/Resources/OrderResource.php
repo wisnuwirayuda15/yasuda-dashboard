@@ -8,13 +8,12 @@ use App\Models\Order;
 use Filament\Forms\Form;
 use Filament\Tables\Table;
 use Filament\Resources\Resource;
-use App\Enums\InstitutionCategory;
 use Illuminate\Database\Eloquent\Builder;
 use App\Filament\Resources\OrderResource\Pages;
-use Ysfkaya\FilamentPhoneInput\Forms\PhoneInput;
+use Coolsam\FilamentFlatpickr\Enums\FlatpickrTheme;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Coolsam\FilamentFlatpickr\Forms\Components\Flatpickr;
 use App\Filament\Resources\OrderResource\RelationManagers;
-use Ysfkaya\FilamentPhoneInput\PhoneInputNumberType;
 
 class OrderResource extends Resource
 {
@@ -48,34 +47,12 @@ class OrderResource extends Resource
           ->native(false)
           ->searchable()
           ->preload()
-          ->createOptionForm(schema: [
-            Forms\Components\TextInput::make('name')
-              ->required()
-              ->maxLength(255),
-            Forms\Components\TextInput::make('institution')
-              ->required()
-              ->maxLength(255),
-            Forms\Components\Select::make('category')
-              ->required()
-              ->options(InstitutionCategory::class)
-              ->native(false),
-            Forms\Components\TextInput::make('email')
-              ->email()
-              ->maxLength(255),
-            PhoneInput::make('phone')
-              ->focusNumberFormat(PhoneInputNumberType::E164)
-              ->defaultCountry('ID')
-              ->initialCountry('id')
-              ->columnSpanFull()
-              ->showSelectedDialCode(true)
-              ->formatAsYouType(false)
-              ->required()
-              ->rules('phone:mobile')
-          ]),
+          ->createOptionForm(schema: fn(Form $form) => CustomerResource::form($form)),
         Forms\Components\Select::make('tour_package_id')
           ->required()
           ->relationship('tourPackage', 'name')
           ->native(false)
+          ->preload()
           ->searchable(),
         Forms\Components\TextInput::make('number_of_people')
           ->required()
@@ -89,10 +66,15 @@ class OrderResource extends Resource
         Forms\Components\TextInput::make('status')
           ->required()
           ->maxLength(50),
-        Forms\Components\DateTimePicker::make('start_date')
+        Flatpickr::make('start_date')
           ->required()
-          ->native(false),
-        Forms\Components\DateTimePicker::make('end_date'),
+          ->range()
+          ->live()
+          ->dateFormat('d M Y')
+          ->theme(FlatpickrTheme::DARK),
+        Forms\Components\DatePicker::make('end_date')
+          ->required()
+          ->native(false)
       ]);
   }
 

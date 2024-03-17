@@ -5,9 +5,8 @@ namespace App\Enums;
 use Filament\Support\Contracts\HasIcon;
 use Filament\Support\Contracts\HasColor;
 use Filament\Support\Contracts\HasLabel;
-use Filament\Support\Contracts\HasDescription;
 
-enum BusStatus: string implements HasLabel, HasColor, HasDescription, HasIcon
+enum BusStatus: string implements HasLabel, HasColor, HasIcon
 {
   case Available = 'available';
   case OnTrip = 'on_trip';
@@ -37,15 +36,6 @@ enum BusStatus: string implements HasLabel, HasColor, HasDescription, HasIcon
       self::Available => 'success',
       self::OnTrip => 'primary',
       self::Canceled => 'danger',
-    };
-  }
-
-  public function getDescription(): ?string
-  {
-    return match ($this) {
-      self::Available => 'Bus tersedia dan dapat digunakan',
-      self::OnTrip => 'Bus sedang dalam perjalanan',
-      self::Canceled => 'Pesanan bus dibatalkan',
     };
   }
 }

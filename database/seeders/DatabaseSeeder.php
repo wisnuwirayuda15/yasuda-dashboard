@@ -3,8 +3,10 @@
 namespace Database\Seeders;
 
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+use App\Models\Bus;
+use App\Models\Customer;
+use App\Models\TourPackage;
 use App\Models\User;
-use Illuminate\Support\Str;
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
@@ -21,9 +23,16 @@ class DatabaseSeeder extends Seeder
       'email' => 'superadmin@yasuda.com',
       'password' => bcrypt('12345678'),
     ]);
+    
+    $this->call([
+      RegionSeeder::class,
+    ]);
 
-    // $this->call([
-    //   RegionSeeder::class,
-    // ]);
+    Bus::factory(50)->create();
+
+    TourPackage::factory(15)->create();
+
+    Customer::factory(100)->create();
+
   }
 }

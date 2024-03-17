@@ -21,13 +21,17 @@ class RegionSeeder extends Seeder
 
 
     $cmd->warn('Mendapatkan data provinsi...');
-    $response = Http::get('https://www.emsifa.com/api-wilayah-indonesia/api/provinces.json');
+    $response = Http::get('https://wilayah.id/api/provinces.json');
     $provinces = $response->json();
+    $provinces = $provinces['data'];
     $output->progressStart(count($provinces));
-    foreach ($provinces as $province) {
+    foreach ($provinces['data'] as $province) {
       Province::create([
-        'id' => $province['id'],
+        'code' => $province['code'],
         'name' => $province['name'],
+        'lat' => $province['coordinates']['lat'],
+        'lng' => $province['coordinates']['lng'],
+        'google_place_id' => $province['google_place_id'],
       ]);
       $output->progressAdvance();
     }
@@ -37,57 +41,20 @@ class RegionSeeder extends Seeder
 
 
     $provinces = Province::all();
+    $cmd->warn("Mendapatkan data kabupaten dari semua provinsi...");
+    $output->progressStart(count($provinces));
     foreach ($provinces as $province) {
-      $cmd->warn("Mendapatkan data kabupaten dari provinsi {$province->name}...");
-      $response = Http::get('https://www.emsifa.com/api-wilayah-indonesia/api/regencies/' . $province->id . '.json');
+      $response = Http::get("https://api.cahyadsn.com/regencies/{$province->id}");
       $regencies = $response->json();
-      $output->progressStart(count($regencies));
-      foreach ($regencies as $regency) {
+      foreach ($regencies['data'] as $regency) {
         $province->regencies()->create([
-          'id' => $regency['id'],
-          'name' => $regency['name'],
+          // 'id' => $regency['kode'],
+          'name' => $regency['nama'],
         ]);
-        $output->progressAdvance();
       }
-      $output->progressFinish();
+      $output->progressAdvance();
     }
+    $output->progressFinish();
     $cmd->info("Data kabupaten berhasil ditambahkan");
-
-
-    $regencies = Regency::all();
-    foreach ($regencies as $regency) {
-      $cmd->warn("Mendapatkan data kecamatan dari kabupaten {$regency->name}...");
-      $response = Http::get('https://www.emsifa.com/api-wilayah-indonesia/api/districts/' . $regency->id . '.json');
-      $districts = $response->json();
-      $output->progressStart(count($districts));
-      foreach ($districts as $district) {
-        $regency->districts()->create([
-          'id' => $district['id'],
-          'name' => $district['name'],
-        ]);
-        $output->progressAdvance();
-      }
-      $output->progressFinish();
-    }
-    $cmd->info("Data kecamatan berhasil ditambahkan");
-
-
-
-    $districts = District::all();
-    foreach ($districts as $district) {
-      $cmd->warn("Mendapatkan data keluarahan dari kecamatan {$district->name}...");
-      $response = Http::get('https://www.emsifa.com/api-wilayah-indonesia/api/villages/' . $district->id . '.json');
-      $villages = $response->json();
-      $output->progressStart(count($villages));
-      foreach ($villages as $village) {
-        $district->villages()->create([
-          'id' => $village['id'],
-          'name' => $village['name'],
-        ]);
-        $output->progressAdvance();
-      }
-      $output->progressFinish();
-    }
-    $cmd->info("Data kelurahan berhasil ditambahkan");
   }
 }

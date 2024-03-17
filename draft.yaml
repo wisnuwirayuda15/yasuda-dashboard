@@ -1,26 +1,81 @@
+# string:50 = enum
+
+# User (for login):
+#   name: string
+#   email: string unique
+#   avatar_url: string
+#   email_verified_at: datetime
+#   password: string
+#   relationships:
+#     hasOne: Employee
+
 models:
+
   # Region
   Province:
+    code: string unique
     name: string
+    lat: string
+    lng: string
+    google_place_id: string
     relationships:
       hasMany: Regency
   Regency:
+    code: string unique
     province_id: foreign constrained onDelete:cascade
     name: string
+    lat: string
+    lng: string
+    google_place_id: string
     relationships:
       hasMany: District
       belongsTo: Province
   District:
+    code: string unique
     regency_id: foreign constrained onDelete:cascade
     name: string
+    lat: string
+    lng: string
+    google_place_id: string
     relationships:
       hasMany: village
       belongsTo: Regency
-  Village:
-    district_id: foreign constrained onDelete:cascade
-    name: string
+
+
+
+  # Master Data
+  Bus:
+    image: string
+    name: string index
+    description: longText
+    seat_set: string:50
+    type: string:50
+    price: bigInteger
+    pic: string
+    phone: string
     relationships:
-      belongsTo: District
+      hasMany: BusAvailability
+
+  Customer:
+    code: string
+    name: string index
+    address: string
+    category: string:50
+    city: string
+    district: string
+    headmaster: string
+    operator: string
+    phone: string
+    lat: string
+    lng: string
+    status: string:50 #new,
+    relationships:
+      hasMany: Order
+
+
+
+
+
 
   Company:
     name: string default:Yasuda Jaya Tour & Travel
@@ -28,15 +83,6 @@ models:
     email: string nullable default:yasudajaya@gmail.com
     phone: string default:+628123456789
     balance: bigInteger default:0
-
-  # User (for login):
-  #   name: string
-  #   email: string unique
-  #   avatar_url: string
-  #   email_verified_at: datetime
-  #   password: string
-  #   relationships:
-  #     hasOne: Employee
 
   Employee:
     user_id: foreign constrained onDelete:cascade
@@ -70,15 +116,6 @@ models:
     duration: integer
     order_total: integer default:0
     price: bigInteger
-
-  Customer:
-    name: string
-    institution: string index
-    category: string:50
-    email: string unique nullable
-    phone: string
-    relationships:
-      hasMany: Order
     
   TourLeader:
     name: string index
@@ -89,18 +126,6 @@ models:
     address: string
     relationships:
       belongsTo: OrderBus
-
-  Bus:
-    image: string
-    name: string index
-    description: longText
-    seat_total: integer
-    left_seat: tinyInteger
-    right_seat: tinyInteger
-    type: string:50
-    price: bigInteger
-    relationships:
-      hasMany: BusAvailability
 
   BusAvailability:
     bus_id: foreign constrained onDelete:cascade

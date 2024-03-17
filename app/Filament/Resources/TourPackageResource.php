@@ -66,24 +66,18 @@ class TourPackageResource extends Resource
           ->numeric()
           ->columnSpanFull(),
         Forms\Components\Select::make('city')
-          ->label('Kota')
+          ->label('Destinasi')
           ->required()
           ->searchable()
           ->live()
-          ->getSearchResultsUsing(function (string $search): array {
-            $data = Http::get("https://api.cahyadsn.com/search/$search");
-            if (isset ($data['error']) || $data['data'] == 'Data not found') return [];
-            return Arr::pluck($data['data'], 'nama', 'nama');
-          })
+          // ->getSearchResultsUsing(function (string $search): array {
+          //   $data = Http::get("https://api.cahyadsn.com/search/$search");
+          //   if (isset ($data['error']) || $data['data'] == 'Data not found')
+          //     return [];
+          //   return Arr::pluck($data['data'], 'nama', 'nama');
+          // })
+          ->getSearchResultsUsing(fn(string $search): array => Regency::where('name', 'like', "%{$search}%")->limit(5)->pluck('name', 'name')->toArray())
           ->columnSpanFull(),
-        // Forms\Components\Select::make('city')
-        //   ->label('Kota')
-        //   ->required()
-        //   ->searchable()
-        //   ->getSearchResultsUsing(fn(string $search): array => Regency::where('name', 'like', "%{$search}%")->limit(5)
-        //     ->pluck('name', 'name')->toArray())
-        //   ->getOptionLabelUsing(fn($value): ?string => Regency::find($value)?->name)
-        //   ->columnSpanFull(),
         Forms\Components\RichEditor::make('description')
           ->required()
           ->columnSpanFull(),
@@ -100,7 +94,7 @@ class TourPackageResource extends Resource
     return $table
       ->columns([
         Tables\Columns\ImageColumn::make('image')
-        ->simpleLightbox(),
+          ->simpleLightbox(),
         Tables\Columns\TextColumn::make('name')
           ->searchable(),
         Tables\Columns\TextColumn::make('city')

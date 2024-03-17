@@ -28,17 +28,18 @@ class AdminPanelProvider extends PanelProvider
     return $panel
       ->default()
       ->id('admin')
-      ->path('admin')
+      ->path('')
       ->login()
       ->colors([
         'primary' => Color::Sky,
-        // 'success' => Color::Emerald,
-        // 'warning' => Color::Orange,
-        // 'danger' => Color::Red,
-        // 'gray' => Color::Gray,
-        // 'info' => Color::Blue,
+        'success' => Color::Emerald,
+        'warning' => Color::Orange,
+        'danger' => Color::Red,
+        'gray' => Color::Gray,
+        'info' => Color::Blue,
       ])
       ->font('Poppins')
+      ->sidebarCollapsibleOnDesktop(true)
       ->discoverResources(app_path('Filament/Resources'), 'App\\Filament\\Resources')
       ->discoverPages(app_path('Filament/Pages'), 'App\\Filament\\Pages')
       ->pages([
@@ -49,6 +50,9 @@ class AdminPanelProvider extends PanelProvider
         Widgets\AccountWidget::class,
         Widgets\FilamentInfoWidget::class,
       ])
+      ->databaseNotifications()
+      ->databaseNotificationsPolling('30s')
+      // ->unsavedChangesAlerts()
       ->middleware([
         EncryptCookies::class,
         AddQueuedCookiesToResponse::class,
@@ -76,9 +80,6 @@ class AdminPanelProvider extends PanelProvider
           ->enableTwoFactorAuthentication(),
         FilamentProgressbarPlugin::make()->color('#0096c7'),
         SimpleLightBoxPlugin::make(),
-      ])
-      ->sidebarCollapsibleOnDesktop(true)
-      ->databaseNotifications()
-      ->databaseNotificationsPolling('30s');
+      ]);
   }
 }

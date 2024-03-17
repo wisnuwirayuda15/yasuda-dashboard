@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use Carbon\Carbon;
 use Filament\Pages\Page;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\ServiceProvider;
 use Filament\Notifications\Notification;
@@ -25,15 +26,20 @@ class AppServiceProvider extends ServiceProvider
    */
   public function boot(): void
   {
-    //Indonesian locale and timezone
+    // Use secure connection for production
+    if (env('APP_ENV') !== 'local') {
+      URL::forceScheme(scheme: 'https');
+    }
+
+    // Indonesian locale and timezone
     Carbon::setLocale(env('APP_LOCALE', 'en'));
 
-    //Unguard model
+    // Unguard model
     if ((bool) env('UNGUARD_MODEL', false)) {
       Model::unguard();
     }
 
-    //Sending validation notifications
+    // Sending validation notifications
     if ((bool) env('USE_NOTIFICATION', true)) {
       Page::$reportValidationErrorUsing = function (ValidationException $exception) {
         Notification::make()
@@ -44,7 +50,7 @@ class AppServiceProvider extends ServiceProvider
       };
     }
 
-    //Languages selector
+    // Languages selector
     LanguageSwitch::configureUsing(function (LanguageSwitch $switch) {
       $switch
         ->locales(['id', 'en'])
