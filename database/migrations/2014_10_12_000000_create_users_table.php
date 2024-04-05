@@ -15,10 +15,6 @@ return new class extends Migration {
       $table->string('name')->index();
       $table->string('avatar_url')->nullable();
       $table->string('email')->unique();
-      // $table->string('phone')->unique()->nullable();
-      // $table->text('address')->nullable();
-      // $table->enum('gender', ['Pria', 'Wanita'])->nullable();
-      // $table->enum('role', ['Operasional', 'Keuangan', 'Marketing', 'Manager'])->nullable();
       $table->timestamp('email_verified_at')->nullable();
       $table->string('password');
       $table->rememberToken();

@@ -20,7 +20,7 @@ class Employee extends Model
         'name',
         'photo',
         'phone',
-        'address',
+        'gender',
         'role',
     ];
 

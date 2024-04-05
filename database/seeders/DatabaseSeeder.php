@@ -3,11 +3,11 @@
 namespace Database\Seeders;
 
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
-use App\Models\Bus;
-use App\Models\Customer;
-use App\Models\TourPackage;
 use App\Models\User;
+use App\Models\Company;
 use Illuminate\Database\Seeder;
+use Database\Seeders\FleetSeeder;
+use Database\Seeders\DestinationSeeder;
 
 class DatabaseSeeder extends Seeder
 {
@@ -16,23 +16,19 @@ class DatabaseSeeder extends Seeder
    */
   public function run(): void
   {
-    // \App\Models\User::factory(10)->create();
-
     User::factory()->create([
       'name' => 'Super Admin',
       'email' => 'superadmin@yasuda.com',
       'password' => bcrypt('12345678'),
     ]);
+
+    Company::create();
     
     $this->call([
       RegionSeeder::class,
+      FleetSeeder::class,
+      CustomerSeeder::class,
+      DestinationSeeder::class,
     ]);
-
-    Bus::factory(50)->create();
-
-    TourPackage::factory(15)->create();
-
-    Customer::factory(100)->create();
-
   }
 }

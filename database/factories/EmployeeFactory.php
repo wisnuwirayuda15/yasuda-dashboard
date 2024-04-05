@@ -26,7 +26,7 @@ class EmployeeFactory extends Factory
             'name' => $this->faker->name(),
             'photo' => $this->faker->word(),
             'phone' => $this->faker->phoneNumber(),
-            'address' => $this->faker->word(),
+            'gender' => $this->faker->regexify('[A-Za-z0-9]{50}'),
             'role' => $this->faker->regexify('[A-Za-z0-9]{50}'),
         ];
     }

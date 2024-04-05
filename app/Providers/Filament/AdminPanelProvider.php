@@ -30,16 +30,20 @@ class AdminPanelProvider extends PanelProvider
       ->id('admin')
       ->path('')
       ->login()
-      ->colors([
-        'primary' => Color::Sky,
-        'success' => Color::Emerald,
-        'warning' => Color::Orange,
-        'danger' => Color::Red,
-        'gray' => Color::Gray,
-        'info' => Color::Blue,
-      ])
+      ->passwordReset()
+      // ->spa()
+      ->topNavigation()
+      // ->colors([
+      //   'danger' => Color::Rose,
+      //   'gray' => Color::Gray,
+      //   'info' => Color::Sky,
+      //   'primary' => Color::Blue,
+      //   'success' => Color::Emerald,
+      //   'warning' => Color::Orange,
+      // ])
       ->font('Poppins')
       ->sidebarCollapsibleOnDesktop(true)
+      ->unsavedChangesAlerts(false)
       ->discoverResources(app_path('Filament/Resources'), 'App\\Filament\\Resources')
       ->discoverPages(app_path('Filament/Pages'), 'App\\Filament\\Pages')
       ->pages([
@@ -51,8 +55,7 @@ class AdminPanelProvider extends PanelProvider
         Widgets\FilamentInfoWidget::class,
       ])
       ->databaseNotifications()
-      ->databaseNotificationsPolling('30s')
-      // ->unsavedChangesAlerts()
+      // ->databaseNotificationsPolling('30s')
       ->middleware([
         EncryptCookies::class,
         AddQueuedCookiesToResponse::class,
@@ -78,8 +81,8 @@ class AdminPanelProvider extends PanelProvider
             slug: 'profile'
           )
           ->enableTwoFactorAuthentication(),
-        FilamentProgressbarPlugin::make()->color('#0096c7'),
-        SimpleLightBoxPlugin::make(),
+        FilamentProgressbarPlugin::make(),
+        // SimpleLightBoxPlugin::make(),
       ]);
   }
 }

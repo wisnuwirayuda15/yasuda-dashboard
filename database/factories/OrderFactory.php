@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
 use App\Models\Customer;
 use App\Models\Order;
-use App\Models\TourPackage;
+use App\Models\Regency;
 
 class OrderFactory extends Factory
 {
@@ -23,14 +23,11 @@ class OrderFactory extends Factory
     public function definition(): array
     {
         return [
+            'code' => $this->faker->word(),
             'customer_id' => Customer::factory(),
-            'number_of_people' => $this->faker->numberBetween(-10000, 10000),
-            'tour_package_id' => TourPackage::factory(),
-            'payment_status' => $this->faker->regexify('[A-Za-z0-9]{50}'),
-            'banner_status' => $this->faker->regexify('[A-Za-z0-9]{50}'),
-            'status' => $this->faker->regexify('[A-Za-z0-9]{50}'),
-            'start_date' => $this->faker->dateTime(),
-            'end_date' => $this->faker->dateTime(),
+            'regency_id' => Regency::factory(),
+            'description' => $this->faker->text(),
+            'destinations' => '{}',
         ];
     }
 }

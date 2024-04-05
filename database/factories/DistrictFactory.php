@@ -22,8 +22,12 @@ class DistrictFactory extends Factory
     public function definition(): array
     {
         return [
+            'code' => $this->faker->word(),
             'regency_id' => Regency::factory(),
             'name' => $this->faker->name(),
+            'lat' => $this->faker->latitude(),
+            'lng' => $this->faker->longitude(),
+            'google_place_id' => $this->faker->word(),
         ];
     }
 }

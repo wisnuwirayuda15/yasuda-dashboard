@@ -12,8 +12,9 @@
         "bezhansalleh/filament-language-switch": "^3.0",
         "coolsam/flatpickr": "^3.0",
         "dotswan/filament-map-picker": "^1.0",
-        "filament/filament": "3.2",
+        "filament/filament": "^3.2",
         "guzzlehttp/guzzle": "^7.2",
+        "haruncpi/laravel-id-generator": "^1.1",
         "jeffgreco13/filament-breezy": "^2.2",
         "laravel/framework": "^10.10",
         "laravel/sanctum": "^3.3",
@@ -25,6 +26,7 @@
         "ysfkaya/filament-phone-input": "^2.3"
     },
     "require-dev": {
+        "barryvdh/laravel-debugbar": "^3.12",
         "fakerphp/faker": "^1.9.1",
         "laravel-shift/blueprint": "^2.9",
         "laravel/pint": "^1.0",
@@ -44,7 +46,10 @@
     "autoload-dev": {
         "psr-4": {
             "Tests\\": "tests/"
-        }
+        },
+        "files": [
+            "app/helpers.php"
+        ]
     },
     "scripts": {
         "post-autoload-dump": [

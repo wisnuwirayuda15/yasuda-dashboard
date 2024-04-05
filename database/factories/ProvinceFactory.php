@@ -21,7 +21,11 @@ class ProvinceFactory extends Factory
     public function definition(): array
     {
         return [
+            'code' => $this->faker->word(),
             'name' => $this->faker->name(),
+            'lat' => $this->faker->latitude(),
+            'lng' => $this->faker->longitude(),
+            'google_place_id' => $this->faker->word(),
         ];
     }
 }

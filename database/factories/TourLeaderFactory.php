@@ -4,8 +4,8 @@ namespace Database\Factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
-use App\Models\OrderBus;
 use App\Models\TourLeader;
+use App\Models\User;
 
 class TourLeaderFactory extends Factory
 {
@@ -22,13 +22,11 @@ class TourLeaderFactory extends Factory
     public function definition(): array
     {
         return [
+            'user_id' => User::factory(),
             'name' => $this->faker->name(),
             'photo' => $this->faker->word(),
-            'email' => $this->faker->safeEmail(),
             'phone' => $this->faker->phoneNumber(),
             'gender' => $this->faker->regexify('[A-Za-z0-9]{50}'),
-            'address' => $this->faker->word(),
-            'order_bus_id' => OrderBus::factory(),
         ];
     }
 }

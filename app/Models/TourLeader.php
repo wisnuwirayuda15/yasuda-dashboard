@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class TourLeader extends Model
 {
@@ -16,13 +17,11 @@ class TourLeader extends Model
      * @var array
      */
     protected $fillable = [
+        'user_id',
         'name',
         'photo',
-        'email',
         'phone',
         'gender',
-        'address',
-        'order_bus_id',
     ];
 
     /**
@@ -32,11 +31,16 @@ class TourLeader extends Model
      */
     protected $casts = [
         'id' => 'integer',
-        'order_bus_id' => 'integer',
+        'user_id' => 'integer',
     ];
 
-    public function orderBus(): BelongsTo
+    public function orderFleets(): HasMany
     {
-        return $this->belongsTo(OrderBus::class);
+        return $this->hasMany(OrderFleet::class);
+    }
+
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
     }
 }

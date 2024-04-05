@@ -45,8 +45,8 @@ class AppServiceProvider extends ServiceProvider
         Notification::make()
           ->title($exception->getMessage())
           ->danger()
-          ->send()
-          ->sendToDatabase(auth()->user());
+          ->send();
+          // ->sendToDatabase(auth()->user());
       };
     }
 

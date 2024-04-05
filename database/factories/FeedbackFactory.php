@@ -4,8 +4,8 @@ namespace Database\Factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
+use App\Models\Customer;
 use App\Models\Feedback;
-use App\Models\Order;
 
 class FeedbackFactory extends Factory
 {
@@ -22,7 +22,7 @@ class FeedbackFactory extends Factory
     public function definition(): array
     {
         return [
-            'order_id' => Order::factory(),
+            'customer_id' => Customer::factory(),
             'text' => $this->faker->text(),
         ];
     }

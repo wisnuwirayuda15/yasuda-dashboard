@@ -7,179 +7,166 @@
 #   email_verified_at: datetime
 #   password: string
 #   relationships:
-#     hasOne: Employee
+#     hasOne: Employee,TourLeader
 
 models:
 
   # Region
-  Province:
-    code: string unique
-    name: string
+  Province: #Jawa Tengah
+    code: string unique index
+    name: string index
     lat: string
     lng: string
     google_place_id: string
+    softDeletes
     relationships:
       hasMany: Regency
+
   Regency:
-    code: string unique
+    code: string unique index
     province_id: foreign constrained onDelete:cascade
-    name: string
+    name: string index
     lat: string
     lng: string
     google_place_id: string
+    softDeletes
     relationships:
       hasMany: District
       belongsTo: Province
+  
   District:
-    code: string unique
+    code: string unique index
     regency_id: foreign constrained onDelete:cascade
-    name: string
+    name: string index
     lat: string
     lng: string
     google_place_id: string
+    softDeletes
     relationships:
       hasMany: village
       belongsTo: Regency
 
 
+#=============================================================#
+
 
   # Master Data
-  Bus:
-    image: string
+  Fleet:
+    code: string unique index #ARMD-00001
+    image: string nullable
     name: string index
     description: longText
-    seat_set: string:50
-    type: string:50
-    price: bigInteger
-    pic: string
-    phone: string
+    seat_set: tinyInteger
+    category: string:50
+    pic_name: string
+    pic_phone: string
+    softDeletes
     relationships:
-      hasMany: BusAvailability
+      hasMany: OrderFleet
 
   Customer:
-    code: string
-    name: string index
+    code: string unique index #TK-00001
+    name: string unique index
     address: string
-    category: string:50
-    city: string
-    district: string
+    category: string:50 default:tk
+    regency_id: foreign constrained onDelete:cascade
+    district_id: foreign:districts.id constrained onDelete:cascade
     headmaster: string
     operator: string
     phone: string
-    lat: string
-    lng: string
-    status: string:50 #new,
+    email: string nullable
+    lat: string nullable
+    lng: string nullable
+    status: string:50
+    softDeletes
     relationships:
-      hasMany: Order
+      hasMany: Order,Feedback
 
+  Destination:
+    name: string unique index
+    type: string:50
+    marketing_name: string
+    marketing_phone: string
+    weekday_price: bigInteger
+    weekend_price: bigInteger
+    high_season_price: bigInteger nullable
+    softDeletes
 
+  TourTemplate:
+    regency_id: foreign constrained onDelete:cascade
+    destinations: json
+    softDeletes
 
-
-
+  CostDetail:
+    name: string unique
+    price: bigInteger
+    cashback: bigInteger nullable
 
   Company:
-    name: string default:Yasuda Jaya Tour & Travel
+    name: string default:"Yasuda Jaya Tour & Travel"
     logo: string default:logo.png
-    email: string nullable default:yasudajaya@gmail.com
+    email: string default:yasudajaya@gmail.com
     phone: string default:+628123456789
     balance: bigInteger default:0
 
   Employee:
-    user_id: foreign constrained onDelete:cascade
+    user_id: foreign constrained onDelete:cascade nullable
     name: string index
-    photo: string
+    photo: string nullable
     phone: string
-    address: string
+    gender: string:50
     role: string:50
-    relationships:
-      belongsTo: User
-
-  Debt:
-    debtor: string
-    date: datetime
-    due_date: datetime nullable
-    amount: bigInteger
-    status: string:50
-
-  Receivable:
-    creditor: string
-    date: datetime
-    due_date: datetime nullable
-    amount: bigInteger
-    status: string:50
-
-  TourPackage:
-    image: string nullable
-    name: string unique
-    city: string
-    description: longText
-    duration: integer
-    order_total: integer default:0
-    price: bigInteger
     
   TourLeader:
+    user_id: foreign constrained onDelete:cascade nullable
     name: string index
-    photo: string
-    email: string unique nullable
+    photo: string nullable
     phone: string unique
     gender: string:50
-    address: string
     relationships:
-      belongsTo: OrderBus
+      hasMany: OrderFleet
 
-  BusAvailability:
-    bus_id: foreign constrained onDelete:cascade
-    status: string:50
-    date: datetime
-    relationships:
-      belongsTo: Bus
+#=============================================================#
 
   Order:
+    code: string index unique #OR-00001
     customer_id: foreign constrained onDelete:cascade
-    number_of_people: integer
-    tour_package_id: foreign constrained onDelete:cascade
+    regency_id: foreign constrained onDelete:cascade
+    description: longText
+    destinations: json
+    relationships:
+      hasMany: OrderFleet
+
+  OrderFleet:
+    code: string index unique #OF-00001
+    order_id: foreign constrained onDelete:cascade nullable
+    fleet_id: foreign constrained onDelete:cascade
+    trip_date: datetime
+    duration: integer default:1
     payment_status: string:50
-    banner_status: string:50
-    status: string:50
-    start_date: datetime
-    end_date: datetime nullable
-    detail: longText
+    payment_date: datetime nullable
+    payment_amount: bigInteger nullable
+    tour_leader_id: foreign constrained onDelete:cascade nullable
+
+  Invoice:
+    code: string index unique #INV-00001
+    order_id: foreign constrained onDelete:cascade
+    main_costs: json
+    bills: json
+    shirts: json
+    seats_charge: json
+    card_details: json
+    special_notes: longText
     relationships:
-      hasMany: OrderBus
-      belongsTo: Customer
+      hasOne: ProfitLoss
 
-  OrderBus:
-    order_id: foreign constrained onDelete:cascade
-    tour_leader_id: foreign constrained onDelete:cascade
-    bus_availability_id: foreign constrained onDelete:cascade
-    relationships:
-      belongsTo: Order,TourLeader
-      hasOne: TourLeader
-
-  Payment:
-    order_id: foreign constrained onDelete:cascade
-    amount: bigInteger
-    total: bigInteger
-    method: string:50
-    status: string:50
-
-  Revenue:
-    order_id: foreign constrained onDelete:cascade
-    payment_id: foreign constrained onDelete:cascade
-    restaurant: bigInteger nullable
-    souvenir: bigInteger nullable
-    shirt: bigInteger nullable
-    hotel: bigInteger nullable
-    snack: bigInteger nullable
-    catering: bigInteger nullable
-    gross_income: bigInteger
-    net_income: bigInteger
-
-  Tax:
-    institution: string
-    date: datetime
-    status: string:50
-    amount: bigInteger
+  ProfitLoss:
+    invoice_id: foreign constrained onDelete:cascade
+    operational_costs: json
+    special_costs: json
+    variable_costs: json
+    other_costs: json
+    total_cost: bigInteger
 
   EmployeeSalary:
     user_id: foreign constrained onDelete:cascade
@@ -187,30 +174,13 @@ models:
     date: datetime
     working_day: integer
 
-  TourLeaderSalary:
-    tour_leader_id: foreign constrained onDelete:cascade
-    amount: bigInteger
-    date: datetime
-
-  Incident:
-    name: string
-    date: datetime
-    description: longText
-    loss: bigInteger nullable
-    status: string:50
-
   Feedback:
-    order_id: foreign constrained onDelete:cascade
+    customer_id: foreign constrained onDelete:cascade
     text: longText
 
-  Meeting:
-    customer_id: foreign constrained onDelete:cascade
-    name: string
+  Receivable:
+    creditor: string
     date: datetime
-    status: string:50
-
-  Brochure:
-    institution: string
-    category: string:50
-    date: datetime
+    due_date: datetime nullable
+    amount: bigInteger
     status: string:50
