@@ -24,11 +24,8 @@ class InvoiceFactory extends Factory
         return [
             'code' => $this->faker->word(),
             'order_id' => Order::factory(),
-            'main_costs' => '{}',
-            'bills' => '{}',
-            'shirts' => '{}',
-            'seats_charge' => '{}',
-            'card_details' => '{}',
+            'status' => $this->faker->regexify('[A-Za-z0-9]{50}'),
+            'costs_detail' => '{}',
             'special_notes' => $this->faker->text(),
         ];
     }

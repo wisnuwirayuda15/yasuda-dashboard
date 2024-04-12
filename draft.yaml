@@ -95,12 +95,12 @@ models:
   TourTemplate:
     regency_id: foreign constrained onDelete:cascade
     destinations: json
-    softDeletes
 
   CostDetail:
     name: string unique
-    price: bigInteger
-    cashback: bigInteger nullable
+    price: bigInteger default:0
+    cashback: bigInteger default:0
+    category: string:50
 
   Company:
     name: string default:"Yasuda Jaya Tour & Travel"
@@ -116,6 +116,7 @@ models:
     phone: string
     gender: string:50
     role: string:50
+    softDeletes
     
   TourLeader:
     user_id: foreign constrained onDelete:cascade nullable
@@ -123,6 +124,7 @@ models:
     photo: string nullable
     phone: string unique
     gender: string:50
+    softDeletes
     relationships:
       hasMany: OrderFleet
 
@@ -136,6 +138,7 @@ models:
     destinations: json
     relationships:
       hasMany: OrderFleet
+      hasOne: Invoice
 
   OrderFleet:
     code: string index unique #OF-00001
@@ -143,6 +146,7 @@ models:
     fleet_id: foreign constrained onDelete:cascade
     trip_date: datetime
     duration: integer default:1
+    status: string:50
     payment_status: string:50
     payment_date: datetime nullable
     payment_amount: bigInteger nullable
@@ -151,22 +155,22 @@ models:
   Invoice:
     code: string index unique #INV-00001
     order_id: foreign constrained onDelete:cascade
-    main_costs: json
-    bills: json
-    shirts: json
-    seats_charge: json
-    card_details: json
-    special_notes: longText
+    status: string:50
+    costs_detail: json
+    special_notes: longText nullable
+    softDeletes
     relationships:
       hasOne: ProfitLoss
 
   ProfitLoss:
     invoice_id: foreign constrained onDelete:cascade
-    operational_costs: json
-    special_costs: json
-    variable_costs: json
-    other_costs: json
-    total_cost: bigInteger
+    status: string:50
+    operational_costs: json nullable
+    special_costs: json nullable
+    variable_costs: json nullable
+    other_costs: json nullable
+    total_cost: bigInteger nullable
+    softDeletes
 
   EmployeeSalary:
     user_id: foreign constrained onDelete:cascade

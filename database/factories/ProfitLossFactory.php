@@ -23,6 +23,7 @@ class ProfitLossFactory extends Factory
     {
         return [
             'invoice_id' => Invoice::factory(),
+            'status' => $this->faker->regexify('[A-Za-z0-9]{50}'),
             'operational_costs' => '{}',
             'special_costs' => '{}',
             'variable_costs' => '{}',

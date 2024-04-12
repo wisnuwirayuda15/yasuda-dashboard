@@ -4,10 +4,12 @@ namespace App\Providers;
 
 use Carbon\Carbon;
 use Filament\Pages\Page;
+use Filament\Support\Assets\Js;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\ServiceProvider;
 use Filament\Notifications\Notification;
+use Filament\Support\Facades\FilamentAsset;
 use Illuminate\Validation\ValidationException;
 use BezhanSalleh\FilamentLanguageSwitch\LanguageSwitch;
 
@@ -31,6 +33,13 @@ class AppServiceProvider extends ServiceProvider
       URL::forceScheme(scheme: 'https');
     }
 
+    // Tailwind CSS CDN in local
+    // if (env('APP_ENV') === 'local') {
+    //   FilamentAsset::register([
+    //     Js::make('tailwindcss', 'https://cdn.tailwindcss.com'),
+    //   ]);
+    // }
+
     // Indonesian locale and timezone
     Carbon::setLocale(env('APP_LOCALE', 'en'));
 
@@ -40,13 +49,13 @@ class AppServiceProvider extends ServiceProvider
     }
 
     // Sending validation notifications
-    if ((bool) env('USE_NOTIFICATION', true)) {
+    if ((bool) env('VALIDATION_NOTIFICATION', true)) {
       Page::$reportValidationErrorUsing = function (ValidationException $exception) {
         Notification::make()
           ->title($exception->getMessage())
           ->danger()
           ->send();
-          // ->sendToDatabase(auth()->user());
+        // ->sendToDatabase(auth()->user());
       };
     }
 

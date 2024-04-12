@@ -7,7 +7,6 @@ use App\Enums\CustomerStatus;
 use App\Models\Regency;
 use App\Models\Customer;
 use Illuminate\Database\Seeder;
-use Haruncpi\LaravelIdGenerator\IdGenerator;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 
 class CustomerSeeder extends Seeder

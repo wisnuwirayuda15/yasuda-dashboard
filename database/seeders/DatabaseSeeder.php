@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Models\Company;
 use Illuminate\Database\Seeder;
 use Database\Seeders\FleetSeeder;
+use Database\Seeders\CostDetailSeeder;
 use Database\Seeders\DestinationSeeder;
 
 class DatabaseSeeder extends Seeder
@@ -28,6 +29,8 @@ class DatabaseSeeder extends Seeder
       RegionSeeder::class,
       FleetSeeder::class,
       CustomerSeeder::class,
+      CostDetailSeeder::class,
+      TourLeaderSeeder::class,
       DestinationSeeder::class,
     ]);
   }

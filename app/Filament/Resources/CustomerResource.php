@@ -15,7 +15,9 @@ use App\Enums\CustomerStatus;
 use App\Enums\CustomerCategory;
 use Filament\Resources\Resource;
 use Dotswan\MapPicker\Fields\Map;
+use Filament\Forms\Components\Wizard;
 use Illuminate\Database\Eloquent\Builder;
+use Filament\Forms\Components\Wizard\Step;
 use Ysfkaya\FilamentPhoneInput\Forms\PhoneInput;
 use App\Filament\Resources\CustomerResource\Pages;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
@@ -26,19 +28,31 @@ class CustomerResource extends Resource
 {
   protected static ?string $model = Customer::class;
 
-  protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+  protected static ?string $navigationIcon = 'fas-users';
 
   public static function form(Form $form): Form
   {
-    return $form
+    return $form->schema([
+      Wizard::make([
+        self::basicInformationFields(),
+        self::locationInformationFields(),
+        self::contactInformationFields(),
+      ])
+        ->columnSpanFull()
+        ->skippable()
+    ]);
+  }
+
+  private static function basicInformationFields(): Step
+  {
+    return Wizard\Step::make('Basic Information')
       ->schema([
         Forms\Components\TextInput::make('code')
           ->required()
           ->disabled()
           ->dehydrated()
           ->live()
-          ->hiddenOn('edit')
-          ->default(get_code(new Customer, 'TK-'))
+          ->default(get_code(new Customer, CustomerCategory::TK->value . '-'))
           ->helperText('Code are generated automatically based on the categories you choose.')
           ->unique(Customer::class, 'code', ignoreRecord: true),
         Forms\Components\TextInput::make('name')
@@ -51,13 +65,25 @@ class CustomerResource extends Resource
           ->required()
           ->live()
           ->inline()
-          ->default('tk')
           ->disabledOn('edit')
-          ->hiddenOn('edit')
           ->helperText("Category can't be edited.")
           ->options(CustomerCategory::class)
-          ->afterStateUpdated(fn(string $state, Set $set) => $set('code', get_code(new Customer, $state . '-'))),
+          ->default(CustomerCategory::TK->value)
+          ->afterStateUpdated(fn(Set $set, string $state) => $set('code', get_code(new Customer, $state . '-'))),
+        Forms\Components\ToggleButtons::make('status')
+          ->required()
+          ->inline()
+          ->default(CustomerStatus::NEW ->value)
+          ->options(CustomerStatus::class),
+      ]);
+  }
+
+  private static function locationInformationFields(): Step
+  {
+    return Wizard\Step::make('Location Information')
+      ->schema([
         Forms\Components\Select::make('regency_id')
+          ->label('Kabupaten / Kota')
           ->required()
           ->live()
           ->searchable()
@@ -65,28 +91,12 @@ class CustomerResource extends Resource
           ->options(Regency::orderBy('name')->pluck('name', 'id'))
           ->afterStateUpdated(fn(Set $set) => $set('district_id', null)),
         Forms\Components\Select::make('district_id')
+          ->label('Kecamatan')
           ->required()
           ->live()
           ->searchable()
           ->native(false)
           ->options(fn(Get $get) => District::where('regency_id', $get('regency_id'))->orderBy('name')->pluck('name', 'id')),
-        Forms\Components\TextInput::make('headmaster')
-          ->required()
-          ->maxLength(255),
-        Forms\Components\TextInput::make('operator')
-          ->required()
-          ->maxLength(255),
-        PhoneInput::make('phone')
-          ->focusNumberFormat(PhoneInputNumberType::E164)
-          ->defaultCountry('ID')
-          ->initialCountry('id')
-          ->showSelectedDialCode(true)
-          ->formatAsYouType(false)
-          ->required()
-          ->rules('phone:mobile'),
-        Forms\Components\TextInput::make('email')
-          ->email()
-          ->maxLength(255),
         Forms\Components\TextInput::make('lat')
           ->maxLength(255),
         Forms\Components\TextInput::make('lng')
@@ -104,62 +114,80 @@ class CustomerResource extends Resource
           ->detectRetina()
           ->showZoomControl()
           ->showFullscreenControl(),
-        Forms\Components\ToggleButtons::make('status')
+      ]);
+  }
+
+  private static function contactInformationFields(): Step
+  {
+    return Wizard\Step::make('Contact Information')
+      ->schema([
+        Forms\Components\TextInput::make('headmaster')
           ->required()
-          ->inline()
-          ->default('new')
-          ->options(CustomerStatus::class),
+          ->maxLength(255),
+        Forms\Components\TextInput::make('operator')
+          ->required()
+          ->maxLength(255),
+        PhoneInput::make('phone')
+          ->focusNumberFormat(PhoneInputNumberType::E164)
+          ->defaultCountry('ID')
+          ->initialCountry('id')
+          ->showSelectedDialCode(true)
+          ->formatAsYouType(false)
+          ->required()
+          ->rules('phone:mobile'),
+        Forms\Components\TextInput::make('email')
+          ->email()
+          ->maxLength(255),
       ]);
   }
 
   public static function table(Table $table): Table
   {
-    return $table
-      ->columns([
-        Tables\Columns\TextColumn::make('code')
-          ->searchable(),
-        Tables\Columns\TextColumn::make('category')
-          ->badge()
-          ->searchable(),
-        Tables\Columns\TextColumn::make('name')
-          ->searchable(),
-        Tables\Columns\TextColumn::make('address')
-          ->searchable()
-          ->toggleable(isToggledHiddenByDefault: true),
-        Tables\Columns\TextColumn::make('regency.name')
-          ->searchable(),
-        Tables\Columns\TextColumn::make('district.name')
-          ->searchable(),
-        Tables\Columns\TextColumn::make('headmaster')
-          ->searchable(),
-        Tables\Columns\TextColumn::make('operator')
-          ->searchable(),
-        Tables\Columns\TextColumn::make('phone')
-          ->searchable(),
-        Tables\Columns\TextColumn::make('email')
-          ->searchable(),
-        Tables\Columns\TextColumn::make('status')
-          ->badge()
-          ->searchable(),
-        Tables\Columns\TextColumn::make('lat')
-          ->searchable()
-          ->toggleable(isToggledHiddenByDefault: true),
-        Tables\Columns\TextColumn::make('lng')
-          ->searchable()
-          ->toggleable(isToggledHiddenByDefault: true),
-        Tables\Columns\TextColumn::make('created_at')
-          ->dateTime()
-          ->sortable()
-          ->toggleable(isToggledHiddenByDefault: true),
-        Tables\Columns\TextColumn::make('updated_at')
-          ->dateTime()
-          ->sortable()
-          ->toggleable(isToggledHiddenByDefault: true),
-        Tables\Columns\TextColumn::make('deleted_at')
-          ->dateTime()
-          ->sortable()
-          ->toggleable(isToggledHiddenByDefault: true),
-      ])
+    return $table->columns([
+      Tables\Columns\TextColumn::make('code')
+        ->searchable(),
+      Tables\Columns\TextColumn::make('category')
+        ->badge()
+        ->searchable(),
+      Tables\Columns\TextColumn::make('name')
+        ->searchable(),
+      Tables\Columns\TextColumn::make('address')
+        ->searchable()
+        ->toggleable(isToggledHiddenByDefault: true),
+      Tables\Columns\TextColumn::make('regency.name')
+        ->searchable(),
+      Tables\Columns\TextColumn::make('district.name')
+        ->searchable(),
+      Tables\Columns\TextColumn::make('headmaster')
+        ->searchable(),
+      Tables\Columns\TextColumn::make('operator')
+        ->searchable(),
+      Tables\Columns\TextColumn::make('phone')
+        ->searchable(),
+      Tables\Columns\TextColumn::make('email')
+        ->searchable(),
+      Tables\Columns\TextColumn::make('status')
+        ->badge()
+        ->searchable(),
+      Tables\Columns\TextColumn::make('lat')
+        ->searchable()
+        ->toggleable(isToggledHiddenByDefault: true),
+      Tables\Columns\TextColumn::make('lng')
+        ->searchable()
+        ->toggleable(isToggledHiddenByDefault: true),
+      Tables\Columns\TextColumn::make('created_at')
+        ->dateTime()
+        ->sortable()
+        ->toggleable(isToggledHiddenByDefault: true),
+      Tables\Columns\TextColumn::make('updated_at')
+        ->dateTime()
+        ->sortable()
+        ->toggleable(isToggledHiddenByDefault: true),
+      Tables\Columns\TextColumn::make('deleted_at')
+        ->dateTime()
+        ->sortable()
+        ->toggleable(isToggledHiddenByDefault: true),
+    ])
       ->filters([
         Tables\Filters\TrashedFilter::make(),
       ])

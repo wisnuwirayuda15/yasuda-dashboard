@@ -17,7 +17,7 @@ call php artisan db:seed
 echo =======================================================================
 call php artisan icon:cache
 echo =======================================================================
-call npm run dev
+call npm run build
 echo =======================================================================
 
 set /p i=Installation successful. Would you like to run the app now? (y/n) [n] 

@@ -1,15 +1,17 @@
 <?php
+
 use Haruncpi\LaravelIdGenerator\IdGenerator;
 
 if (!function_exists('get_code')) {
   /**
    * Generates a unique code for a model.
    *
-   * @param  Illuminate\Database\Eloquent\Model  $model
-   * @param  string  $prefix
-   * @param  string  $column
-   * @param  int  $numberDigit
-   * @return string
+   * @param  Illuminate\Database\Eloquent\Model  $model The Eloquent model for which the code is generated
+   * @param  string|null  $prefix The prefix to be added to the generated code
+   * @param  string  $column Generate a unique code based on this column
+   * @param  int  $numberDigit The number of digits for the generated code
+   * @param  bool  $reset_on_prefix_change Flag indicating whether to reset the code when the prefix changes
+   * @return string The generated unique code
    */
   function get_code(
     Illuminate\Database\Eloquent\Model $model,
@@ -20,18 +22,19 @@ if (!function_exists('get_code')) {
   ): string {
     $table = $model->getTable();
 
-    // create prefix based on table names if not provided
-    is_null($prefix) && $prefix = substr($table, 0, 3) . '-';
+    // Create prefix based on table names if not provided
+    blank($prefix) && $prefix = substr($table, 0, 3) . '-';
 
-    // remove spaces and other unwanted characters
+    // Remove spaces and other unwanted characters
     $prefix = str_replace(' ', '', trim($prefix));
 
-    // capitalize all characters
+    // Capitalize all characters
     $prefix = strtoupper($prefix);
 
-    // n digit(s) of prefix, 5 digits of number. Example: PRF-00001
+    // Calculate the total length of the generated code
     $length = strlen($prefix) + $numberDigit;
 
+    // Generate the unique code using IdGenerator
     $code = IdGenerator::generate([
       'table' => $table,
       'field' => $column,

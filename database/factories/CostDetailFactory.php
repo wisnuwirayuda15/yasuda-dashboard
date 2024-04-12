@@ -24,6 +24,7 @@ class CostDetailFactory extends Factory
             'name' => $this->faker->name(),
             'price' => $this->faker->numberBetween(-100000, 100000),
             'cashback' => $this->faker->numberBetween(-100000, 100000),
+            'category' => $this->faker->regexify('[A-Za-z0-9]{50}'),
         ];
     }
 }

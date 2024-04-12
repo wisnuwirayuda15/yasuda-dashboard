@@ -15,7 +15,6 @@ use App\Enums\MediumFleetSeat;
 use App\Enums\LegrestFleetSeat;
 use Filament\Resources\Resource;
 use Illuminate\Database\Eloquent\Builder;
-use Haruncpi\LaravelIdGenerator\IdGenerator;
 use App\Filament\Resources\FleetResource\Pages;
 use Ysfkaya\FilamentPhoneInput\Forms\PhoneInput;
 use Ysfkaya\FilamentPhoneInput\Tables\PhoneColumn;
@@ -27,7 +26,7 @@ class FleetResource extends Resource
 {
   protected static ?string $model = Fleet::class;
 
-  protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+  protected static ?string $navigationIcon = 'fas-bus';
 
   public static function form(Form $form): Form
   {
@@ -52,7 +51,7 @@ class FleetResource extends Resource
         Forms\Components\TextInput::make('name')
           ->required()
           ->maxLength(255),
-        Forms\Components\Textarea::make('description')
+        Forms\Components\RichEditor::make('description')
           ->required()
           ->columnSpanFull(),
         Forms\Components\ToggleButtons::make('category')
@@ -60,18 +59,18 @@ class FleetResource extends Resource
           ->live()
           ->inline()
           ->options(FleetCategory::class)
-          ->default('medium')
+          ->default(FleetCategory::MEDIUM->value)
           ->afterStateUpdated(fn(Set $set) => $set('seat_set', null)),
         Forms\Components\ToggleButtons::make('seat_set')
           ->required()
           ->live()
           ->inline()
-          ->helperText(fn(Get $get): string => 'Select seat set for ' . $get('category') . ' fleet.')
+          ->helperText(fn(Get $get): string => "Select seat set for {$get('category')} fleet.")
           ->hidden(fn(Get $get): bool => !$get('category'))
           ->options(fn(Get $get) => match ($get('category')) {
-            'medium' => MediumFleetSeat::class,
-            'big' => BigFleetSeat::class,
-            'legrest' => LegrestFleetSeat::class,
+            FleetCategory::MEDIUM->value => MediumFleetSeat::class,
+            FleetCategory::BIG->value => BigFleetSeat::class,
+            FleetCategory::LEGREST->value => LegrestFleetSeat::class,
             default => [],
           }),
         Forms\Components\TextInput::make('pic_name')

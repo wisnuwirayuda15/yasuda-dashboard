@@ -19,7 +19,7 @@ class OrderResource extends Resource
 {
   protected static ?string $model = Order::class;
 
-  protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+  protected static ?string $navigationIcon = 'heroicon-s-check-badge';
 
   public static function form(Form $form): Form
   {
@@ -37,7 +37,7 @@ class OrderResource extends Resource
           ->preload()
           ->searchable()
           ->native(false)
-          ->prefixIcon('heroicon-s-user-group')
+          ->prefixIcon(fn() => CustomerResource::getNavigationIcon())
           ->relationship('customer', 'name')
           // ->editOptionForm(fn(Form $form) => CustomerResource::form($form))
           ->createOptionForm(fn(Form $form) => CustomerResource::form($form))
@@ -48,15 +48,15 @@ class OrderResource extends Resource
           ->searchable()
           ->native(false)
           ->options(Regency::orderBy('name')->pluck('name', 'id')),
-        Forms\Components\RichEditor::make('description')
-          ->required()
-          ->columnSpanFull(),
         Forms\Components\Select::make('destinations')
           ->required()
           ->multiple()
           ->searchable()
           ->native(false)
           ->options(Destination::pluck('name', 'id')),
+        Forms\Components\RichEditor::make('description')
+          ->required()
+          ->columnSpanFull(),
       ]);
   }
 

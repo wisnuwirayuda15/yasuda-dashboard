@@ -29,6 +29,7 @@ class OrderFleetFactory extends Factory
             'fleet_id' => Fleet::factory(),
             'trip_date' => $this->faker->dateTime(),
             'duration' => $this->faker->numberBetween(-10000, 10000),
+            'status' => $this->faker->regexify('[A-Za-z0-9]{50}'),
             'payment_status' => $this->faker->regexify('[A-Za-z0-9]{50}'),
             'payment_date' => $this->faker->dateTime(),
             'payment_amount' => $this->faker->numberBetween(-100000, 100000),

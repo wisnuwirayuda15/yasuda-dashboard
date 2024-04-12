@@ -18,6 +18,7 @@ class CostDetail extends Model
         'name',
         'price',
         'cashback',
+        'category',
     ];
 
     /**

@@ -7,19 +7,19 @@ use Filament\Panel;
 use Filament\Widgets;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
+use Filament\Support\Enums\MaxWidth;
 use Filament\Http\Middleware\Authenticate;
 use Jeffgreco13\FilamentBreezy\BreezyCore;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\Cookie\Middleware\EncryptCookies;
+use Awcodes\FilamentQuickCreate\QuickCreatePlugin;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\AuthenticateSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
-use Njxqlus\FilamentProgressbar\FilamentProgressbarPlugin;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
-use SolutionForest\FilamentSimpleLightBox\SimpleLightBoxPlugin;
 
 class AdminPanelProvider extends PanelProvider
 {
@@ -27,35 +27,29 @@ class AdminPanelProvider extends PanelProvider
   {
     return $panel
       ->default()
+      ->spa()
       ->id('admin')
       ->path('')
       ->login()
       ->passwordReset()
-      // ->spa()
       ->topNavigation()
-      // ->colors([
-      //   'danger' => Color::Rose,
-      //   'gray' => Color::Gray,
-      //   'info' => Color::Sky,
-      //   'primary' => Color::Blue,
-      //   'success' => Color::Emerald,
-      //   'warning' => Color::Orange,
-      // ])
       ->font('Poppins')
+      ->viteTheme('resources/css/filament/admin/theme.css')
+      ->brandLogo(asset('/img/logo.png'))
+      ->brandLogoHeight('45px')
       ->sidebarCollapsibleOnDesktop(true)
-      ->unsavedChangesAlerts(false)
+      // ->darkMode(false)
+      // ->maxContentWidth(MaxWidth::Full)
+      // ->databaseNotifications()
+      // ->databaseNotificationsPolling('30s')
       ->discoverResources(app_path('Filament/Resources'), 'App\\Filament\\Resources')
       ->discoverPages(app_path('Filament/Pages'), 'App\\Filament\\Pages')
-      ->pages([
-        Pages\Dashboard::class,
-      ])
+      ->pages([Pages\Dashboard::class])
       ->discoverWidgets(app_path('Filament/Widgets'), 'App\\Filament\\Widgets')
       ->widgets([
         Widgets\AccountWidget::class,
         Widgets\FilamentInfoWidget::class,
       ])
-      ->databaseNotifications()
-      // ->databaseNotificationsPolling('30s')
       ->middleware([
         EncryptCookies::class,
         AddQueuedCookiesToResponse::class,
@@ -81,8 +75,7 @@ class AdminPanelProvider extends PanelProvider
             slug: 'profile'
           )
           ->enableTwoFactorAuthentication(),
-        FilamentProgressbarPlugin::make(),
-        // SimpleLightBoxPlugin::make(),
+          QuickCreatePlugin::make()->rounded(false),
       ]);
   }
 }
