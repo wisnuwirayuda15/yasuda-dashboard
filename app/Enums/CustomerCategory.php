@@ -7,11 +7,11 @@ use Filament\Support\Contracts\HasLabel;
 
 enum CustomerCategory: string implements HasLabel, HasColor
 {
-  case UMUM = 'umum';
-  case SD = 'sd';
   case TK = 'tk';
+  case SD = 'sd';
   case SMP = 'smp';
   case SMA = 'sma';
+  case UMUM = 'umum';
 
   public function getLabel(): ?string
   {

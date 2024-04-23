@@ -21,12 +21,11 @@ class FleetFactory extends Factory
     public function definition(): array
     {
         return [
-            'code' => $this->faker->word(),
             'image' => $this->faker->word(),
             'name' => $this->faker->name(),
             'description' => $this->faker->text(),
-            'seat_set' => $this->faker->numberBetween(-8, 8),
             'category' => $this->faker->regexify('[A-Za-z0-9]{50}'),
+            'seat_set' => $this->faker->numberBetween(-8, 8),
             'pic_name' => $this->faker->word(),
             'pic_phone' => $this->faker->word(),
         ];

@@ -1,7 +1,5 @@
 <?php
 
-use Haruncpi\LaravelIdGenerator\IdGenerator;
-
 if (!function_exists('get_code')) {
   /**
    * Generates a unique code for a model.
@@ -29,13 +27,13 @@ if (!function_exists('get_code')) {
     $prefix = str_replace(' ', '', trim($prefix));
 
     // Capitalize all characters
-    $prefix = strtoupper($prefix);
+    $prefix = mb_strtoupper($prefix);
 
     // Calculate the total length of the generated code
     $length = strlen($prefix) + $numberDigit;
 
     // Generate the unique code using IdGenerator
-    $code = IdGenerator::generate([
+    $code = \Haruncpi\LaravelIdGenerator\IdGenerator::generate([
       'table' => $table,
       'field' => $column,
       'length' => $length,

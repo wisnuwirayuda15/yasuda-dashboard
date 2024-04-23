@@ -4,10 +4,10 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class Fleet extends Model
+class TourReport extends Model
 {
     use HasFactory, SoftDeletes;
 
@@ -17,13 +17,12 @@ class Fleet extends Model
      * @var array
      */
     protected $fillable = [
-        'image',
-        'name',
-        'description',
-        'category',
-        'seat_set',
-        'pic_name',
-        'pic_phone',
+        'invoice_id',
+        'status',
+        'costs_detail',
+        'other_costs',
+        'income',
+        'expense',
     ];
 
     /**
@@ -33,11 +32,15 @@ class Fleet extends Model
      */
     protected $casts = [
         'id' => 'integer',
-        'seat_set' => 'integer',
+        'invoice_id' => 'integer',
+        'costs_detail' => 'array',
+        'other_costs' => 'array',
+        'income' => 'integer',
+        'expense' => 'integer',
     ];
 
-    public function orderFleets(): HasMany
+    public function invoice(): BelongsTo
     {
-        return $this->hasMany(OrderFleet::class);
+        return $this->belongsTo(Invoice::class);
     }
 }

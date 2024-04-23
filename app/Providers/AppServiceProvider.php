@@ -41,7 +41,7 @@ class AppServiceProvider extends ServiceProvider
     // }
 
     // Indonesian locale and timezone
-    Carbon::setLocale(env('APP_LOCALE', 'en'));
+    Carbon::setlocale(config('app.locale'));
 
     // Unguard model
     if ((bool) env('UNGUARD_MODEL', false)) {
@@ -62,7 +62,7 @@ class AppServiceProvider extends ServiceProvider
     // Languages selector
     LanguageSwitch::configureUsing(function (LanguageSwitch $switch) {
       $switch
-        ->locales(['id', 'en'])
+        ->locales(['en', 'id'])
         ->visible(outsidePanels: true);
     });
   }

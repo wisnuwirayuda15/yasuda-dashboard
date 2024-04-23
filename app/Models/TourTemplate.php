@@ -16,6 +16,7 @@ class TourTemplate extends Model
      * @var array
      */
     protected $fillable = [
+        'name',
         'regency_id',
         'destinations',
     ];

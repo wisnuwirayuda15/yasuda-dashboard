@@ -13,11 +13,17 @@ return new class extends Migration
     {
         Schema::disableForeignKeyConstraints();
 
-        Schema::create('tour_templates', function (Blueprint $table) {
+        Schema::create('profit_losses', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('regency_id')->constrained()->cascadeOnDelete();
-            $table->json('destinations');
+            $table->foreignId('invoice_id')->constrained()->cascadeOnDelete();
+            $table->string('status', 50);
+            $table->json('operational_costs');
+            $table->json('special_costs');
+            $table->json('variable_costs');
+            $table->json('other_costs');
+            $table->bigInteger('total_cost');
             $table->timestamps();
+            $table->softDeletes();
         });
 
         Schema::enableForeignKeyConstraints();
@@ -28,6 +34,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('tour_templates');
+        Schema::dropIfExists('profit_losses');
     }
 };

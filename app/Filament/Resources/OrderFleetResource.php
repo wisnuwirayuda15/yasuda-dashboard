@@ -13,7 +13,6 @@ use App\Models\OrderFleet;
 use Filament\Tables\Table;
 use Filament\Resources\Resource;
 use App\Enums\FleetPaymentStatus;
-use Illuminate\Support\Facades\Blade;
 use Illuminate\Database\Eloquent\Model;
 use App\Filament\Resources\OrderResource;
 use App\Filament\Resources\OrderFleetResource\Pages;
@@ -35,7 +34,7 @@ class OrderFleetResource extends Resource
           ->dehydrated()
           ->live()
           ->hiddenOn('edit')
-          ->helperText('Code are generated automatically.')
+          ->helperText('Code is generated automatically.')
           ->unique(OrderFleet::class, 'code', ignoreRecord: true)
           ->default(get_code(new OrderFleet, 'OF-')),
         Forms\Components\Select::make('order_id')
@@ -49,15 +48,7 @@ class OrderFleetResource extends Resource
           ->allowHtml()
           ->getOptionLabelFromRecordUsing(
             function (Order $record) {
-              return Blade::render(
-                '
-                  <span class="flex items-center">
-                    <x-filament::badge class="mr-2">{{ $record->code }}</x-filament::badge>
-                    <span>{{ $record->customer->name }}</span>
-                  </span>
-                ',
-                ['record' => $record]
-              );
+              return view('livewire.order-badge', ['record' => $record]);
             }
           ),
         Forms\Components\Select::make('fleet_id')
@@ -69,6 +60,7 @@ class OrderFleetResource extends Resource
           ->required()
           ->native(false)
           ->closeOnDateSelection()
+          ->minDate(today())
           ->prefixIcon('heroicon-s-calendar-days')
           ->displayFormat('d mm Y'),
         Forms\Components\TextInput::make('duration')
@@ -100,22 +92,24 @@ class OrderFleetResource extends Resource
                 $set('payment_date', null);
                 $set('payment_amount', null);
               }),
-            Forms\Components\DateTimePicker::make('payment_date')
-              ->live()
-              ->native(false)
-              ->closeOnDateSelection()
-              ->required(fn(Get $get) => $get('payment_status') != FleetPaymentStatus::NON_DP->value)
-              ->hidden(fn(Get $get) => $get('payment_status') == FleetPaymentStatus::NON_DP->value)
-              ->prefixIcon('iconsax-bol-money-time')
-              ->displayFormat('d mm Y'),
-            Forms\Components\TextInput::make('payment_amount')
-              ->live()
-              ->numeric()
-              ->prefix('Rp')
-              ->minValue(1)
-              ->required(fn(Get $get) => $get('payment_status') != FleetPaymentStatus::NON_DP->value)
-              ->hidden(fn(Get $get) => $get('payment_status') == FleetPaymentStatus::NON_DP->value)
-              ->afterStateUpdated(fn(?int $state, Set $set) => $state <= 1 && $set('payment_amount', 1)),
+            Forms\Components\Group::make()
+              ->visible(fn(Get $get) => $get('payment_status') != FleetPaymentStatus::NON_DP->value)
+              ->columnSpan(2)
+              ->schema([
+                Forms\Components\DateTimePicker::make('payment_date')
+                  ->required()
+                  ->native(false)
+                  ->closeOnDateSelection()
+                  ->prefixIcon('iconsax-bol-money-time')
+                  ->displayFormat('d mm Y'),
+                Forms\Components\TextInput::make('payment_amount')
+                  ->live()
+                  ->numeric()
+                  ->prefix('Rp')
+                  ->minValue(1)
+                  ->required()
+                  ->afterStateUpdated(fn(?int $state, Set $set) => $state <= 1 && $set('payment_amount', 1)),
+              ])
           ]),
         Forms\Components\Select::make('tour_leader_id')
           ->relationship('tourLeader', 'name')
@@ -132,19 +126,39 @@ class OrderFleetResource extends Resource
       ->columns([
         Tables\Columns\TextColumn::make('code')
           ->searchable(),
+        Tables\Columns\TextColumn::make('trip_date')
+          ->date()
+          ->sortable()
+          ->formatStateUsing(fn($state): string => $state->translatedFormat('d F Y')),
         Tables\Columns\TextColumn::make('order.customer.name')
           ->numeric()
           ->sortable(),
         Tables\Columns\TextColumn::make('fleet.name')
           ->numeric()
           ->sortable(),
-        Tables\Columns\TextColumn::make('trip_date')
-          ->date()
-          ->sortable(),
+        Tables\Columns\TextColumn::make('trip_day')
+          ->default(fn(Model $record): string => $record->trip_date->translatedFormat('l')),
+        Tables\Columns\TextColumn::make('trip_month')
+          ->default(fn(Model $record): string => $record->trip_date->translatedFormat('F')),
+        Tables\Columns\TextColumn::make('remaining_days')
+          ->badge()
+          ->default(
+            function (Model $record): string {
+              $date = $record->trip_date;
+              if ($date->isToday()) {
+                return OrderStatus::ON_TRIP->getLabel();
+              } elseif ($date->isPast()) {
+                return OrderStatus::FINISHED->getLabel();
+              }
+              return today()->diffInDays($date);
+            }
+          )
+          ->color(fn(string $state): string => $state == OrderStatus::ON_TRIP->getLabel() ? 'warning' : ($state <= 7 ? 'danger' : ($state <= 30 ? 'warning' : 'success'))),
         Tables\Columns\TextColumn::make('duration')
           ->numeric()
           ->sortable(),
         Tables\Columns\TextColumn::make('payment_status')
+          ->badge()
           ->searchable(),
         Tables\Columns\TextColumn::make('payment_date')
           ->date()
@@ -195,11 +209,5 @@ class OrderFleetResource extends Resource
       'view' => Pages\ViewOrderFleet::route('/{record}'),
       'edit' => Pages\EditOrderFleet::route('/{record}/edit'),
     ];
-  }
-
-  public function renderBadgeOptionLabel(string $label, string $color = 'primary', string $size = 'sm'): string
-  {
-    $label = e($label);
-    return Blade::render("<x-filament::badge color='$color' size='$size'>$label</x-filament::badge>");
   }
 }

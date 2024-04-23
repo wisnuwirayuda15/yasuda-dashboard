@@ -17,9 +17,15 @@ return new class extends Migration
             $table->id();
             $table->string('code')->index()->unique();
             $table->foreignId('order_id')->constrained()->cascadeOnDelete();
-            $table->string('status', 50);
-            $table->json('costs_detail');
-            $table->longText('special_notes')->nullable();
+            $table->json('main_costs');
+            $table->json('down_payments');
+            $table->integer('kaos_diserahkan');
+            $table->json('kaos_guru');
+            $table->json('kaos_dewasa');
+            $table->integer('adjusted_seat')->nullable();
+            $table->bigInteger('other_cost')->nullable();
+            $table->longText('notes')->nullable();
+            $table->bigInteger('total_transactions');
             $table->timestamps();
             $table->softDeletes();
         });

@@ -52,12 +52,11 @@ models:
 
   # Master Data
   Fleet:
-    code: string unique index #ARMD-00001
     image: string nullable
     name: string index
     description: longText
-    seat_set: tinyInteger
     category: string:50
+    seat_set: tinyInteger
     pic_name: string
     pic_phone: string
     softDeletes
@@ -93,14 +92,9 @@ models:
     softDeletes
 
   TourTemplate:
+    name: string
     regency_id: foreign constrained onDelete:cascade
     destinations: json
-
-  CostDetail:
-    name: string unique
-    price: bigInteger default:0
-    cashback: bigInteger default:0
-    category: string:50
 
   Company:
     name: string default:"Yasuda Jaya Tour & Travel"
@@ -155,21 +149,36 @@ models:
   Invoice:
     code: string index unique #INV-00001
     order_id: foreign constrained onDelete:cascade
-    status: string:50
-    costs_detail: json
-    special_notes: longText nullable
+    main_costs: json
+    down_payments: json
+    kaos_diserahkan: integer
+    kaos_guru: json
+    kaos_dewasa: json
+    adjusted_seat: integer nullable
+    other_cost: bigInteger nullable
+    notes: longText nullable
+    total_transactions: bigInteger
     softDeletes
     relationships:
-      hasOne: ProfitLoss
+      hasOne: ProfitLoss, TourReport
 
   ProfitLoss:
     invoice_id: foreign constrained onDelete:cascade
     status: string:50
-    operational_costs: json nullable
-    special_costs: json nullable
-    variable_costs: json nullable
-    other_costs: json nullable
-    total_cost: bigInteger nullable
+    operational_costs: json
+    special_costs: json
+    variable_costs: json
+    other_costs: json
+    total_cost: bigInteger
+    softDeletes
+
+  TourReport:
+    invoice_id: foreign constrained onDelete:cascade
+    status: string:50
+    costs_detail: json
+    other_costs: json
+    income: bigInteger
+    expense: bigInteger
     softDeletes
 
   EmployeeSalary:

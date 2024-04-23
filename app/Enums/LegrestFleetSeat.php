@@ -6,12 +6,12 @@ use Filament\Support\Contracts\HasLabel;
 
 enum LegrestFleetSeat: string implements HasLabel
 {
-  case SEAT_SET_1 = '36';
+  case SEAT_SET_1 = '38';
 
   public function getLabel(): ?string
   {
     return match ($this) {
-      self::SEAT_SET_1 => '36 (2-2)',
+      self::SEAT_SET_1 => '38 (2-2)',
     };
   }
 }

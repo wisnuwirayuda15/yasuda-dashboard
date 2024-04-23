@@ -13,7 +13,7 @@ enum FleetSeat: string implements HasLabel
   case SEAT_SET_5 = '52';
   case SEAT_SET_6 = '60';
   case SEAT_SET_7 = '61';
-  case SEAT_SET_8 = '36';
+  case SEAT_SET_8 = '38';
 
   public function getLabel(): ?string
   {
@@ -25,7 +25,7 @@ enum FleetSeat: string implements HasLabel
       self::SEAT_SET_5 => '52 (2-2)',
       self::SEAT_SET_6 => '60 (2-3)',
       self::SEAT_SET_7 => '61 (2-3)',
-      self::SEAT_SET_8 => '36 (2-2)',
+      self::SEAT_SET_8 => '38 (2-2)',
     };
   }
 }

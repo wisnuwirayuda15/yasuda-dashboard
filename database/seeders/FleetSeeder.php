@@ -2,9 +2,11 @@
 
 namespace Database\Seeders;
 
-use App\Enums\FleetCategory;
-use App\Enums\FleetSeat;
 use App\Models\Fleet;
+use App\Enums\BigFleetSeat;
+use App\Enums\FleetCategory;
+use App\Enums\MediumFleetSeat;
+use App\Enums\LegrestFleetSeat;
 use Illuminate\Database\Seeder;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 
@@ -30,22 +32,33 @@ class FleetSeeder extends Seeder
       'Tidal',
     ];
 
-    $seats = array_map(fn($x) => $x->value, FleetSeat::cases());
+    $mediumSeats = array_map(fn($x) => $x->value, MediumFleetSeat::cases());
+    $bigSeats = array_map(fn($x) => $x->value, BigFleetSeat::cases());
+    $legrestSeats = array_map(fn($x) => $x->value, LegrestFleetSeat::cases());
 
     $categories = array_map(fn($x) => $x->value, FleetCategory::cases());
 
     foreach ($busses as $bus) {
-      $code = get_code(new Fleet, 'BUS-');
+      $code = substr(md5(rand()), 0, 10);
 
       $image = "https://picsum.photos/seed/$code/1280/720";
 
+      $category = fake()->randomElement($categories);
+
+      if ($category == FleetCategory::MEDIUM->value) {
+        $seat = fake()->randomElement($mediumSeats);
+      } elseif ($category == FleetCategory::BIG->value) {
+        $seat = fake()->randomElement($bigSeats);
+      } elseif ($category == FleetCategory::LEGREST->value) {
+        $seat = fake()->randomElement($legrestSeats);
+      }
+
       Fleet::create([
-        'code' => $code,
         'image' => $image,
         'name' => strtoupper($bus),
         'description' => fake()->text(),
-        'seat_set' => fake()->randomElement($seats),
-        'category' => fake()->randomElement($categories),
+        'category' => $category,
+        'seat_set' => $seat,
         'pic_name' => fake()->name(),
         'pic_phone' => fake()->phoneNumber(),
       ]);

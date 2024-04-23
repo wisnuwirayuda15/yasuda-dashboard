@@ -2,12 +2,14 @@
 
 namespace App\Providers\Filament;
 
+use App\Enums\NavigationGroupLabel;
 use Filament\Pages;
 use Filament\Panel;
 use Filament\Widgets;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
 use Filament\Support\Enums\MaxWidth;
+use Filament\Navigation\NavigationGroup;
 use Filament\Http\Middleware\Authenticate;
 use Jeffgreco13\FilamentBreezy\BreezyCore;
 use Illuminate\Session\Middleware\StartSession;
@@ -27,24 +29,24 @@ class AdminPanelProvider extends PanelProvider
   {
     return $panel
       ->default()
-      ->spa()
+      // ->spa()
       ->id('admin')
       ->path('')
       ->login()
       ->passwordReset()
-      ->topNavigation()
+      // ->topNavigation()
       ->font('Poppins')
       ->viteTheme('resources/css/filament/admin/theme.css')
       ->brandLogo(asset('/img/logo.png'))
-      ->brandLogoHeight('45px')
+      ->brandLogoHeight('35px')
       ->sidebarCollapsibleOnDesktop(true)
       // ->darkMode(false)
-      // ->maxContentWidth(MaxWidth::Full)
+      ->maxContentWidth(MaxWidth::Full)
       // ->databaseNotifications()
       // ->databaseNotificationsPolling('30s')
       ->discoverResources(app_path('Filament/Resources'), 'App\\Filament\\Resources')
       ->discoverPages(app_path('Filament/Pages'), 'App\\Filament\\Pages')
-      ->pages([Pages\Dashboard::class])
+      ->pages([])
       ->discoverWidgets(app_path('Filament/Widgets'), 'App\\Filament\\Widgets')
       ->widgets([
         Widgets\AccountWidget::class,
@@ -64,6 +66,9 @@ class AdminPanelProvider extends PanelProvider
       ->authMiddleware([
         Authenticate::class,
       ])
+      ->navigationGroups([
+        NavigationGroup::make(NavigationGroupLabel::MASTER_DATA->value)
+      ])
       ->plugins([
         BreezyCore::make()
           ->avatarUploadComponent(fn($fileUpload) => $fileUpload->disableLabel())
@@ -75,7 +80,7 @@ class AdminPanelProvider extends PanelProvider
             slug: 'profile'
           )
           ->enableTwoFactorAuthentication(),
-          QuickCreatePlugin::make()->rounded(false),
+        QuickCreatePlugin::make()->rounded(false),
       ]);
   }
 }

@@ -29,7 +29,6 @@ class DatabaseSeeder extends Seeder
       RegionSeeder::class,
       FleetSeeder::class,
       CustomerSeeder::class,
-      CostDetailSeeder::class,
       TourLeaderSeeder::class,
       DestinationSeeder::class,
     ]);

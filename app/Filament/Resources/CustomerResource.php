@@ -4,7 +4,6 @@ namespace App\Filament\Resources;
 
 use Filament\Forms;
 use Filament\Tables;
-use App\Models\Regency;
 use Filament\Forms\Get;
 use Filament\Forms\Set;
 use App\Models\Customer;
@@ -16,6 +15,7 @@ use App\Enums\CustomerCategory;
 use Filament\Resources\Resource;
 use Dotswan\MapPicker\Fields\Map;
 use Filament\Forms\Components\Wizard;
+use Filament\Forms\Components\Section;
 use Illuminate\Database\Eloquent\Builder;
 use Filament\Forms\Components\Wizard\Step;
 use Ysfkaya\FilamentPhoneInput\Forms\PhoneInput;
@@ -33,19 +33,15 @@ class CustomerResource extends Resource
   public static function form(Form $form): Form
   {
     return $form->schema([
-      Wizard::make([
-        self::basicInformationFields(),
-        self::locationInformationFields(),
-        self::contactInformationFields(),
-      ])
-        ->columnSpanFull()
-        ->skippable()
+      self::getBasicInformationSection(),
+      self::getLocationInformationSection(),
+      self::getContactInformationSection(),
     ]);
   }
 
-  private static function basicInformationFields(): Step
+  private static function getBasicInformationSection(): Section
   {
-    return Wizard\Step::make('Basic Information')
+    return Forms\Components\Section::make('Basic Information')
       ->schema([
         Forms\Components\TextInput::make('code')
           ->required()
@@ -53,10 +49,12 @@ class CustomerResource extends Resource
           ->dehydrated()
           ->live()
           ->default(get_code(new Customer, CustomerCategory::TK->value . '-'))
-          ->helperText('Code are generated automatically based on the categories you choose.')
+          ->helperText('Code is generated automatically based on the categories you choose.')
           ->unique(Customer::class, 'code', ignoreRecord: true),
         Forms\Components\TextInput::make('name')
           ->required()
+          ->live()
+          ->afterStateUpdated(fn(string $operation) => dd($operation))
           ->maxLength(255),
         Forms\Components\TextInput::make('address')
           ->required()
@@ -65,7 +63,7 @@ class CustomerResource extends Resource
           ->required()
           ->live()
           ->inline()
-          ->disabledOn('edit')
+          ->disabledOn(['edit', 'editOption', 'editOption.editOption', 'createOption.editOption'])
           ->helperText("Category can't be edited.")
           ->options(CustomerCategory::class)
           ->default(CustomerCategory::TK->value)
@@ -78,9 +76,9 @@ class CustomerResource extends Resource
       ]);
   }
 
-  private static function locationInformationFields(): Step
+  private static function getLocationInformationSection(): Section
   {
-    return Wizard\Step::make('Location Information')
+    return Forms\Components\Section::make('Location Information')
       ->schema([
         Forms\Components\Select::make('regency_id')
           ->label('Kabupaten / Kota')
@@ -88,7 +86,8 @@ class CustomerResource extends Resource
           ->live()
           ->searchable()
           ->native(false)
-          ->options(Regency::orderBy('name')->pluck('name', 'id'))
+          ->preload()
+          ->relationship('regency', 'name')
           ->afterStateUpdated(fn(Set $set) => $set('district_id', null)),
         Forms\Components\Select::make('district_id')
           ->label('Kecamatan')
@@ -117,9 +116,9 @@ class CustomerResource extends Resource
       ]);
   }
 
-  private static function contactInformationFields(): Step
+  private static function getContactInformationSection(): Section
   {
-    return Wizard\Step::make('Contact Information')
+    return Forms\Components\Section::make('Contact Information')
       ->schema([
         Forms\Components\TextInput::make('headmaster')
           ->required()

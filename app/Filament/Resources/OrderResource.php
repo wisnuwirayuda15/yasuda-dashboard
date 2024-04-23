@@ -2,13 +2,15 @@
 
 namespace App\Filament\Resources;
 
-use App\Models\Destination;
 use Filament\Forms;
 use Filament\Tables;
 use App\Models\Order;
-use App\Models\Regency;
+use Filament\Forms\Get;
+use Filament\Forms\Set;
 use Filament\Forms\Form;
 use Filament\Tables\Table;
+use App\Models\Destination;
+use App\Models\TourTemplate;
 use Filament\Resources\Resource;
 use Illuminate\Database\Eloquent\Builder;
 use App\Filament\Resources\OrderResource\Pages;
@@ -30,7 +32,7 @@ class OrderResource extends Resource
           ->disabled()
           ->dehydrated()
           ->default(get_code(new Order, 'OR-'))
-          ->helperText('Code are generated automatically.')
+          ->helperText('Code is generated automatically.')
           ->unique(Order::class, 'code', ignoreRecord: true),
         Forms\Components\Select::make('customer_id')
           ->required()
@@ -39,19 +41,34 @@ class OrderResource extends Resource
           ->native(false)
           ->prefixIcon(fn() => CustomerResource::getNavigationIcon())
           ->relationship('customer', 'name')
-          // ->editOptionForm(fn(Form $form) => CustomerResource::form($form))
+          ->editOptionForm(fn(Form $form) => CustomerResource::form($form))
           ->createOptionForm(fn(Form $form) => CustomerResource::form($form))
-          // ->editOptionModalHeading('Edit Customer')
+          ->editOptionModalHeading('Edit Customer')
           ->createOptionModalHeading('Create Customer'),
         Forms\Components\Select::make('regency_id')
           ->required()
           ->searchable()
           ->native(false)
-          ->options(Regency::orderBy('name')->pluck('name', 'id')),
+          ->preload()
+          ->relationship('regency', 'name'),
         Forms\Components\Select::make('destinations')
           ->required()
           ->multiple()
           ->searchable()
+          ->hintAction(Forms\Components\Actions\Action::make('select_tour_template')
+            ->icon('tabler-playlist-add')
+            ->form([
+              Forms\Components\Select::make('tour_template')
+                ->required()
+                ->searchable()
+                ->live()
+                ->options(TourTemplate::query()->pluck('name', 'id')),
+            ])
+            ->action(function (array $data, Set $set) {
+              $tourTemplate = TourTemplate::findOrFail($data)->toArray()[0];
+              $set('regency_id', $tourTemplate['regency_id']);
+              $set('destinations', $tourTemplate['destinations']);
+            }), )
           ->native(false)
           ->options(Destination::pluck('name', 'id')),
         Forms\Components\RichEditor::make('description')
@@ -62,6 +79,8 @@ class OrderResource extends Resource
 
   public static function table(Table $table): Table
   {
+    $destination = Destination::all();
+
     return $table
       ->columns([
         Tables\Columns\TextColumn::make('code')
@@ -73,8 +92,8 @@ class OrderResource extends Resource
           ->label('Kota')
           ->searchable(),
         Tables\Columns\TextColumn::make('destinations')
-          ->searchable()
-          ->formatStateUsing(fn(string $state): string => count(explode(", ", $state)) . " destinasi"),
+          ->badge()
+          ->formatStateUsing(fn(string $state): string => $destination->find($state)->name),
         Tables\Columns\TextColumn::make('created_at')
           ->dateTime()
           ->sortable()

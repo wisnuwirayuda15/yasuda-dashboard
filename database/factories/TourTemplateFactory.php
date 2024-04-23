@@ -22,6 +22,7 @@ class TourTemplateFactory extends Factory
     public function definition(): array
     {
         return [
+            'name' => $this->faker->name(),
             'regency_id' => Regency::factory(),
             'destinations' => '{}',
         ];

@@ -13,6 +13,7 @@ use App\Enums\BigFleetSeat;
 use App\Enums\FleetCategory;
 use App\Enums\MediumFleetSeat;
 use App\Enums\LegrestFleetSeat;
+use App\Enums\NavigationGroupLabel;
 use Filament\Resources\Resource;
 use Illuminate\Database\Eloquent\Builder;
 use App\Filament\Resources\FleetResource\Pages;
@@ -28,6 +29,8 @@ class FleetResource extends Resource
 
   protected static ?string $navigationIcon = 'fas-bus';
 
+  protected static ?string $navigationGroup = NavigationGroupLabel::MASTER_DATA->value;
+
   public static function form(Form $form): Form
   {
     return $form
@@ -41,13 +44,6 @@ class FleetResource extends Resource
           ->imageCropAspectRatio('16:9')
           ->imageResizeMode('cover')
           ->columnSpanFull(),
-        Forms\Components\TextInput::make('code')
-          ->required()
-          ->disabled()
-          ->dehydrated()
-          ->default(get_code(new Fleet, 'BUS-'))
-          ->helperText('Code are generated automatically.')
-          ->unique(Fleet::class, 'code', ignoreRecord: true),
         Forms\Components\TextInput::make('name')
           ->required()
           ->maxLength(255),
@@ -91,8 +87,6 @@ class FleetResource extends Resource
   {
     return $table
       ->columns([
-        Tables\Columns\TextColumn::make('code')
-          ->searchable(),
         Tables\Columns\ImageColumn::make('image'),
         Tables\Columns\TextColumn::make('name')
           ->searchable(),

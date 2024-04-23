@@ -13,13 +13,17 @@ return new class extends Migration
     {
         Schema::disableForeignKeyConstraints();
 
-        Schema::create('cost_details', function (Blueprint $table) {
+        Schema::create('fleets', function (Blueprint $table) {
             $table->id();
-            $table->string('name')->unique();
-            $table->bigInteger('price')->default(0);
-            $table->bigInteger('cashback')->default(0);
+            $table->string('image')->nullable();
+            $table->string('name')->index();
+            $table->longText('description');
             $table->string('category', 50);
+            $table->tinyInteger('seat_set');
+            $table->string('pic_name');
+            $table->string('pic_phone');
             $table->timestamps();
+            $table->softDeletes();
         });
 
         Schema::enableForeignKeyConstraints();
@@ -30,6 +34,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('cost_details');
+        Schema::dropIfExists('fleets');
     }
 };
