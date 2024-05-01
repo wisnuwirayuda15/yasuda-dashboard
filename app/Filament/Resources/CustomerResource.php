@@ -48,13 +48,12 @@ class CustomerResource extends Resource
           ->disabled()
           ->dehydrated()
           ->live()
-          ->default(get_code(new Customer, CustomerCategory::TK->value . '-'))
+          ->default(get_code(new Customer, CustomerCategory::TK->value))
           ->helperText('Code is generated automatically based on the categories you choose.')
           ->unique(Customer::class, 'code', ignoreRecord: true),
         Forms\Components\TextInput::make('name')
           ->required()
           ->live()
-          ->afterStateUpdated(fn(string $operation) => dd($operation))
           ->maxLength(255),
         Forms\Components\TextInput::make('address')
           ->required()
@@ -67,7 +66,7 @@ class CustomerResource extends Resource
           ->helperText("Category can't be edited.")
           ->options(CustomerCategory::class)
           ->default(CustomerCategory::TK->value)
-          ->afterStateUpdated(fn(Set $set, string $state) => $set('code', get_code(new Customer, $state . '-'))),
+          ->afterStateUpdated(fn(Set $set, string $state) => $set('code', get_code(new Customer, $state))),
         Forms\Components\ToggleButtons::make('status')
           ->required()
           ->inline()

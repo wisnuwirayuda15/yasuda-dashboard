@@ -17,24 +17,24 @@ created:
     - database/factories/EmployeeSalaryFactory.php
     - database/factories/FeedbackFactory.php
     - database/factories/ReceivableFactory.php
-    - database/migrations/2024_04_23_121721_create_provinces_table.php
-    - database/migrations/2024_04_23_121722_create_regencies_table.php
-    - database/migrations/2024_04_23_121723_create_districts_table.php
-    - database/migrations/2024_04_23_121724_create_fleets_table.php
-    - database/migrations/2024_04_23_121725_create_customers_table.php
-    - database/migrations/2024_04_23_121726_create_destinations_table.php
-    - database/migrations/2024_04_23_121727_create_tour_templates_table.php
-    - database/migrations/2024_04_23_121728_create_companies_table.php
-    - database/migrations/2024_04_23_121729_create_employees_table.php
-    - database/migrations/2024_04_23_121730_create_tour_leaders_table.php
-    - database/migrations/2024_04_23_121731_create_orders_table.php
-    - database/migrations/2024_04_23_121732_create_order_fleets_table.php
-    - database/migrations/2024_04_23_121733_create_invoices_table.php
-    - database/migrations/2024_04_23_121734_create_profit_losses_table.php
-    - database/migrations/2024_04_23_121735_create_tour_reports_table.php
-    - database/migrations/2024_04_23_121736_create_employee_salaries_table.php
-    - database/migrations/2024_04_23_121737_create_feedback_table.php
-    - database/migrations/2024_04_23_121738_create_receivables_table.php
+    - database/migrations/2024_05_01_224204_create_provinces_table.php
+    - database/migrations/2024_05_01_224205_create_regencies_table.php
+    - database/migrations/2024_05_01_224206_create_districts_table.php
+    - database/migrations/2024_05_01_224207_create_fleets_table.php
+    - database/migrations/2024_05_01_224208_create_customers_table.php
+    - database/migrations/2024_05_01_224209_create_destinations_table.php
+    - database/migrations/2024_05_01_224210_create_tour_templates_table.php
+    - database/migrations/2024_05_01_224211_create_companies_table.php
+    - database/migrations/2024_05_01_224212_create_employees_table.php
+    - database/migrations/2024_05_01_224213_create_tour_leaders_table.php
+    - database/migrations/2024_05_01_224214_create_orders_table.php
+    - database/migrations/2024_05_01_224215_create_order_fleets_table.php
+    - database/migrations/2024_05_01_224216_create_invoices_table.php
+    - database/migrations/2024_05_01_224217_create_profit_losses_table.php
+    - database/migrations/2024_05_01_224218_create_tour_reports_table.php
+    - database/migrations/2024_05_01_224219_create_employee_salaries_table.php
+    - database/migrations/2024_05_01_224220_create_feedback_table.php
+    - database/migrations/2024_05_01_224221_create_receivables_table.php
     - app/Models/Province.php
     - app/Models/Regency.php
     - app/Models/District.php
@@ -65,9 +65,9 @@ models:
     Company: { name: 'string default:"Yasuda Jaya Tour & Travel"', logo: 'string default:logo.png', email: 'string default:yasudajaya@gmail.com', phone: 'string default:+628123456789', balance: 'bigInteger default:0' }
     Employee: { user_id: 'foreign constrained onDelete:cascade nullable', name: 'string index', photo: 'string nullable', phone: string, gender: 'string:50', role: 'string:50', softdeletes: softDeletes }
     TourLeader: { user_id: 'foreign constrained onDelete:cascade nullable', name: 'string index', photo: 'string nullable', phone: 'string unique', gender: 'string:50', softdeletes: softDeletes, relationships: { hasMany: OrderFleet } }
-    Order: { code: 'string index unique', customer_id: 'foreign constrained onDelete:cascade', regency_id: 'foreign constrained onDelete:cascade', description: longText, destinations: json, relationships: { hasMany: OrderFleet, hasOne: Invoice } }
+    Order: { code: 'string index unique', customer_id: 'foreign constrained onDelete:cascade', regency_id: 'foreign constrained onDelete:cascade', destinations: json, trip_date: datetime, description: 'longText nullable', relationships: { hasMany: OrderFleet, hasOne: Invoice } }
     OrderFleet: { code: 'string index unique', order_id: 'foreign constrained onDelete:cascade nullable', fleet_id: 'foreign constrained onDelete:cascade', trip_date: datetime, duration: 'integer default:1', status: 'string:50', payment_status: 'string:50', payment_date: 'datetime nullable', payment_amount: 'bigInteger nullable', tour_leader_id: 'foreign constrained onDelete:cascade nullable' }
-    Invoice: { code: 'string index unique', order_id: 'foreign constrained onDelete:cascade', main_costs: json, down_payments: json, kaos_diserahkan: integer, kaos_guru: json, kaos_dewasa: json, adjusted_seat: 'integer nullable', other_cost: 'bigInteger nullable', notes: 'longText nullable', total_transactions: bigInteger, softdeletes: softDeletes, relationships: { hasOne: 'ProfitLoss, TourReport' } }
+    Invoice: { code: 'string index unique', order_id: 'foreign constrained onDelete:cascade', main_costs: json, down_payments: json, kaos_diserahkan: integer, qty_kaos_anak: integer, qty_kaos_guru: 'integer nullable', qty_kaos_dewasa: 'integer nullable', price_kaos_anak: 'bigInteger default:25000', price_kaos_guru: 'bigInteger default:120000', price_kaos_dewasa: 'bigInteger default:80000', adjusted_seat: 'integer nullable', other_cost: 'bigInteger nullable', notes: 'longText nullable', total_transactions: bigInteger, status: 'string:50', softdeletes: softDeletes, relationships: { hasOne: 'ProfitLoss, TourReport' } }
     ProfitLoss: { invoice_id: 'foreign constrained onDelete:cascade', status: 'string:50', operational_costs: json, special_costs: json, variable_costs: json, other_costs: json, total_cost: bigInteger, softdeletes: softDeletes }
     TourReport: { invoice_id: 'foreign constrained onDelete:cascade', status: 'string:50', costs_detail: json, other_costs: json, income: bigInteger, expense: bigInteger, softdeletes: softDeletes }
     EmployeeSalary: { user_id: 'foreign constrained onDelete:cascade', amount: bigInteger, date: datetime, working_day: integer }

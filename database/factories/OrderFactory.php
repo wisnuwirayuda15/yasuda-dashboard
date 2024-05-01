@@ -26,8 +26,9 @@ class OrderFactory extends Factory
             'code' => $this->faker->word(),
             'customer_id' => Customer::factory(),
             'regency_id' => Regency::factory(),
-            'description' => $this->faker->text(),
             'destinations' => '{}',
+            'trip_date' => $this->faker->dateTime(),
+            'description' => $this->faker->text(),
         ];
     }
 }

@@ -18,8 +18,9 @@ return new class extends Migration
             $table->string('code')->index()->unique();
             $table->foreignId('customer_id')->constrained()->cascadeOnDelete();
             $table->foreignId('regency_id')->constrained()->cascadeOnDelete();
-            $table->longText('description');
             $table->json('destinations');
+            $table->dateTime('trip_date');
+            $table->longText('description')->nullable();
             $table->timestamps();
         });
 

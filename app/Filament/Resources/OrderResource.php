@@ -5,7 +5,6 @@ namespace App\Filament\Resources;
 use Filament\Forms;
 use Filament\Tables;
 use App\Models\Order;
-use Filament\Forms\Get;
 use Filament\Forms\Set;
 use Filament\Forms\Form;
 use Filament\Tables\Table;
@@ -31,48 +30,52 @@ class OrderResource extends Resource
           ->required()
           ->disabled()
           ->dehydrated()
-          ->default(get_code(new Order, 'OR-'))
+          ->default(get_code(new Order, 'OR'))
           ->helperText('Code is generated automatically.')
           ->unique(Order::class, 'code', ignoreRecord: true),
         Forms\Components\Select::make('customer_id')
           ->required()
-          ->preload()
           ->searchable()
-          ->native(false)
-          ->prefixIcon(fn() => CustomerResource::getNavigationIcon())
-          ->relationship('customer', 'name')
-          ->editOptionForm(fn(Form $form) => CustomerResource::form($form))
-          ->createOptionForm(fn(Form $form) => CustomerResource::form($form))
+          ->preload()
+          ->optionsLimit(5)
+          ->relationship('customer', 'name', fn(Builder $query) => $query->orderBy('created_at', 'desc'))
           ->editOptionModalHeading('Edit Customer')
-          ->createOptionModalHeading('Create Customer'),
+          ->createOptionModalHeading('Create Customer')
+          ->prefixIcon(fn() => CustomerResource::getNavigationIcon())
+          ->editOptionForm(fn(Form $form) => CustomerResource::form($form))
+          ->createOptionForm(fn(Form $form) => CustomerResource::form($form)),
         Forms\Components\Select::make('regency_id')
           ->required()
-          ->searchable()
-          ->native(false)
           ->preload()
+          ->searchable()
           ->relationship('regency', 'name'),
         Forms\Components\Select::make('destinations')
           ->required()
           ->multiple()
           ->searchable()
+          ->options(Destination::pluck('name', 'id'))
           ->hintAction(Forms\Components\Actions\Action::make('select_tour_template')
+            ->label('Select Tour Template')
             ->icon('tabler-playlist-add')
             ->form([
               Forms\Components\Select::make('tour_template')
                 ->required()
                 ->searchable()
-                ->live()
                 ->options(TourTemplate::query()->pluck('name', 'id')),
             ])
             ->action(function (array $data, Set $set) {
-              $tourTemplate = TourTemplate::findOrFail($data)->toArray()[0];
+              $tourTemplate = TourTemplate::find($data)->toArray()[0];
               $set('regency_id', $tourTemplate['regency_id']);
               $set('destinations', $tourTemplate['destinations']);
-            }), )
-          ->native(false)
-          ->options(Destination::pluck('name', 'id')),
-        Forms\Components\RichEditor::make('description')
+            })),
+        Forms\Components\DatePicker::make('trip_date')
           ->required()
+          ->native(false)
+          ->minDate(today())
+          ->closeOnDateSelection()
+          ->prefixIcon('heroicon-s-calendar-days')
+          ->displayFormat('d mm Y'),
+        Forms\Components\RichEditor::make('description')
           ->columnSpanFull(),
       ]);
   }

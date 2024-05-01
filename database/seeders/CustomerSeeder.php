@@ -23,7 +23,7 @@ class CustomerSeeder extends Seeder
     for ($x = 1; $x <= 100; $x++) {
       $category = fake()->randomElement($categories);
 
-      $code = get_code(new Customer, $category . '-');
+      $code = get_code(new Customer, $category);
 
       $city = Regency::inRandomOrder()->first();
 

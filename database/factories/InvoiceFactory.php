@@ -27,12 +27,17 @@ class InvoiceFactory extends Factory
             'main_costs' => '{}',
             'down_payments' => '{}',
             'kaos_diserahkan' => $this->faker->numberBetween(-10000, 10000),
-            'kaos_guru' => '{}',
-            'kaos_dewasa' => '{}',
+            'qty_kaos_anak' => $this->faker->numberBetween(-10000, 10000),
+            'qty_kaos_guru' => $this->faker->numberBetween(-10000, 10000),
+            'qty_kaos_dewasa' => $this->faker->numberBetween(-10000, 10000),
+            'price_kaos_anak' => $this->faker->numberBetween(-100000, 100000),
+            'price_kaos_guru' => $this->faker->numberBetween(-100000, 100000),
+            'price_kaos_dewasa' => $this->faker->numberBetween(-100000, 100000),
             'adjusted_seat' => $this->faker->numberBetween(-10000, 10000),
             'other_cost' => $this->faker->numberBetween(-100000, 100000),
             'notes' => $this->faker->text(),
             'total_transactions' => $this->faker->numberBetween(-100000, 100000),
+            'status' => $this->faker->regexify('[A-Za-z0-9]{50}'),
         ];
     }
 }

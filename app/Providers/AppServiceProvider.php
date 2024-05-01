@@ -6,10 +6,13 @@ use Carbon\Carbon;
 use Filament\Pages\Page;
 use Filament\Support\Assets\Js;
 use Illuminate\Support\Facades\URL;
+use Filament\Livewire\Notifications;
+use Filament\Support\Enums\Alignment;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\ServiceProvider;
 use Filament\Notifications\Notification;
 use Filament\Support\Facades\FilamentAsset;
+use Filament\Support\Enums\VerticalAlignment;
 use Illuminate\Validation\ValidationException;
 use BezhanSalleh\FilamentLanguageSwitch\LanguageSwitch;
 
@@ -65,5 +68,8 @@ class AppServiceProvider extends ServiceProvider
         ->locales(['en', 'id'])
         ->visible(outsidePanels: true);
     });
+
+    Notifications::alignment(Alignment::End);
+    Notifications::verticalAlignment(VerticalAlignment::End);
   }
 }

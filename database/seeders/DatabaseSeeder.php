@@ -31,6 +31,8 @@ class DatabaseSeeder extends Seeder
       CustomerSeeder::class,
       TourLeaderSeeder::class,
       DestinationSeeder::class,
+      OrderSeeder::class,
+      OrderFleetSeeder::class,
     ]);
   }
 }

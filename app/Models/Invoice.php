@@ -23,12 +23,17 @@ class Invoice extends Model
         'main_costs',
         'down_payments',
         'kaos_diserahkan',
-        'kaos_guru',
-        'kaos_dewasa',
+        'qty_kaos_anak',
+        'qty_kaos_guru',
+        'qty_kaos_dewasa',
+        'price_kaos_anak',
+        'price_kaos_guru',
+        'price_kaos_dewasa',
         'adjusted_seat',
         'other_cost',
         'notes',
         'total_transactions',
+        'status',
     ];
 
     /**
@@ -41,8 +46,9 @@ class Invoice extends Model
         'order_id' => 'integer',
         'main_costs' => 'array',
         'down_payments' => 'array',
-        'kaos_guru' => 'array',
-        'kaos_dewasa' => 'array',
+        'price_kaos_anak' => 'integer',
+        'price_kaos_guru' => 'integer',
+        'price_kaos_dewasa' => 'integer',
         'other_cost' => 'integer',
         'total_transactions' => 'integer',
     ];

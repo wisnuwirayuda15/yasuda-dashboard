@@ -4,6 +4,7 @@ namespace App\Filament\Resources;
 
 use Filament\Forms;
 use Filament\Tables;
+use App\Models\Fleet;
 use App\Models\Order;
 use Filament\Forms\Get;
 use Filament\Forms\Set;
@@ -15,6 +16,7 @@ use Filament\Resources\Resource;
 use App\Enums\FleetPaymentStatus;
 use Illuminate\Database\Eloquent\Model;
 use App\Filament\Resources\OrderResource;
+use Illuminate\Database\Eloquent\Builder;
 use App\Filament\Resources\OrderFleetResource\Pages;
 use App\Filament\Resources\OrderFleetResource\RelationManagers;
 
@@ -33,29 +35,25 @@ class OrderFleetResource extends Resource
           ->disabled()
           ->dehydrated()
           ->live()
-          ->hiddenOn('edit')
           ->helperText('Code is generated automatically.')
           ->unique(OrderFleet::class, 'code', ignoreRecord: true)
-          ->default(get_code(new OrderFleet, 'OF-')),
+          ->default(get_code(new OrderFleet, 'OF')),
         Forms\Components\Select::make('order_id')
           ->relationship('order', 'id')
+          ->allowHtml()
           ->native(false)
           ->prefixIcon(fn() => OrderResource::getNavigationIcon())
           ->editOptionForm(fn(Form $form) => OrderResource::form($form))
           ->createOptionForm(fn(Form $form) => OrderResource::form($form))
           ->editOptionModalHeading('Edit Order')
           ->createOptionModalHeading('Create Order')
-          ->allowHtml()
-          ->getOptionLabelFromRecordUsing(
-            function (Order $record) {
-              return view('livewire.order-badge', ['record' => $record]);
-            }
-          ),
+          ->getOptionLabelFromRecordUsing(fn(Order $record) => view('livewire.order-badge', compact('record'))),
         Forms\Components\Select::make('fleet_id')
           ->required()
           ->native(false)
           ->relationship('fleet', 'name')
-          ->getOptionLabelFromRecordUsing(fn(Model $record) => "{$record->name} - {$record->seat_set}"),
+          ->allowHtml()
+          ->getOptionLabelFromRecordUsing(fn(Fleet $record) => view('livewire.fleet-options-badge', compact('record'))),
         Forms\Components\DatePicker::make('trip_date')
           ->required()
           ->native(false)
@@ -96,26 +94,27 @@ class OrderFleetResource extends Resource
               ->visible(fn(Get $get) => $get('payment_status') != FleetPaymentStatus::NON_DP->value)
               ->columnSpan(2)
               ->schema([
-                Forms\Components\DateTimePicker::make('payment_date')
+                Forms\Components\DatePicker::make('payment_date')
                   ->required()
                   ->native(false)
+                  ->minDate(today())
                   ->closeOnDateSelection()
                   ->prefixIcon('iconsax-bol-money-time')
                   ->displayFormat('d mm Y'),
                 Forms\Components\TextInput::make('payment_amount')
-                  ->live()
+                  ->required()
                   ->numeric()
+                  ->live(true)
                   ->prefix('Rp')
                   ->minValue(1)
-                  ->required()
                   ->afterStateUpdated(fn(?int $state, Set $set) => $state <= 1 && $set('payment_amount', 1)),
               ])
           ]),
         Forms\Components\Select::make('tour_leader_id')
-          ->relationship('tourLeader', 'name')
-          ->native(false)
           ->searchable()
           ->preload()
+          ->optionsLimit(5)
+          ->relationship('tourLeader', 'name')
           ->prefixIcon(fn() => TourLeaderResource::getNavigationIcon()),
       ]);
   }
@@ -132,7 +131,8 @@ class OrderFleetResource extends Resource
           ->formatStateUsing(fn($state): string => $state->translatedFormat('d F Y')),
         Tables\Columns\TextColumn::make('order.customer.name')
           ->numeric()
-          ->sortable(),
+          ->sortable()
+          ->placeholder('No customer'),
         Tables\Columns\TextColumn::make('fleet.name')
           ->numeric()
           ->sortable(),
@@ -142,6 +142,7 @@ class OrderFleetResource extends Resource
           ->default(fn(Model $record): string => $record->trip_date->translatedFormat('F')),
         Tables\Columns\TextColumn::make('remaining_days')
           ->badge()
+          ->sortable()
           ->default(
             function (Model $record): string {
               $date = $record->trip_date;
@@ -170,7 +171,8 @@ class OrderFleetResource extends Resource
           ->numeric()
           ->sortable(),
         Tables\Columns\TextColumn::make('status')
-          ->searchable(),
+          ->badge()
+          ->sortable(),
         Tables\Columns\TextColumn::make('created_at')
           ->dateTime()
           ->sortable()

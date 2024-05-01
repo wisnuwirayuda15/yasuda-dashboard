@@ -2,12 +2,13 @@
 
 namespace App\Providers\Filament;
 
-use App\Enums\NavigationGroupLabel;
 use Filament\Pages;
 use Filament\Panel;
 use Filament\Widgets;
 use Filament\PanelProvider;
+use App\Filament\Pages\Auth\Login;
 use Filament\Support\Colors\Color;
+use App\Enums\NavigationGroupLabel;
 use Filament\Support\Enums\MaxWidth;
 use Filament\Navigation\NavigationGroup;
 use Filament\Http\Middleware\Authenticate;
@@ -32,12 +33,14 @@ class AdminPanelProvider extends PanelProvider
       // ->spa()
       ->id('admin')
       ->path('')
-      ->login()
+      ->login(Login::class)
       ->passwordReset()
       // ->topNavigation()
       ->font('Poppins')
       ->viteTheme('resources/css/filament/admin/theme.css')
-      ->brandLogo(asset('/img/logo.png'))
+      ->favicon(asset('favicon.svg'))
+      ->brandLogo(asset('/img/logo-light.svg'))
+      ->darkModeBrandLogo(asset('/img/logo-dark.svg'))
       ->brandLogoHeight('35px')
       ->sidebarCollapsibleOnDesktop(true)
       // ->darkMode(false)

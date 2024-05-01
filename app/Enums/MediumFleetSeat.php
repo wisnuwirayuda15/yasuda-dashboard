@@ -4,11 +4,11 @@ namespace App\Enums;
 
 use Filament\Support\Contracts\HasLabel;
 
-enum MediumFleetSeat: string implements HasLabel
+enum MediumFleetSeat: int implements HasLabel
 {
-  case SEAT_SET_1 = '31';
-  case SEAT_SET_2 = '33';
-  case SEAT_SET_3 = '35';
+  case SEAT_SET_1 = 31;
+  case SEAT_SET_2 = 33;
+  case SEAT_SET_3 = 35;
 
   public function getLabel(): ?string
   {

@@ -128,8 +128,9 @@ models:
     code: string index unique #OR-00001
     customer_id: foreign constrained onDelete:cascade
     regency_id: foreign constrained onDelete:cascade
-    description: longText
     destinations: json
+    trip_date: datetime
+    description: longText nullable
     relationships:
       hasMany: OrderFleet
       hasOne: Invoice
@@ -152,12 +153,17 @@ models:
     main_costs: json
     down_payments: json
     kaos_diserahkan: integer
-    kaos_guru: json
-    kaos_dewasa: json
+    qty_kaos_anak: integer #(Total Kaos Diserahkan - Kaos Tercover Paket)
+    qty_kaos_guru: integer nullable
+    qty_kaos_dewasa: integer nullable
+    price_kaos_anak: bigInteger default:25000
+    price_kaos_guru: bigInteger default:120000
+    price_kaos_dewasa: bigInteger default:80000
     adjusted_seat: integer nullable
     other_cost: bigInteger nullable
     notes: longText nullable
-    total_transactions: bigInteger
+    total_transactions: bigInteger 
+    status: string:50
     softDeletes
     relationships:
       hasOne: ProfitLoss, TourReport

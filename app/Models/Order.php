@@ -21,8 +21,9 @@ class Order extends Model
         'code',
         'customer_id',
         'regency_id',
-        'description',
         'destinations',
+        'trip_date',
+        'description',
     ];
 
     /**
@@ -35,6 +36,7 @@ class Order extends Model
         'customer_id' => 'integer',
         'regency_id' => 'integer',
         'destinations' => 'array',
+        'trip_date' => 'datetime',
     ];
 
     public function orderFleets(): HasMany

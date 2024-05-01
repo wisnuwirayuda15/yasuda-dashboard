@@ -45,13 +45,12 @@ class FleetSeeder extends Seeder
 
       $category = fake()->randomElement($categories);
 
-      if ($category == FleetCategory::MEDIUM->value) {
-        $seat = fake()->randomElement($mediumSeats);
-      } elseif ($category == FleetCategory::BIG->value) {
-        $seat = fake()->randomElement($bigSeats);
-      } elseif ($category == FleetCategory::LEGREST->value) {
-        $seat = fake()->randomElement($legrestSeats);
-      }
+      $seat = match ($category) {
+        FleetCategory::MEDIUM->value => fake()->randomElement($mediumSeats),
+        FleetCategory::BIG->value => fake()->randomElement($bigSeats),
+        FleetCategory::LEGREST->value => fake()->randomElement($legrestSeats),
+        default => fake()->randomElement($mediumSeats),
+      };
 
       Fleet::create([
         'image' => $image,

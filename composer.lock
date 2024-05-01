@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "6d89f0453c20a326ab6dda7ff0d39ef1",
+    "content-hash": "08458f6a79b11dd392bd385fdd0394ec",
     "packages": [
         {
             "name": "anourvalar/eloquent-serialize",
@@ -902,6 +902,77 @@
                 }
             ],
             "time": "2024-02-29T17:17:19+00:00"
+        },
+        {
+            "name": "codeat3/blade-phosphor-icons",
+            "version": "2.2.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/codeat3/blade-phosphor-icons.git",
+                "reference": "d7d7c027ce0a0ce2f5e5c68688595f0a816e7508"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/codeat3/blade-phosphor-icons/zipball/d7d7c027ce0a0ce2f5e5c68688595f0a816e7508",
+                "reference": "d7d7c027ce0a0ce2f5e5c68688595f0a816e7508",
+                "shasum": ""
+            },
+            "require": {
+                "blade-ui-kit/blade-icons": "^1.1",
+                "illuminate/support": "^8.0|^9.0|^10.0|^11.0",
+                "php": "^7.4|^8.0"
+            },
+            "require-dev": {
+                "codeat3/blade-icon-generation-helpers": "^0.8",
+                "codeat3/phpcs-styles": "^1.0",
+                "orchestra/testbench": "^6.0|^7.0|^8.0|^9.0",
+                "phpunit/phpunit": "^9.0|^10.5|^11.0"
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "Codeat3\\BladePhosphorIcons\\BladePhosphorIconsServiceProvider"
+                    ]
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Codeat3\\BladePhosphorIcons\\": "src"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Swapnil Sarwe",
+                    "homepage": "https://swapnilsarwe.com"
+                },
+                {
+                    "name": "Dries Vints",
+                    "homepage": "https://driesvints.com"
+                }
+            ],
+            "description": "A package to easily make use of \"Phosphor Icons\" in your Laravel Blade views.",
+            "homepage": "https://github.com/codeat3/blade-phosphor-icons",
+            "keywords": [
+                "blade",
+                "laravel",
+                "phosphor-icons"
+            ],
+            "support": {
+                "issues": "https://github.com/codeat3/blade-phosphor-icons/issues",
+                "source": "https://github.com/codeat3/blade-phosphor-icons/tree/2.2.0"
+            },
+            "funding": [
+                {
+                    "url": "https://github.com/swapnilsarwe",
+                    "type": "github"
+                }
+            ],
+            "time": "2024-04-08T19:02:17+00:00"
         },
         {
             "name": "coolsam/flatpickr",
@@ -3072,6 +3143,81 @@
                 "source": "https://github.com/haruncpi/laravel-id-generator/tree/v1.1.0"
             },
             "time": "2021-10-01T06:16:03+00:00"
+        },
+        {
+            "name": "icetalker/filament-stepper",
+            "version": "v1.2.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/icetalker/filament-stepper.git",
+                "reference": "ef48e6c90e5126bed2a55d5e5ce61fb41113c44f"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/icetalker/filament-stepper/zipball/ef48e6c90e5126bed2a55d5e5ce61fb41113c44f",
+                "reference": "ef48e6c90e5126bed2a55d5e5ce61fb41113c44f",
+                "shasum": ""
+            },
+            "require": {
+                "filament/filament": "^2.0|^3.0",
+                "illuminate/contracts": "^8.6|^9.0|^10.0|^11.0",
+                "php": "^8.0",
+                "spatie/laravel-package-tools": "^1.9.2"
+            },
+            "require-dev": {
+                "nunomaduro/collision": "^6.0|^8.0",
+                "orchestra/testbench": "^7.0|^9.0",
+                "pestphp/pest": "^1.21|^2.34",
+                "pestphp/pest-plugin-laravel": "^1.1|^2.3",
+                "phpunit/phpunit": "^9.5|^10.5",
+                "spatie/laravel-ray": "^1.26"
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "Icetalker\\FilamentStepper\\FilamentStepperServiceProvider"
+                    ],
+                    "aliases": {
+                        "FilamentStepper": "Icetalker\\FilamentStepper\\Facades\\FilamentStepper"
+                    }
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Icetalker\\FilamentStepper\\": "src",
+                    "Icetalker\\FilamentStepper\\Database\\Factories\\": "database/factories"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Martin Hwang",
+                    "email": "martin.hwang@outlook.com",
+                    "role": "Developer"
+                }
+            ],
+            "description": "Filament Form Component for Number Input Field ",
+            "homepage": "https://github.com/icetalker/filament-stepper",
+            "keywords": [
+                "filament-stepper",
+                "icetalker",
+                "laravel"
+            ],
+            "support": {
+                "issues": "https://github.com/icetalker/filament-stepper/issues",
+                "source": "https://github.com/icetalker/filament-stepper/tree/v1.2.0"
+            },
+            "funding": [
+                {
+                    "url": "https://github.com/icetalker",
+                    "type": "github"
+                }
+            ],
+            "time": "2024-04-03T21:39:30+00:00"
         },
         {
             "name": "jeffgreco13/filament-breezy",
