@@ -23,7 +23,6 @@ class Invoice extends Model
         'main_costs',
         'down_payments',
         'kaos_diserahkan',
-        'qty_kaos_anak',
         'qty_kaos_guru',
         'qty_kaos_dewasa',
         'price_kaos_anak',
@@ -32,8 +31,6 @@ class Invoice extends Model
         'adjusted_seat',
         'other_cost',
         'notes',
-        'total_transactions',
-        'status',
     ];
 
     /**
@@ -50,7 +47,6 @@ class Invoice extends Model
         'price_kaos_guru' => 'integer',
         'price_kaos_dewasa' => 'integer',
         'other_cost' => 'integer',
-        'total_transactions' => 'integer',
     ];
 
     public function profitLoss(): HasOne

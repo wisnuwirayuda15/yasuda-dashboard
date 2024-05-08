@@ -11,36 +11,36 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Fleet extends Model
 {
-  use HasFactory, SoftDeletes;
+    use HasFactory, SoftDeletes;
 
-  /**
-   * The attributes that are mass assignable.
-   *
-   * @var array
-   */
-  protected $fillable = [
-    'image',
-    'name',
-    'description',
-    'category',
-    'seat_set',
-    'pic_name',
-    'pic_phone',
-  ];
+    /**
+     * The attributes that are mass assignable.
+     *
+     * @var array
+     */
+    protected $fillable = [
+        'image',
+        'name',
+        'description',
+        'category',
+        'seat_set',
+        'pic_name',
+        'pic_phone',
+    ];
 
-  /**
-   * The attributes that should be cast to native types.
-   *
-   * @var array
-   */
-  protected $casts = [
-    'id' => 'integer',
-    'seat_set' => FleetSeat::class,
-    'category' => FleetCategory::class,
-  ];
+    /**
+     * The attributes that should be cast to native types.
+     *
+     * @var array
+     */
+    protected $casts = [
+        'id' => 'integer',
+        'seat_set' => FleetSeat::class,
+        'category' => FleetCategory::class,
+    ];
 
-  public function orderFleets(): HasMany
-  {
-    return $this->hasMany(OrderFleet::class);
-  }
+    public function orderFleets(): HasMany
+    {
+        return $this->hasMany(OrderFleet::class);
+    }
 }

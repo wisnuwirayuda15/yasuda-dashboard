@@ -151,9 +151,9 @@ models:
     code: string index unique #INV-00001
     order_id: foreign constrained onDelete:cascade
     main_costs: json
-    down_payments: json
+    down_payments: json nullable
     kaos_diserahkan: integer
-    qty_kaos_anak: integer #(Total Kaos Diserahkan - Kaos Tercover Paket)
+    # qty_kaos_anak: integer (Total Kaos Diserahkan - Kaos Tercover Paket)
     qty_kaos_guru: integer nullable
     qty_kaos_dewasa: integer nullable
     price_kaos_anak: bigInteger default:25000
@@ -162,8 +162,8 @@ models:
     adjusted_seat: integer nullable
     other_cost: bigInteger nullable
     notes: longText nullable
-    total_transactions: bigInteger 
-    status: string:50
+    # total_transactions: bigInteger 
+    # status: string:50
     softDeletes
     relationships:
       hasOne: ProfitLoss, TourReport

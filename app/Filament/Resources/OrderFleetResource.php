@@ -16,6 +16,7 @@ use Filament\Resources\Resource;
 use App\Enums\FleetPaymentStatus;
 use Illuminate\Database\Eloquent\Model;
 use App\Filament\Resources\OrderResource;
+use Filament\Tables\Columns\SelectColumn;
 use Illuminate\Database\Eloquent\Builder;
 use App\Filament\Resources\OrderFleetResource\Pages;
 use App\Filament\Resources\OrderFleetResource\RelationManagers;
@@ -39,9 +40,9 @@ class OrderFleetResource extends Resource
           ->unique(OrderFleet::class, 'code', ignoreRecord: true)
           ->default(get_code(new OrderFleet, 'OF')),
         Forms\Components\Select::make('order_id')
-          ->relationship('order', 'id')
           ->allowHtml()
           ->native(false)
+          ->relationship('order', 'id')
           ->prefixIcon(fn() => OrderResource::getNavigationIcon())
           ->editOptionForm(fn(Form $form) => OrderResource::form($form))
           ->createOptionForm(fn(Form $form) => OrderResource::form($form))
@@ -86,9 +87,11 @@ class OrderFleetResource extends Resource
               ->inline()
               ->options(FleetPaymentStatus::class)
               ->default(FleetPaymentStatus::NON_DP->value)
-              ->afterStateUpdated(function (Set $set) {
-                $set('payment_date', null);
-                $set('payment_amount', null);
+              ->afterStateUpdated(function (Get $get, Set $set) {
+                if ($get('payment_status') == FleetPaymentStatus::NON_DP->value) {
+                  $set('payment_date', null);
+                  $set('payment_amount', null);
+                }
               }),
             Forms\Components\Group::make()
               ->visible(fn(Get $get) => $get('payment_status') != FleetPaymentStatus::NON_DP->value)
@@ -133,17 +136,14 @@ class OrderFleetResource extends Resource
           ->numeric()
           ->sortable()
           ->placeholder('No customer'),
-        Tables\Columns\TextColumn::make('fleet.name')
-          ->numeric()
-          ->sortable(),
         Tables\Columns\TextColumn::make('trip_day')
-          ->default(fn(Model $record): string => $record->trip_date->translatedFormat('l')),
+          ->state(fn(Model $record): string => $record->trip_date->translatedFormat('l')),
         Tables\Columns\TextColumn::make('trip_month')
-          ->default(fn(Model $record): string => $record->trip_date->translatedFormat('F')),
+          ->state(fn(Model $record): string => $record->trip_date->translatedFormat('F')),
         Tables\Columns\TextColumn::make('remaining_days')
           ->badge()
           ->sortable()
-          ->default(
+          ->state(
             function (Model $record): string {
               $date = $record->trip_date;
               if ($date->isToday()) {

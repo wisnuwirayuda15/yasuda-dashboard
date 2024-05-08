@@ -18,9 +18,8 @@ return new class extends Migration
             $table->string('code')->index()->unique();
             $table->foreignId('order_id')->constrained()->cascadeOnDelete();
             $table->json('main_costs');
-            $table->json('down_payments');
+            $table->json('down_payments')->nullable();
             $table->integer('kaos_diserahkan');
-            $table->integer('qty_kaos_anak');
             $table->integer('qty_kaos_guru')->nullable();
             $table->integer('qty_kaos_dewasa')->nullable();
             $table->bigInteger('price_kaos_anak')->default(25000);
@@ -29,8 +28,6 @@ return new class extends Migration
             $table->integer('adjusted_seat')->nullable();
             $table->bigInteger('other_cost')->nullable();
             $table->longText('notes')->nullable();
-            $table->bigInteger('total_transactions');
-            $table->string('status', 50);
             $table->timestamps();
             $table->softDeletes();
         });

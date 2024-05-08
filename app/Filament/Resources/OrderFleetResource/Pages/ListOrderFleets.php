@@ -8,12 +8,18 @@ use Filament\Resources\Pages\ListRecords;
 
 class ListOrderFleets extends ListRecords
 {
-    protected static string $resource = OrderFleetResource::class;
+  protected static string $resource = OrderFleetResource::class;
 
-    protected function getHeaderActions(): array
-    {
-        return [
-            Actions\CreateAction::make(),
-        ];
-    }
+  protected function getHeaderActions(): array
+  {
+    return [
+      Actions\CreateAction::make(),
+    ];
+  }
+
+  public function setPage($page, $pageName = 'page'): void
+  {
+    parent::setPage($page, $pageName);
+    $this->dispatch('scroll-to-top');
+  }
 }

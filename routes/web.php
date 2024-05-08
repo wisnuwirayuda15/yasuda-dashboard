@@ -1,5 +1,9 @@
 <?php
 
+use App\Http\Controllers\PdfController;
+use App\Models\Invoice;
+use Spatie\LaravelPdf\Facades\Pdf;
+use Spatie\Browsershot\Browsershot;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -13,6 +17,4 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-// Route::get('/', function () {
-//     return view('welcome');
-// });
+Route::get('generate/invoice/{invoice}', [PdfController::class, 'invoice'])->name('generate.invoice');

@@ -26,8 +26,8 @@ enum InvoiceStatus: string implements HasLabel, HasColor, HasIcon
   {
     return match ($this) {
       self::PAID_OFF => 'heroicon-s-check-badge',
-      self::UNDER_PAYMENT => 'heroicon-s-information-circle',
-      self::OVER_PAYMENT => 'heroicon-s-x-circle',
+      self::UNDER_PAYMENT => 'heroicon-s-x-circle',
+      self::OVER_PAYMENT => 'heroicon-s-information-circle',
     };
   }
 
@@ -35,8 +35,8 @@ enum InvoiceStatus: string implements HasLabel, HasColor, HasIcon
   {
     return match ($this) {
       self::PAID_OFF => Color::Emerald,
-      self::UNDER_PAYMENT => Color::Yellow,
-      self::OVER_PAYMENT => Color::Red,
+      self::UNDER_PAYMENT => Color::Red,
+      self::OVER_PAYMENT => Color::Yellow,
     };
   }
 }
