@@ -25,6 +25,17 @@ enum DestinationType: string implements HasLabel, HasColor, HasIcon
     };
   }
 
+  public function getFormula(): ?string
+  {
+    return match ($this) {
+      self::SISWA_ONLY => 'Paket Anak',
+      self::SISWA_DEWASA => 'Paket Anak x 2 + Tambahan',
+      self::SISWA_DEWASA_PEMBINA => 'Paket Anak x 2 + Tambahan + Pembina',
+      self::SISWA_TAMBAHAN => 'Paket Anak + Tambahan',
+      self::DEWASA => 'Dewasa only',
+    };
+  }
+
   public function getColor(): string|array|null
   {
     return match ($this) {
@@ -43,7 +54,7 @@ enum DestinationType: string implements HasLabel, HasColor, HasIcon
       self::SISWA_DEWASA => 'heroicon-s-users',
       self::SISWA_DEWASA_PEMBINA => 'heroicon-s-user-group',
       self::SISWA_TAMBAHAN => 'heroicon-s-user-plus',
-      self::DEWASA => 'heroicon-s-user-circle',
+      self::DEWASA => 'gmdi-man',
     };
   }
 }

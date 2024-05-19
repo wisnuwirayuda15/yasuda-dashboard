@@ -77,6 +77,7 @@ models:
     lat: string nullable
     lng: string nullable
     status: string:50
+    loyalty_point: bigInteger default:0
     softDeletes
     relationships:
       hasMany: Order,Feedback
@@ -87,7 +88,7 @@ models:
     marketing_name: string
     marketing_phone: string
     weekday_price: bigInteger
-    weekend_price: bigInteger
+    weekend_price: bigInteger nullable
     high_season_price: bigInteger nullable
     softDeletes
 
@@ -151,31 +152,52 @@ models:
     code: string index unique #INV-00001
     order_id: foreign constrained onDelete:cascade
     main_costs: json
-    down_payments: json nullable
-    kaos_diserahkan: integer
-    # qty_kaos_anak: integer (Total Kaos Diserahkan - Kaos Tercover Paket)
-    qty_kaos_guru: integer nullable
-    qty_kaos_dewasa: integer nullable
-    price_kaos_anak: bigInteger default:25000
-    price_kaos_guru: bigInteger default:120000
-    price_kaos_dewasa: bigInteger default:80000
+    submitted_shirt: integer
+    teacher_shirt_qty: integer nullable
+    adult_shirt_qty: integer nullable
+    child_shirt_price: bigInteger default:25000
+    teacher_shirt_price: bigInteger default:120000
+    adult_shirt_price: bigInteger default:80000
     adjusted_seat: integer nullable
+    down_payments: json nullable
     other_cost: bigInteger nullable
     notes: longText nullable
-    # total_transactions: bigInteger 
-    # status: string:50
     softDeletes
     relationships:
       hasOne: ProfitLoss, TourReport
 
   ProfitLoss:
     invoice_id: foreign constrained onDelete:cascade
-    status: string:50
-    operational_costs: json
-    special_costs: json
-    variable_costs: json
-    other_costs: json
-    total_cost: bigInteger
+
+    #operational_cost
+    medium_rent_price: bigInteger nullable
+    big_rent_price: bigInteger nullable
+    legrest_rent_price: bigInteger nullable
+    toll_price: bigInteger nullable
+    banner_price: bigInteger nullable
+    crew_price: bigInteger nullable
+    tour_leader_price: bigInteger nullable
+    documentation_qty: integer nullable
+    documentation_price: bigInteger nullable
+
+    #special_cost
+    teacher_shirt_price: bigInteger nullable
+    souvenir_price: bigInteger nullable
+
+    #variable_cost
+    child_shirt_price: bigInteger nullable
+    adult_shirt_price: bigInteger nullable
+    photo_price: bigInteger nullable
+    snack_price: bigInteger nullable
+    eat_price: bigInteger nullable
+
+    #other_cost
+    backup_price: bigInteger nullable
+    others_income: bigInteger nullable
+    medium_subs_bonus: bigInteger nullable
+    big_subs_bonus: bigInteger nullable
+    legrest_subs_bonus: bigInteger nullable
+
     softDeletes
 
   TourReport:

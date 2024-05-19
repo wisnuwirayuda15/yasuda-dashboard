@@ -36,6 +36,7 @@ class CustomerFactory extends Factory
             'lat' => $this->faker->latitude(),
             'lng' => $this->faker->longitude(),
             'status' => $this->faker->regexify('[A-Za-z0-9]{50}'),
+            'loyalty_point' => $this->faker->numberBetween(-100000, 100000),
         ];
     }
 }

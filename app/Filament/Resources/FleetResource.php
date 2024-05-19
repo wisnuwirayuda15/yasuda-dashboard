@@ -73,13 +73,8 @@ class FleetResource extends Resource
           ->required()
           ->maxLength(255),
         PhoneInput::make('pic_phone')
-          ->focusNumberFormat(PhoneInputNumberType::E164)
-          ->defaultCountry('ID')
-          ->initialCountry('id')
-          ->showSelectedDialCode(true)
-          ->formatAsYouType(false)
           ->required()
-          ->rules('phone:mobile'),
+          ->idDefaultFormat(),
       ]);
   }
 

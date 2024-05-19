@@ -56,9 +56,31 @@ if (!function_exists('idr')) {
    * @param bool $asRupiah Whether to display the currency as Rupiah.
    * @return string The formatted IDR currency value.
    */
-  function idr(int|float $number, bool $asRupiah = true): string
+  function idr(int|float|null $number, bool $asRupiah = true): string
   {
-    // if ($number === null) return '';
-    return Number::currency($number, 'IDR', $asRupiah ? 'id' : null);
+    if (blank($number)) return 0;
+    
+    $idrString = Number::currency($number, 'IDR', $asRupiah ? 'id' : null);
+
+    return str_replace(',00', '', $idrString);
+  }
+}
+
+if (!function_exists('getUrlQueryParameters')) {
+  /**
+   * Retrieves the query parameters from a given URL.
+   *
+   * @param string $url The URL from which to extract the query parameters.
+   * @return array An associative array containing the query parameters.
+   */
+  function getUrlQueryParameters($url)
+  {
+    $parsedUrl = parse_url($url);
+
+    $queryString = $parsedUrl['query'] ?? '';
+
+    parse_str($queryString, $parameters);
+    
+    return $parameters;
   }
 }

@@ -38,13 +38,8 @@ class DestinationResource extends Resource
           ->required()
           ->maxLength(255),
         PhoneInput::make('marketing_phone')
-          ->focusNumberFormat(PhoneInputNumberType::E164)
-          ->defaultCountry('ID')
-          ->initialCountry('id')
-          ->showSelectedDialCode(true)
-          ->formatAsYouType(false)
           ->required()
-          ->rules('phone:mobile'),
+          ->idDefaultFormat(),
         Forms\Components\TextInput::make('weekday_price')
           ->required()
           ->numeric()

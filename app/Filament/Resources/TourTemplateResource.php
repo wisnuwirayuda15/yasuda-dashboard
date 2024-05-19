@@ -37,15 +37,12 @@ class TourTemplateResource extends Resource
               ->action(fn(Get $get, Set $set) => self::setTourTemplateName($get, $set))
           ),
         Forms\Components\Select::make('regency_id')
-          ->relationship('regency', 'name')
           ->required()
-          ->searchable()
-          ->preload(),
+          ->relationship('regency', 'name'),
         Forms\Components\Select::make('destinations')
-          ->options(Destination::pluck('name', 'id'))
           ->required()
           ->multiple()
-          ->searchable(),
+          ->options(Destination::pluck('name', 'id')),
       ])->columns(1);
   }
 

@@ -20,7 +20,7 @@ class CustomerSeeder extends Seeder
 
     $statuses = array_map(fn($x) => $x->value, CustomerStatus::cases());
 
-    for ($x = 1; $x <= 100; $x++) {
+    for ($x = 1; $x <= 500; $x++) {
       $category = fake()->randomElement($categories);
 
       $code = get_code(new Customer, $category);

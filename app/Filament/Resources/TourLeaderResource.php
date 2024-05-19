@@ -29,7 +29,6 @@ class TourLeaderResource extends Resource
         Forms\Components\Section::make('Tour Leader')
           ->schema([
             Forms\Components\Select::make('user_id')
-              ->native(false)
               ->relationship('user', 'name'),
             Forms\Components\TextInput::make('name')
               ->required()
@@ -56,13 +55,8 @@ class TourLeaderResource extends Resource
             Forms\Components\Section::make('Contact')
               ->schema([
                 PhoneInput::make('phone')
-                  ->focusNumberFormat(PhoneInputNumberType::E164)
-                  ->defaultCountry('ID')
-                  ->initialCountry('id')
-                  ->showSelectedDialCode(true)
-                  ->formatAsYouType(false)
                   ->required()
-                  ->rules('phone:mobile'),
+                  ->idDefaultFormat(),
               ]),
           ])->columnSpan(1)
 

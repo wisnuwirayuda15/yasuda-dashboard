@@ -17,11 +17,11 @@ class OrderFleetSeeder extends Seeder
    */
   public function run(): void
   {
-    for ($i = 0; $i < 20; $i++) {
+    for ($i = 0; $i < 100; $i++) {
       OrderFleet::create([
         'code' => get_code(new OrderFleet, 'OF'),
         'fleet_id' => Fleet::inRandomOrder()->value('id'),
-        'trip_date' => fake()->dateTimeBetween(today()->addWeek(), today()->addMonths(3)),
+        'trip_date' => fake()->dateTimeBetween(today()->addWeek(), today()->addMonths(1)),
         'status' => OrderStatus::READY->value,
         'payment_status' => FleetPaymentStatus::NON_DP->value,
         'tour_leader_id' => TourLeader::inRandomOrder()->value('id'),

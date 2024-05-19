@@ -17,24 +17,24 @@ created:
     - database/factories/EmployeeSalaryFactory.php
     - database/factories/FeedbackFactory.php
     - database/factories/ReceivableFactory.php
-    - database/migrations/2024_05_08_111214_create_provinces_table.php
-    - database/migrations/2024_05_08_111215_create_regencies_table.php
-    - database/migrations/2024_05_08_111216_create_districts_table.php
-    - database/migrations/2024_05_08_111217_create_fleets_table.php
-    - database/migrations/2024_05_08_111218_create_customers_table.php
-    - database/migrations/2024_05_08_111219_create_destinations_table.php
-    - database/migrations/2024_05_08_111220_create_tour_templates_table.php
-    - database/migrations/2024_05_08_111221_create_companies_table.php
-    - database/migrations/2024_05_08_111222_create_employees_table.php
-    - database/migrations/2024_05_08_111223_create_tour_leaders_table.php
-    - database/migrations/2024_05_08_111224_create_orders_table.php
-    - database/migrations/2024_05_08_111225_create_order_fleets_table.php
-    - database/migrations/2024_05_08_111226_create_invoices_table.php
-    - database/migrations/2024_05_08_111227_create_profit_losses_table.php
-    - database/migrations/2024_05_08_111228_create_tour_reports_table.php
-    - database/migrations/2024_05_08_111229_create_employee_salaries_table.php
-    - database/migrations/2024_05_08_111230_create_feedback_table.php
-    - database/migrations/2024_05_08_111231_create_receivables_table.php
+    - database/migrations/2024_05_19_232915_create_provinces_table.php
+    - database/migrations/2024_05_19_232916_create_regencies_table.php
+    - database/migrations/2024_05_19_232917_create_districts_table.php
+    - database/migrations/2024_05_19_232918_create_fleets_table.php
+    - database/migrations/2024_05_19_232919_create_customers_table.php
+    - database/migrations/2024_05_19_232920_create_destinations_table.php
+    - database/migrations/2024_05_19_232921_create_tour_templates_table.php
+    - database/migrations/2024_05_19_232922_create_companies_table.php
+    - database/migrations/2024_05_19_232923_create_employees_table.php
+    - database/migrations/2024_05_19_232924_create_tour_leaders_table.php
+    - database/migrations/2024_05_19_232925_create_orders_table.php
+    - database/migrations/2024_05_19_232926_create_order_fleets_table.php
+    - database/migrations/2024_05_19_232927_create_invoices_table.php
+    - database/migrations/2024_05_19_232928_create_profit_losses_table.php
+    - database/migrations/2024_05_19_232929_create_tour_reports_table.php
+    - database/migrations/2024_05_19_232930_create_employee_salaries_table.php
+    - database/migrations/2024_05_19_232931_create_feedback_table.php
+    - database/migrations/2024_05_19_232932_create_receivables_table.php
     - app/Models/Province.php
     - app/Models/Regency.php
     - app/Models/District.php
@@ -59,16 +59,16 @@ models:
     Regency: { code: 'string unique index', province_id: 'foreign constrained onDelete:cascade', name: 'string index', lat: string, lng: string, google_place_id: string, softdeletes: softDeletes, relationships: { hasMany: District, belongsTo: Province } }
     District: { code: 'string unique index', regency_id: 'foreign constrained onDelete:cascade', name: 'string index', lat: string, lng: string, google_place_id: string, softdeletes: softDeletes, relationships: { hasMany: village, belongsTo: Regency } }
     Fleet: { image: 'string nullable', name: 'string index', description: longText, category: 'string:50', seat_set: tinyInteger, pic_name: string, pic_phone: string, softdeletes: softDeletes, relationships: { hasMany: OrderFleet } }
-    Customer: { code: 'string unique index', name: 'string unique index', address: string, category: 'string:50 default:tk', regency_id: 'foreign constrained onDelete:cascade', district_id: 'foreign:districts.id constrained onDelete:cascade', headmaster: string, operator: string, phone: string, email: 'string nullable', lat: 'string nullable', lng: 'string nullable', status: 'string:50', softdeletes: softDeletes, relationships: { hasMany: 'Order,Feedback' } }
-    Destination: { name: 'string unique index', type: 'string:50', marketing_name: string, marketing_phone: string, weekday_price: bigInteger, weekend_price: bigInteger, high_season_price: 'bigInteger nullable', softdeletes: softDeletes }
+    Customer: { code: 'string unique index', name: 'string unique index', address: string, category: 'string:50 default:tk', regency_id: 'foreign constrained onDelete:cascade', district_id: 'foreign:districts.id constrained onDelete:cascade', headmaster: string, operator: string, phone: string, email: 'string nullable', lat: 'string nullable', lng: 'string nullable', status: 'string:50', loyalty_point: 'bigInteger default:0', softdeletes: softDeletes, relationships: { hasMany: 'Order,Feedback' } }
+    Destination: { name: 'string unique index', type: 'string:50', marketing_name: string, marketing_phone: string, weekday_price: bigInteger, weekend_price: 'bigInteger nullable', high_season_price: 'bigInteger nullable', softdeletes: softDeletes }
     TourTemplate: { name: string, regency_id: 'foreign constrained onDelete:cascade', destinations: json }
     Company: { name: 'string default:"Yasuda Jaya Tour & Travel"', logo: 'string default:logo.png', email: 'string default:yasudajaya@gmail.com', phone: 'string default:+628123456789', balance: 'bigInteger default:0' }
     Employee: { user_id: 'foreign constrained onDelete:cascade nullable', name: 'string index', photo: 'string nullable', phone: string, gender: 'string:50', role: 'string:50', softdeletes: softDeletes }
     TourLeader: { user_id: 'foreign constrained onDelete:cascade nullable', name: 'string index', photo: 'string nullable', phone: 'string unique', gender: 'string:50', softdeletes: softDeletes, relationships: { hasMany: OrderFleet } }
     Order: { code: 'string index unique', customer_id: 'foreign constrained onDelete:cascade', regency_id: 'foreign constrained onDelete:cascade', destinations: json, trip_date: datetime, description: 'longText nullable', relationships: { hasMany: OrderFleet, hasOne: Invoice } }
     OrderFleet: { code: 'string index unique', order_id: 'foreign constrained onDelete:cascade nullable', fleet_id: 'foreign constrained onDelete:cascade', trip_date: datetime, duration: 'integer default:1', status: 'string:50', payment_status: 'string:50', payment_date: 'datetime nullable', payment_amount: 'bigInteger nullable', tour_leader_id: 'foreign constrained onDelete:cascade nullable' }
-    Invoice: { code: 'string index unique', order_id: 'foreign constrained onDelete:cascade', main_costs: json, down_payments: 'json nullable', kaos_diserahkan: integer, qty_kaos_guru: 'integer nullable', qty_kaos_dewasa: 'integer nullable', price_kaos_anak: 'bigInteger default:25000', price_kaos_guru: 'bigInteger default:120000', price_kaos_dewasa: 'bigInteger default:80000', adjusted_seat: 'integer nullable', other_cost: 'bigInteger nullable', notes: 'longText nullable', softdeletes: softDeletes, relationships: { hasOne: 'ProfitLoss, TourReport' } }
-    ProfitLoss: { invoice_id: 'foreign constrained onDelete:cascade', status: 'string:50', operational_costs: json, special_costs: json, variable_costs: json, other_costs: json, total_cost: bigInteger, softdeletes: softDeletes }
+    Invoice: { code: 'string index unique', order_id: 'foreign constrained onDelete:cascade', main_costs: json, submitted_shirt: integer, teacher_shirt_qty: 'integer nullable', adult_shirt_qty: 'integer nullable', child_shirt_price: 'bigInteger default:25000', teacher_shirt_price: 'bigInteger default:120000', adult_shirt_price: 'bigInteger default:80000', adjusted_seat: 'integer nullable', down_payments: 'json nullable', other_cost: 'bigInteger nullable', notes: 'longText nullable', softdeletes: softDeletes, relationships: { hasOne: 'ProfitLoss, TourReport' } }
+    ProfitLoss: { invoice_id: 'foreign constrained onDelete:cascade', medium_rent_price: 'bigInteger nullable', big_rent_price: 'bigInteger nullable', legrest_rent_price: 'bigInteger nullable', toll_price: 'bigInteger nullable', banner_price: 'bigInteger nullable', crew_price: 'bigInteger nullable', tour_leader_price: 'bigInteger nullable', documentation_qty: 'integer nullable', documentation_price: 'bigInteger nullable', teacher_shirt_price: 'bigInteger nullable', souvenir_price: 'bigInteger nullable', child_shirt_price: 'bigInteger nullable', adult_shirt_price: 'bigInteger nullable', photo_price: 'bigInteger nullable', snack_price: 'bigInteger nullable', eat_price: 'bigInteger nullable', backup_price: 'bigInteger nullable', others_income: 'bigInteger nullable', medium_subs_bonus: 'bigInteger nullable', big_subs_bonus: 'bigInteger nullable', legrest_subs_bonus: 'bigInteger nullable', softdeletes: softDeletes }
     TourReport: { invoice_id: 'foreign constrained onDelete:cascade', status: 'string:50', costs_detail: json, other_costs: json, income: bigInteger, expense: bigInteger, softdeletes: softDeletes }
     EmployeeSalary: { user_id: 'foreign constrained onDelete:cascade', amount: bigInteger, date: datetime, working_day: integer }
     Feedback: { customer_id: 'foreign constrained onDelete:cascade', text: longText }

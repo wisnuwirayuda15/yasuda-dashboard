@@ -83,17 +83,12 @@ class CustomerResource extends Resource
           ->label('Kabupaten / Kota')
           ->required()
           ->live()
-          ->searchable()
-          ->native(false)
-          ->preload()
           ->relationship('regency', 'name')
           ->afterStateUpdated(fn(Set $set) => $set('district_id', null)),
         Forms\Components\Select::make('district_id')
           ->label('Kecamatan')
           ->required()
           ->live()
-          ->searchable()
-          ->native(false)
           ->options(fn(Get $get) => District::where('regency_id', $get('regency_id'))->orderBy('name')->pluck('name', 'id')),
         Forms\Components\TextInput::make('lat')
           ->maxLength(255),
@@ -126,13 +121,8 @@ class CustomerResource extends Resource
           ->required()
           ->maxLength(255),
         PhoneInput::make('phone')
-          ->focusNumberFormat(PhoneInputNumberType::E164)
-          ->defaultCountry('ID')
-          ->initialCountry('id')
-          ->showSelectedDialCode(true)
-          ->formatAsYouType(false)
           ->required()
-          ->rules('phone:mobile'),
+          ->idDefaultFormat(),
         Forms\Components\TextInput::make('email')
           ->email()
           ->maxLength(255),

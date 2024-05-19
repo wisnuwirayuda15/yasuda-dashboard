@@ -6,6 +6,7 @@ use Filament\Pages;
 use Filament\Panel;
 use Filament\Widgets;
 use Filament\Pages\Page;
+use Filament\Tables\Table;
 use Filament\PanelProvider;
 use Filament\Support\Assets\Js;
 use App\Filament\Pages\Auth\Login;
@@ -15,15 +16,18 @@ use App\Enums\NavigationGroupLabel;
 use Filament\View\PanelsRenderHook;
 use Filament\Livewire\Notifications;
 use Filament\Support\Enums\MaxWidth;
+use Filament\Forms\Components\Select;
 use Filament\Support\Enums\Alignment;
 use Filament\Navigation\NavigationGroup;
 use Filament\Notifications\Notification;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Support\Facades\FilamentView;
+use Filament\Tables\Enums\ActionsPosition;
 use Jeffgreco13\FilamentBreezy\BreezyCore;
 use Filament\Support\Facades\FilamentAsset;
 use Filament\Support\Enums\VerticalAlignment;
 use pxlrbt\FilamentSpotlight\SpotlightPlugin;
+use App\Filament\Resources\ProfitLossResource;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\Cookie\Middleware\EncryptCookies;
@@ -58,16 +62,29 @@ class AdminPanelProvider extends PanelProvider
       };
     }
 
-    // Notification alignment
-    Notifications::alignment(Alignment::End);
-    Notifications::verticalAlignment(VerticalAlignment::End);
-
-    // Languages selector
-    LanguageSwitch::configureUsing(function (LanguageSwitch $switch) {
+    // Global Settings
+    Table::configureUsing(function (Table $table): void {
+      $table
+        ->paginationPageOptions([5, 10, 15, 20, 25, 30])
+        ->extremePaginationLinks()
+        ->actions([
+        ], position: ActionsPosition::BeforeColumns);
+    });
+    Select::configureUsing(function (Select $select): void {
+      $select
+        ->preload()
+        ->searchable()
+        ->optionsLimit(5);
+    });
+    LanguageSwitch::configureUsing(function (LanguageSwitch $switch): void {
       $switch
         ->locales(['en', 'id'])
         ->visible(outsidePanels: true);
     });
+
+    // Notification alignment
+    Notifications::alignment(Alignment::End);
+    Notifications::verticalAlignment(VerticalAlignment::End);
 
     // Register Tailwind CSS CDN in local
     if (env('APP_ENV') === 'local' && env('TAILWIND_CDN') === true) {
@@ -83,8 +100,8 @@ class AdminPanelProvider extends PanelProvider
       ->path('')
       ->login(Login::class)
       ->passwordReset()
-      // ->topNavigation()
       ->font('Poppins')
+      ->breadcrumbs(false)
       ->viteTheme('resources/css/filament/admin/theme.css')
       ->favicon(asset('favicon.svg'))
       ->brandLogo(asset('/img/logo-light.svg'))
@@ -103,6 +120,15 @@ class AdminPanelProvider extends PanelProvider
         Widgets\AccountWidget::class,
         Widgets\FilamentInfoWidget::class,
       ])
+      // ->colors([
+      //   'primary' => Color::Red,
+      //   'secondary' => Color::Indigo,
+      //   'danger' => Color::Red,
+      //   'gray' => Color::Gray,
+      //   'info' => Color::Sky,
+      //   'success' => Color::Green,
+      //   'warning' => Color::Yellow,
+      // ])
       ->middleware([
         EncryptCookies::class,
         AddQueuedCookiesToResponse::class,
@@ -132,7 +158,10 @@ class AdminPanelProvider extends PanelProvider
           )
           ->enableTwoFactorAuthentication(),
         QuickCreatePlugin::make()
-          ->rounded(false),
+          ->rounded(false)
+          ->excludes([
+            ProfitLossResource::class
+          ]),
         SpotlightPlugin::make(),
       ]);
   }

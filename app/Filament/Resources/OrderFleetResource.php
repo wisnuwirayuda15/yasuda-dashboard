@@ -8,18 +8,25 @@ use App\Models\Fleet;
 use App\Models\Order;
 use Filament\Forms\Get;
 use Filament\Forms\Set;
+use App\Models\Customer;
 use Filament\Forms\Form;
 use App\Enums\OrderStatus;
 use App\Models\OrderFleet;
 use Filament\Tables\Table;
 use Filament\Resources\Resource;
 use App\Enums\FleetPaymentStatus;
+use Filament\Tables\Actions\Action;
+use Filament\Forms\Components\Select;
+use Filament\Tables\Columns\IconColumn;
 use Illuminate\Database\Eloquent\Model;
+use Filament\Notifications\Notification;
+use Filament\Tables\Actions\ActionGroup;
 use App\Filament\Resources\OrderResource;
 use Filament\Tables\Columns\SelectColumn;
 use Illuminate\Database\Eloquent\Builder;
 use App\Filament\Resources\OrderFleetResource\Pages;
 use App\Filament\Resources\OrderFleetResource\RelationManagers;
+use Malzariey\FilamentDaterangepickerFilter\Filters\DateRangeFilter;
 
 class OrderFleetResource extends Resource
 {
@@ -41,20 +48,20 @@ class OrderFleetResource extends Resource
           ->default(get_code(new OrderFleet, 'OF')),
         Forms\Components\Select::make('order_id')
           ->allowHtml()
-          ->native(false)
           ->relationship('order', 'id')
           ->prefixIcon(fn() => OrderResource::getNavigationIcon())
           ->editOptionForm(fn(Form $form) => OrderResource::form($form))
           ->createOptionForm(fn(Form $form) => OrderResource::form($form))
           ->editOptionModalHeading('Edit Order')
           ->createOptionModalHeading('Create Order')
-          ->getOptionLabelFromRecordUsing(fn(Order $record) => view('livewire.order-badge', compact('record'))),
+          ->getOptionLabelFromRecordUsing(fn(Order $record) => view('filament.components.badges.order', compact('record'))),
         Forms\Components\Select::make('fleet_id')
           ->required()
-          ->native(false)
-          ->relationship('fleet', 'name')
+          ->optionsLimit(false)
+          // ->relationship('fleet', 'name')
           ->allowHtml()
-          ->getOptionLabelFromRecordUsing(fn(Fleet $record) => view('livewire.fleet-options-badge', compact('record'))),
+          ->options(Fleet::getGroupOptionsByCategories())
+          ->getOptionLabelFromRecordUsing(fn(Fleet $record) => view('filament.components.badges.fleet-options', compact('record'))),
         Forms\Components\DatePicker::make('trip_date')
           ->required()
           ->native(false)
@@ -114,9 +121,6 @@ class OrderFleetResource extends Resource
               ])
           ]),
         Forms\Components\Select::make('tour_leader_id')
-          ->searchable()
-          ->preload()
-          ->optionsLimit(5)
           ->relationship('tourLeader', 'name')
           ->prefixIcon(fn() => TourLeaderResource::getNavigationIcon()),
       ]);
@@ -128,23 +132,41 @@ class OrderFleetResource extends Resource
       ->columns([
         Tables\Columns\TextColumn::make('code')
           ->searchable(),
+        Tables\Columns\TextColumn::make('order.customer.name')
+          ->sortable()
+          ->placeholder('No customer'),
+        // SelectColumn::make('order_id')
+        //   ->label('Customer')
+        //   ->extraAttributes(['class' => 'w-52'])
+        //   ->placeholder(
+        //     function (OrderFleet $record) {
+        //       $orders = Order::whereDate('trip_date', $record->trip_date)->get();
+        //       return blank($orders) ? 'No order' : 'Select order';
+        //     }
+        //   )
+        //   ->disabled(
+        //     function (OrderFleet $record) {
+        //       $orders = Order::whereDate('trip_date', $record->trip_date)->get();
+        //       return blank($orders) ? true : false;
+        //     }
+        //   )
+        //   ->options(function (OrderFleet $record) {
+        //     $orders = Order::whereDate('trip_date', $record->trip_date)->get();
+        //     $orderArray = [];
+        //     foreach ($orders as $order) {
+        //       $orderArray[$order->id] = "{$order->code} • {$order->customer->name}";
+        //     }
+        //     return $orderArray;
+        //   }),
         Tables\Columns\TextColumn::make('trip_date')
           ->date()
           ->sortable()
-          ->formatStateUsing(fn($state): string => $state->translatedFormat('d F Y')),
-        Tables\Columns\TextColumn::make('order.customer.name')
-          ->numeric()
-          ->sortable()
-          ->placeholder('No customer'),
-        Tables\Columns\TextColumn::make('trip_day')
-          ->state(fn(Model $record): string => $record->trip_date->translatedFormat('l')),
-        Tables\Columns\TextColumn::make('trip_month')
-          ->state(fn(Model $record): string => $record->trip_date->translatedFormat('F')),
-        Tables\Columns\TextColumn::make('remaining_days')
+          ->formatStateUsing(fn($state): string => $state->format('d/m/Y')),
+        Tables\Columns\TextColumn::make('remaining_day')
+          ->alignCenter()
           ->badge()
-          ->sortable()
           ->state(
-            function (Model $record): string {
+            function (OrderFleet $record): string {
               $date = $record->trip_date;
               if ($date->isToday()) {
                 return OrderStatus::ON_TRIP->getLabel();
@@ -155,6 +177,19 @@ class OrderFleetResource extends Resource
             }
           )
           ->color(fn(string $state): string => $state == OrderStatus::ON_TRIP->getLabel() ? 'warning' : ($state <= 7 ? 'danger' : ($state <= 30 ? 'warning' : 'success'))),
+        Tables\Columns\TextColumn::make('fleet.name')
+          ->label('Mitra Armada'),
+        Tables\Columns\TextColumn::make('fleet.category')
+          ->label('Jenis')
+          ->badge()
+          ->formatStateUsing(fn($state): string => $state->getLabel()),
+        Tables\Columns\TextColumn::make('fleet.seat_set')
+          ->label('Seat Set')
+          ->formatStateUsing(fn($state): string => $state->getLabel()),
+        Tables\Columns\TextColumn::make('trip_day')
+          ->state(fn(OrderFleet $record): string => $record->trip_date->translatedFormat('l')),
+        Tables\Columns\TextColumn::make('trip_month')
+          ->state(fn(OrderFleet $record): string => $record->trip_date->translatedFormat('F')),
         Tables\Columns\TextColumn::make('duration')
           ->numeric()
           ->sortable(),
@@ -183,11 +218,43 @@ class OrderFleetResource extends Resource
           ->toggleable(isToggledHiddenByDefault: true),
       ])
       ->filters([
-        //
+        DateRangeFilter::make('trip_date')
+          ->label('Trip Date'),
       ])
       ->actions([
-        Tables\Actions\ViewAction::make(),
-        Tables\Actions\EditAction::make(),
+        ActionGroup::make([
+          Tables\Actions\ViewAction::make(),
+          Tables\Actions\EditAction::make(),
+          Tables\Actions\DeleteAction::make(),
+          Action::make('order_id')
+            ->icon(OrderResource::getNavigationIcon())
+            ->label('Select Order')
+            ->color('info')
+            ->form([
+              Select::make('order_id')
+                ->hiddenLabel()
+                ->prefixIcon(fn() => OrderResource::getNavigationIcon())
+                ->options(function (OrderFleet $record) {
+                  $orders = Order::whereDate('trip_date', $record->trip_date)->get();
+                  $orderArray = [];
+                  foreach ($orders as $order) {
+                    $orderArray[$order->id] = "{$order->code} • {$order->customer->name}";
+                  }
+                  return $orderArray;
+                })
+                ->required(),
+            ])
+            ->action(function (array $data, OrderFleet $record): void {
+              $record->update(['order_id' => $data['order_id']]);
+            }),
+          Action::make('delete_order_id')
+            ->requiresConfirmation()
+            ->icon('heroicon-s-trash')
+            ->label('Remove Order')
+            ->color('warning')
+            ->hidden(fn(OrderFleet $record): bool => blank($record->order_id))
+            ->action(fn(OrderFleet $record) => $record->update(['order_id' => null])),
+        ])
       ])
       ->bulkActions([
         Tables\Actions\BulkActionGroup::make([

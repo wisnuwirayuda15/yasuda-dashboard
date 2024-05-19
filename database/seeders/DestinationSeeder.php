@@ -16,15 +16,15 @@ class DestinationSeeder extends Seeder
   {
     $types = array_map(fn($x) => $x->value, DestinationType::cases());
 
-    for ($x = 1; $x <= 15; $x++) {
+    for ($x = 1; $x <= 100; $x++) {
       Destination::create([
         'name' => ucwords(fake('en_US')->unique()->streetName()),
         'type' => fake()->randomElement($types),
         'marketing_name' => fake()->name(),
         'marketing_phone' => fake()->phoneNumber(),
-        'weekday_price' => fake()->numberBetween(100000, 1000000),
-        'weekend_price' => fake()->numberBetween(100000, 1000000),
-        'high_season_price' => fake()->numberBetween(100000, 1000000),
+        'weekday_price' => (fake()->numberBetween(15000, 30000) / 1000) * 1000,
+        'weekend_price' => (fake()->numberBetween(31000, 40000) / 1000) * 1000,
+        'high_season_price' => (fake()->numberBetween(41000, 50000) / 1000) * 1000,
       ]);
     }
   }
