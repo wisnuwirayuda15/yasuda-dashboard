@@ -34,12 +34,7 @@ class OrderResource extends Resource
     return $form
       ->schema([
         Forms\Components\TextInput::make('code')
-          ->required()
-          ->disabled()
-          ->dehydrated()
-          ->default(get_code(new Order, 'OR'))
-          ->helperText('Code is generated automatically.')
-          ->unique(Order::class, 'code', ignoreRecord: true),
+          ->code(get_code(new Order, 'OR')),
         Forms\Components\Select::make('customer_id')
           ->required()
           ->relationship('customer', 'name', fn(Builder $query) => $query->orderBy('created_at', 'desc'))

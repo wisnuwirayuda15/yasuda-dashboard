@@ -38,7 +38,6 @@ return new class extends Migration
             $table->bigInteger('big_subs_bonus')->nullable();
             $table->bigInteger('legrest_subs_bonus')->nullable();
             $table->timestamps();
-            $table->softDeletes();
         });
 
         Schema::enableForeignKeyConstraints();

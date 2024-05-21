@@ -39,13 +39,7 @@ class OrderFleetResource extends Resource
     return $form
       ->schema([
         Forms\Components\TextInput::make('code')
-          ->required()
-          ->disabled()
-          ->dehydrated()
-          ->live()
-          ->helperText('Code is generated automatically.')
-          ->unique(OrderFleet::class, 'code', ignoreRecord: true)
-          ->default(get_code(new OrderFleet, 'OF')),
+          ->code(get_code(new OrderFleet, 'OF')),
         Forms\Components\Select::make('order_id')
           ->allowHtml()
           ->relationship('order', 'id')

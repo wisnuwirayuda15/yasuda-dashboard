@@ -2,10 +2,8 @@
 
 namespace App\Providers;
 
-use Closure;
 use Filament\Forms\Set;
 use Illuminate\Support\ServiceProvider;
-use Filament\Forms\Components\Component;
 use Filament\Forms\Components\TextInput;
 use Ysfkaya\FilamentPhoneInput\Forms\PhoneInput;
 use Ysfkaya\FilamentPhoneInput\PhoneInputNumberType;
@@ -32,14 +30,25 @@ class MacroServiceProvider extends ServiceProvider
       return $this;
     });
 
+    TextInput::macro('code', function (string $code = null): static {
+      $this
+        ->required()
+        ->disabled()
+        ->dehydrated()
+        ->default($code)
+        ->unique(ignoreRecord: true)
+        ->helperText('Code is generated automatically.');
+      return $this;
+    });
+
     PhoneInput::macro('idDefaultFormat', function (): static {
       $this
-        ->focusNumberFormat(PhoneInputNumberType::E164)
         ->defaultCountry('ID')
         ->initialCountry('id')
-        ->showSelectedDialCode(true)
+        ->rules('phone:mobile')
         ->formatAsYouType(false)
-        ->rules('phone:mobile');
+        ->showSelectedDialCode(true)
+        ->focusNumberFormat(PhoneInputNumberType::E164);
       return $this;
     });
   }

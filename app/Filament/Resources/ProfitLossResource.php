@@ -24,12 +24,11 @@ use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Fieldset;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Tabs\Tab;
+use Filament\Tables\Columns\TextColumn;
 use Filament\Forms\Components\TextInput;
-use Illuminate\Database\Eloquent\Builder;
 use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\ToggleButtons;
 use Filament\Forms\Components\Actions\Action;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
 use App\Filament\Resources\ProfitLossResource\Pages;
 use App\Filament\Resources\ProfitLossResource\RelationManagers;
 
@@ -45,14 +44,24 @@ class ProfitLossResource extends Resource
 
   public static function form(Form $form): Form
   {
-    $invoice = request('invoice');
+    $record = $form->getRecord();
 
-    if (blank($invoice) && Route::current()->getName() == 'livewire.update') {
-      $parameters = getUrlQueryParameters(url()->previous());
-      $invoice = $parameters['invoice'];
+    if (!$record) {
+
+      $invoice = request('invoice');
+
+      if (blank($invoice) && Route::current()->getName() == 'livewire.update') {
+        $parameters = getUrlQueryParameters(url()->previous());
+        $invoice = $parameters['invoice'];
+      }
+
+      self::$invoice = Invoice::where('code', $invoice)->with(['order.orderFleets.fleet', 'order.customer'])->firstOrFail();
+
+    } else {
+
+      self::$invoice = $record->invoice;
+
     }
-
-    self::$invoice = Invoice::where('code', $invoice)->with(['order.orderFleets.fleet', 'order.customer'])->firstOrFail();
 
     return $form
       ->schema([
@@ -67,29 +76,17 @@ class ProfitLossResource extends Resource
   {
     return $table
       ->columns([
-        Tables\Columns\TextColumn::make('invoice.code')
-          ->numeric()
+        TextColumn::make('invoice.code')
+          ->numeric(),
+        TextColumn::make('created_at')
+          ->dateTime()
           ->sortable(),
-        Tables\Columns\TextColumn::make('status')
-          ->searchable(),
-        Tables\Columns\TextColumn::make('total_cost')
-          ->numeric()
+        TextColumn::make('updated_at')
+          ->dateTime()
           ->sortable(),
-        Tables\Columns\TextColumn::make('created_at')
-          ->dateTime()
-          ->sortable()
-          ->toggleable(isToggledHiddenByDefault: true),
-        Tables\Columns\TextColumn::make('updated_at')
-          ->dateTime()
-          ->sortable()
-          ->toggleable(isToggledHiddenByDefault: true),
-        Tables\Columns\TextColumn::make('deleted_at')
-          ->dateTime()
-          ->sortable()
-          ->toggleable(isToggledHiddenByDefault: true),
       ])
       ->filters([
-        Tables\Filters\TrashedFilter::make(),
+        // 
       ])
       ->actions([
         Tables\Actions\ViewAction::make(),
@@ -98,8 +95,6 @@ class ProfitLossResource extends Resource
       ->bulkActions([
         Tables\Actions\BulkActionGroup::make([
           Tables\Actions\DeleteBulkAction::make(),
-          Tables\Actions\ForceDeleteBulkAction::make(),
-          Tables\Actions\RestoreBulkAction::make(),
         ]),
       ]);
   }
@@ -121,14 +116,6 @@ class ProfitLossResource extends Resource
     ];
   }
 
-  public static function getEloquentQuery(): Builder
-  {
-    return parent::getEloquentQuery()
-      ->withoutGlobalScopes([
-        SoftDeletingScope::class,
-      ]);
-  }
-
   public static function getGeneralInfoSection(): Section
   {
     return Section::make('General information')
@@ -137,11 +124,20 @@ class ProfitLossResource extends Resource
           ->required()
           ->disabled()
           ->dehydrated()
+          ->allowHtml()
           ->prefixIcon(InvoiceResource::getNavigationIcon())
           ->default(self::$invoice->id)
-          ->allowHtml()
           ->relationship('invoice', 'id')
-          ->getOptionLabelFromRecordUsing(fn(Invoice $record) => view('filament.components.badges.invoice', compact('record'))),
+          ->getOptionLabelFromRecordUsing(fn(Invoice $record) => view('filament.components.badges.invoice', compact('record')))
+          ->rules([
+            fn(string $operation): Closure => function (string $attribute, $value, Closure $fail) use ($operation) {
+              if ($operation !== 'edit') {
+                if (Invoice::find($value)->profitLoss()->exists()) {
+                  $fail('Profit & Loss untuk invoice ini sudah ada.');
+                }
+              }
+            },
+          ]),
         Placeholder::make('invoice_code')
           ->label('Invoice :')
           ->inlineLabel()
@@ -237,6 +233,7 @@ class ProfitLossResource extends Resource
             ->required()
             ->numeric()
             ->disabled(fn(Get $get) => !$get('medium_bus_total'))
+            ->dehydrated()
             ->label('Medium Bus')
             ->prefix('Rp')
             ->minValue(0)
@@ -246,6 +243,7 @@ class ProfitLossResource extends Resource
             ->required()
             ->numeric()
             ->disabled(fn(Get $get) => !$get('big_bus_total'))
+            ->dehydrated()
             ->label('Big Bus')
             ->prefix('Rp')
             ->minValue(0)
@@ -255,6 +253,7 @@ class ProfitLossResource extends Resource
             ->required()
             ->numeric()
             ->disabled(fn(Get $get) => !$get('legrest_bus_total'))
+            ->dehydrated()
             ->label('Legrest Bus')
             ->prefix('Rp')
             ->minValue(0)
@@ -335,7 +334,6 @@ class ProfitLossResource extends Resource
     $teacher = collect($inv->main_costs)->firstWhere('slug', 'pembina')['qty'];
     $teacherShirtPrice = $inv->teacher_shirt_price;
     $additionalTeacherShirtQty = $inv->teacher_shirt_qty;
-    // dd($teacher);
 
     return Section::make('Fix Cost - Special Threatment')
       ->columns(1)
@@ -511,7 +509,6 @@ class ProfitLossResource extends Resource
             $set($component, $totalNetTransactions);
             return view('filament.components.badges.default', ['text' => idr($totalNetTransactions), 'color' => 'warning']);
           }),
-
         Placeholder::make('cost_total')
           ->inlineLabel()
           ->label('Total Cost')
@@ -528,7 +525,6 @@ class ProfitLossResource extends Resource
             $set($component, $total);
             return view('filament.components.badges.default', ['text' => idr($total), 'color' => 'danger']);
           }),
-
         Placeholder::make('net_income')
           ->inlineLabel()
           ->label('Net Income')
@@ -537,7 +533,6 @@ class ProfitLossResource extends Resource
             $set($component, $netIncome);
             return view('filament.components.badges.default', ['text' => idr($netIncome), 'color' => 'info']);
           }),
-
         Group::make([
           Placeholder::make('adjusted_income')
             ->inlineLabel()
@@ -556,11 +551,11 @@ class ProfitLossResource extends Resource
             ->hiddenLabel()
             ->content(fn($state) => $state),
         ]),
-
         ToggleButtons::make('adjusted_income_status')
           ->grouped()
           ->inlineLabel()
           ->disabled()
+          ->helperText('Dikategorikan good profit jika income > 15%')
           ->options(ProfitLossStatus::class)
       ])
     ;
@@ -578,7 +573,7 @@ class ProfitLossResource extends Resource
           ->deletable(false)
           ->addable(false)
           ->reorderable(false)
-          ->default(self::getDestinationsCostItems())
+          ->afterStateHydrated(fn(Set $set, Repeater $component) => $set($component, self::getDestinationsCostItems()))
           ->itemLabel(fn(array $state) => $state['name'] ?? null)
           ->schema([
             Hidden::make('name'),
@@ -650,7 +645,7 @@ class ProfitLossResource extends Resource
       $destinationArray[$des->id] = [
         "id" => $des->id,
         "name" => $des->type->value . ' - ' . $des->name,
-        "type" => $des->type->getFormula(),
+        "type" => $des->type->getDescription(),
         "qty" => $qty,
         "price" => $price,
       ];
@@ -686,7 +681,8 @@ class ProfitLossResource extends Resource
         Placeholder::make("{$name}_qty")
           ->label('Jumlah')
           ->visible($disableQty)
-          ->content(function (Get $get) use ($name) {
+          ->content(function (Get $get, Set $set) use ($name, $qty) {
+            $get("{$name}_qty") ?? $set("{$name}_qty", $qty);
             return $get("{$name}_qty");
           }),
         TextInput::make("{$name}_price")
@@ -701,7 +697,8 @@ class ProfitLossResource extends Resource
         Placeholder::make("{$name}_price")
           ->label('Harga')
           ->visible($disablePrice)
-          ->content(function (Get $get) use ($name) {
+          ->content(function (Get $get, Set $set) use ($name, $price) {
+            $get("{$name}_price") ?? $set("{$name}_price", $price);
             return idr($get("{$name}_price"));
           }),
         Placeholder::make("{$name}_total")

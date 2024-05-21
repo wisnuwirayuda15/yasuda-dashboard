@@ -9,6 +9,7 @@ use Filament\Tables\Table;
 use App\Models\Destination;
 use App\Enums\DestinationType;
 use Filament\Resources\Resource;
+use App\Enums\NavigationGroupLabel;
 use Illuminate\Database\Eloquent\Builder;
 use Ysfkaya\FilamentPhoneInput\Forms\PhoneInput;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
@@ -21,6 +22,8 @@ class DestinationResource extends Resource
   protected static ?string $model = Destination::class;
 
   protected static ?string $navigationIcon = 'fas-map-location-dot';
+
+  protected static ?string $navigationGroup = NavigationGroupLabel::MASTER_DATA->value;
 
   public static function form(Form $form): Form
   {

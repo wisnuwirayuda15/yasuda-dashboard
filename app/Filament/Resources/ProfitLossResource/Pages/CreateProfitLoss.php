@@ -2,7 +2,7 @@
 
 namespace App\Filament\Resources\ProfitLossResource\Pages;
 
-use Filament\Actions;
+use App\Models\Invoice;
 use Illuminate\Support\Facades\Route;
 use Filament\Resources\Pages\CreateRecord;
 use Illuminate\Contracts\Support\Htmlable;
@@ -21,6 +21,10 @@ class CreateProfitLoss extends CreateRecord
       $invoice = $parameters['invoice'];
     }
 
-    return 'Create Profit & Loss Analysis for ' . $invoice;
+    if (Invoice::where('code', $invoice)->first()->profitLoss()->exists()) {
+      abort(404);
+    }
+
+    return 'Create Profit & Loss Analysis: ' . $invoice;
   }
 }

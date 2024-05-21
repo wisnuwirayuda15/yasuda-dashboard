@@ -50,6 +50,8 @@ class InvoiceResource extends Resource
 
   protected static ?string $navigationIcon = 'fas-file-invoice';
 
+  protected static ?Order $order = null;
+
   public static function form(Form $form): Form
   {
     return $form
@@ -63,6 +65,96 @@ class InvoiceResource extends Resource
         ])
           ->columnSpanFull()
           ->visible(fn(Get $get) => $get('order_id')),
+      ]);
+  }
+
+  public static function table(Table $table): Table
+  {
+    return $table
+      ->columns([
+        Tables\Columns\TextColumn::make('code')
+          ->searchable(),
+        Tables\Columns\TextColumn::make('order.customer.name')
+          ->numeric()
+          ->sortable(),
+        Tables\Columns\TextColumn::make('order.trip_date')
+          ->date()
+          ->sortable(),
+        Tables\Columns\TextColumn::make('created_at')
+          ->dateTime()
+          ->sortable()
+          ->toggleable(isToggledHiddenByDefault: true),
+        Tables\Columns\TextColumn::make('updated_at')
+          ->dateTime()
+          ->sortable()
+          ->toggleable(isToggledHiddenByDefault: true),
+        Tables\Columns\TextColumn::make('deleted_at')
+          ->dateTime()
+          ->sortable()
+          ->toggleable(isToggledHiddenByDefault: true),
+      ])
+      ->filters([
+        Tables\Filters\TrashedFilter::make(),
+      ])
+      ->actions([
+        ActionGroup::make([
+          Tables\Actions\ViewAction::make()
+            ->hidden(fn(Model $record) => $record->trashed()),
+          Tables\Actions\EditAction::make()
+            ->hidden(fn(Model $record) => $record->trashed()),
+          Tables\Actions\DeleteAction::make(),
+          Tables\Actions\RestoreAction::make(),
+          Tables\Actions\ForceDeleteAction::make(),
+          Tables\Actions\Action::make('export_pdf')
+            ->label('Export to PDF')
+            ->color('danger')
+            ->icon('tabler-pdf')
+            ->hidden(fn(Model $record) => $record->trashed())
+            ->url(fn(Model $record) => route('generate.invoice', $record->code), true),
+        ])
+      ])
+      ->bulkActions([
+        Tables\Actions\BulkActionGroup::make([
+          Tables\Actions\DeleteBulkAction::make(),
+          Tables\Actions\ForceDeleteBulkAction::make(),
+          Tables\Actions\RestoreBulkAction::make(),
+        ]),
+      ]);
+  }
+
+  public static function infolist(Infolist $infolist): Infolist
+  {
+    return $infolist
+      ->schema([
+        InvoiceTemplate::make('invoice')
+          ->hiddenLabel()
+          ->columnSpanFull(),
+      ]);
+  }
+
+  public static function getRelations(): array
+  {
+    return [
+      ProfitLossRelationManager::class,
+      TourReportRelationManager::class,
+    ];
+  }
+
+  public static function getPages(): array
+  {
+    return [
+      'index' => Pages\ListInvoices::route('/'),
+      'create' => Pages\CreateInvoice::route('/create'),
+      'view' => Pages\ViewInvoice::route('/{record}'),
+      'edit' => Pages\EditInvoice::route('/{record}/edit'),
+    ];
+  }
+
+  public static function getEloquentQuery(): Builder
+  {
+    return parent::getEloquentQuery()
+      ->withoutGlobalScopes([
+        SoftDeletingScope::class,
       ]);
   }
 
@@ -95,29 +187,19 @@ class InvoiceResource extends Resource
     return Section::make('General information')
       ->schema([
         TextInput::make('code')
-          ->required()
-          ->disabled()
-          ->dehydrated()
-          ->helperText('Code is generated automatically.')
-          ->unique(ignoreRecord: true)
-          ->default(get_code(new Invoice)),
+          ->code(get_code(new Invoice)),
         Select::make('order_id')
           ->required()
           ->allowHtml()
           ->hiddenOn('edit')
           ->unique(ignoreRecord: true)
           ->prefixIcon(fn() => OrderResource::getNavigationIcon())
-          //! ga bisa edit kalo relationshipnya pake query tambahan, bisa diakalin pake hiddenOn('edit')
-          // ->relationship('order')
           ->relationship('order', modifyQueryUsing: fn(Builder $query) => $query->doesntHave('invoice')->has('orderFleets'))
-          // ->default(fn(Order $order) => $order->inRandomOrder()->has('orderFleets')->doesntHave('invoice')->value('id'))
           ->editOptionModalHeading('Edit Order')
           ->createOptionModalHeading('Create Order')
           ->editOptionForm(fn(Form $form) => OrderResource::form($form))
           ->createOptionForm(fn(Form $form) => OrderResource::form($form))
-          ->getOptionLabelFromRecordUsing(fn(Order $record) => view('filament.components.badges.order', compact('record')))
-        // ->getOptionLabelFromRecordUsing(fn(Order $record) => "{$record->code} • {$record->customer->name}")
-        ,
+          ->getOptionLabelFromRecordUsing(fn(Order $record) => view('filament.components.badges.order', compact('record'))),
         Group::make()
           ->visible(fn(Get $get) => filled($get('order_id')))
           ->schema([
@@ -162,7 +244,6 @@ class InvoiceResource extends Resource
   {
     return Fieldset::make('Jumlah Armada')
       ->schema([
-        //Hidden::make('total_seat'),
         Placeholder::make('total_seat')
           ->inlineLabel()
           ->label('Total')
@@ -189,22 +270,16 @@ class InvoiceResource extends Resource
               return '-';
             }
           ),
-
-        //Hidden::make('total_medium_bus'),
         Placeholder::make('total_medium_bus')
           ->inlineLabel()
           ->label('Medium')
           ->hintIcon(FleetCategory::MEDIUM->getIcon())
           ->content(fn(Get $get) => $get('total_medium_bus') ?? '-'),
-
-        //Hidden::make('total_big_bus'),
         Placeholder::make('total_big_bus')
           ->inlineLabel()
           ->label('Big')
           ->hintIcon(FleetCategory::BIG->getIcon())
           ->content(fn(Get $get) => $get('total_big_bus') ?? '-'),
-
-        //Hidden::make('total_legrest_bus'),
         Placeholder::make('total_legrest_bus')
           ->inlineLabel()
           ->label('Legrest')
@@ -296,15 +371,12 @@ class InvoiceResource extends Resource
 
         Fieldset::make('Total')
           ->schema([
-            //Hidden::make('total_qty'),
             Placeholder::make('total_qty')
               ->content(function (Get $get, Set $set) {
                 $qty = array_sum(array_map(fn($cost) => (int) $cost['qty'], $get('main_costs'))) ?: 0;
                 $set('total_qty', $qty);
                 return $qty;
               }),
-
-            //Hidden::make('total_gross_transactions'),
             Placeholder::make('total_gross_transactions')
               ->extraAttributes(['class' => 'text-sky-500'])
               ->content(function (Get $get, Set $set) {
@@ -312,8 +384,6 @@ class InvoiceResource extends Resource
                 $set('total_gross_transactions', $total);
                 return idr($total);
               }),
-
-            //Hidden::make('total_cashbacks'),
             Placeholder::make('total_cashbacks')
               ->extraAttributes(['class' => 'text-red-500'])
               ->content(function (Get $get, Set $set) {
@@ -321,8 +391,6 @@ class InvoiceResource extends Resource
                 $set('total_cashbacks', $total);
                 return idr($total);
               }),
-
-            //Hidden::make('total_net_transactions'),
             Placeholder::make('total_net_transactions')
               ->extraAttributes(['class' => 'text-green-500'])
               ->content(function (Get $get, Set $set) {
@@ -348,7 +416,6 @@ class InvoiceResource extends Resource
           ->minValue(0)
           ->default(0)
           ->preventUnwantedNumberValue(),
-        //Hidden::make('shirt_covered_package'),
         Placeholder::make('shirt_covered_package')
           ->label('Kaos Tercover Paket')
           ->helperText('Program + Ibu & Anak Pangku')
@@ -366,7 +433,6 @@ class InvoiceResource extends Resource
         self::getShirtFields('child_shirt', 'Selisih Kaos Anak', 25000, 'Total Kaos Diserahkan - Kaos Tercover Paket'),
         self::getShirtFields('teacher_shirt', 'Tambahan 1-Stel Guru', 120000),
         self::getShirtFields('adult_shirt', 'Tambahan Kaos Dewasa', 80000),
-        //Hidden::make('additional_shirts_total'),
         Placeholder::make('additional_shirts_total')
           ->label('Total')
           ->extraAttributes(['class' => 'text-green-500 text-xl font-bolder'])
@@ -401,7 +467,6 @@ class InvoiceResource extends Resource
           ->dehydrated()
           ->prefix('Rp')
           ->preventUnwantedNumberValue(),
-        //Hidden::make("{$name}_total"),
         Placeholder::make("{$name}_total")
           ->label('Total Biaya')
           ->extraAttributes(['class' => 'text-green-500'])
@@ -433,7 +498,6 @@ class InvoiceResource extends Resource
           ->default(0)
           ->extraAttributes(['class' => 'w-max'])
           ->preventUnwantedNumberValue(),
-        //Hidden::make('empty_seat'),
         Placeholder::make('empty_seat')
           ->inlineLabel()
           ->content(
@@ -444,7 +508,6 @@ class InvoiceResource extends Resource
               return view('filament.components.badges.default', ['text' => $emptySeat, 'color' => $color]);
             }
           ),
-        //Hidden::make('seat_charge'),
         Placeholder::make('seat_charge')
           ->inlineLabel()
           ->helperText('50% x Kursi kosong x (Beli Kursi - Cashback)')
@@ -511,7 +574,6 @@ class InvoiceResource extends Resource
             return idr($total);
           }),
         self::getDownPaymentReapeter(),
-        //Hidden::make('kekurangan'),
         Placeholder::make('kekurangan')
           ->inlineLabel()
           ->label('Kekurangan/Kelebihan')
@@ -528,7 +590,6 @@ class InvoiceResource extends Resource
             $color = $total > 0 ? 'danger' : 'success';
             return view('filament.components.badges.default', ['text' => idr($total), 'color' => $color, 'big' => true]);
           }),
-
         ToggleButtons::make('status')
           ->grouped()
           ->inlineLabel()
@@ -560,7 +621,7 @@ class InvoiceResource extends Resource
           ->required()
           ->numeric()
           ->prefix('Rp')
-          ->minValue(0)
+          ->minValue(1)
           ->default(0)
           ->preventUnwantedNumberValue(),
         DatePicker::make('date')
@@ -631,95 +692,5 @@ class InvoiceResource extends Resource
   public static function getCostItem(Get $get, string $name, string $slug): array
   {
     return collect($get($name))->firstWhere('slug', $slug);
-  }
-
-  public static function table(Table $table): Table
-  {
-    return $table
-      ->columns([
-        Tables\Columns\TextColumn::make('code')
-          ->searchable(),
-        Tables\Columns\TextColumn::make('order.customer.name')
-          ->numeric()
-          ->sortable(),
-        Tables\Columns\TextColumn::make('order.trip_date')
-          ->date()
-          ->sortable(),
-        Tables\Columns\TextColumn::make('created_at')
-          ->dateTime()
-          ->sortable()
-          ->toggleable(isToggledHiddenByDefault: true),
-        Tables\Columns\TextColumn::make('updated_at')
-          ->dateTime()
-          ->sortable()
-          ->toggleable(isToggledHiddenByDefault: true),
-        Tables\Columns\TextColumn::make('deleted_at')
-          ->dateTime()
-          ->sortable()
-          ->toggleable(isToggledHiddenByDefault: true),
-      ])
-      ->filters([
-        Tables\Filters\TrashedFilter::make(),
-      ])
-      ->actions([
-        ActionGroup::make([
-          Tables\Actions\ViewAction::make()
-            ->hidden(fn(Model $record) => $record->trashed()),
-          Tables\Actions\EditAction::make()
-            ->hidden(fn(Model $record) => $record->trashed()),
-          Tables\Actions\DeleteAction::make(),
-          Tables\Actions\RestoreAction::make(),
-          Tables\Actions\ForceDeleteAction::make(),
-          Tables\Actions\Action::make('export_pdf')
-            ->label('Export to PDF')
-            ->color('danger')
-            ->icon('tabler-pdf')
-            ->hidden(fn(Model $record) => $record->trashed())
-            ->url(fn(Model $record) => route('generate.invoice', $record->code), true),
-        ])
-      ])
-      ->bulkActions([
-        Tables\Actions\BulkActionGroup::make([
-          Tables\Actions\DeleteBulkAction::make(),
-          Tables\Actions\ForceDeleteBulkAction::make(),
-          Tables\Actions\RestoreBulkAction::make(),
-        ]),
-      ]);
-  }
-
-  public static function infolist(Infolist $infolist): Infolist
-  {
-    return $infolist
-      ->schema([
-        InvoiceTemplate::make('invoice')
-          ->hiddenLabel()
-          ->columnSpanFull(),
-      ]);
-  }
-
-  public static function getRelations(): array
-  {
-    return [
-      ProfitLossRelationManager::class,
-      TourReportRelationManager::class,
-    ];
-  }
-
-  public static function getPages(): array
-  {
-    return [
-      'index' => Pages\ListInvoices::route('/'),
-      'create' => Pages\CreateInvoice::route('/create'),
-      'view' => Pages\ViewInvoice::route('/{record}'),
-      'edit' => Pages\EditInvoice::route('/{record}/edit'),
-    ];
-  }
-
-  public static function getEloquentQuery(): Builder
-  {
-    return parent::getEloquentQuery()
-      ->withoutGlobalScopes([
-        SoftDeletingScope::class,
-      ]);
   }
 }

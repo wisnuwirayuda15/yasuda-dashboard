@@ -21,7 +21,7 @@ class ViewInvoice extends ViewRecord
     $inv = $this->getRecord();
     $customer = $inv->order->customer;
     $url = route('generate.invoice', $inv->code);
-    $pnl = $inv->profitLoss ? ProfitLossResource::getUrl('edit', ['record' => $inv->profitLoss->id]) : ProfitLossResource::getUrl('create', ['invoice' => $inv->code]);
+    $pnl = $inv->profitLoss ? ProfitLossResource::getUrl('view', ['record' => $inv->profitLoss->id]) : ProfitLossResource::getUrl('create', ['invoice' => $inv->code]);
     return [
       Actions\ActionGroup::make([
         Actions\DeleteAction::make(),

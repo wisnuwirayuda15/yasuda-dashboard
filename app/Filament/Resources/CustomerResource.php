@@ -14,6 +14,7 @@ use App\Enums\CustomerStatus;
 use App\Enums\CustomerCategory;
 use Filament\Resources\Resource;
 use Dotswan\MapPicker\Fields\Map;
+use App\Enums\NavigationGroupLabel;
 use Filament\Forms\Components\Wizard;
 use Filament\Forms\Components\Section;
 use Illuminate\Database\Eloquent\Builder;
@@ -30,6 +31,8 @@ class CustomerResource extends Resource
 
   protected static ?string $navigationIcon = 'fas-users';
 
+  protected static ?string $navigationGroup = NavigationGroupLabel::MASTER_DATA->value;
+
   public static function form(Form $form): Form
   {
     return $form->schema([
@@ -44,13 +47,8 @@ class CustomerResource extends Resource
     return Forms\Components\Section::make('Basic Information')
       ->schema([
         Forms\Components\TextInput::make('code')
-          ->required()
-          ->disabled()
-          ->dehydrated()
           ->live()
-          ->default(get_code(new Customer, CustomerCategory::TK->value))
-          ->helperText('Code is generated automatically based on the categories you choose.')
-          ->unique(Customer::class, 'code', ignoreRecord: true),
+          ->code(get_code(new Customer, CustomerCategory::TK->value)),
         Forms\Components\TextInput::make('name')
           ->required()
           ->live()

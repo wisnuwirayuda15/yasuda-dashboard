@@ -13,49 +13,20 @@ use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class ProfitLossRelationManager extends RelationManager
 {
-    protected static string $relationship = 'profitLoss';
+  protected static string $relationship = 'profitLoss';
 
-    public function isReadOnly(): bool { return false; }
+  public function isReadOnly(): bool
+  {
+    return false;
+  }
 
-    public function form(Form $form): Form
-    {
-      // return ProfitLossResource::form($form);
-        return $form
-            ->schema([
-                Forms\Components\TextInput::make('id')
-                    ->required()
-                    ->maxLength(255),
-            ]);
-    }
+  public function form(Form $form): Form
+  {
+    return ProfitLossResource::form($form);
+  }
 
-    public function table(Table $table): Table
-    {
-        return $table
-            ->recordTitleAttribute('id')
-            ->columns([
-                Tables\Columns\TextColumn::make('id'),
-            ])
-            ->filters([
-                Tables\Filters\TrashedFilter::make()
-            ])
-            ->headerActions([
-                Tables\Actions\CreateAction::make(),
-            ])
-            ->actions([
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
-                Tables\Actions\ForceDeleteAction::make(),
-                Tables\Actions\RestoreAction::make(),
-            ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
-                    Tables\Actions\RestoreBulkAction::make(),
-                    Tables\Actions\ForceDeleteBulkAction::make(),
-                ]),
-            ])
-            ->modifyQueryUsing(fn (Builder $query) => $query->withoutGlobalScopes([
-                SoftDeletingScope::class,
-            ]));
-    }
+  public function table(Table $table): Table
+  {
+    return ProfitLossResource::table($table);
+  }
 }

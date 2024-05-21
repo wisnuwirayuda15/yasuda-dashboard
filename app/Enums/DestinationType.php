@@ -4,9 +4,10 @@ namespace App\Enums;
 
 use Filament\Support\Contracts\HasIcon;
 use Filament\Support\Contracts\HasColor;
+use Filament\Support\Contracts\HasDescription;
 use Filament\Support\Contracts\HasLabel;
 
-enum DestinationType: string implements HasLabel, HasColor, HasIcon
+enum DestinationType: string implements HasLabel, HasColor, HasIcon, HasDescription
 {
   case SISWA_ONLY = 'AA';
   case SISWA_DEWASA = 'AO';
@@ -25,7 +26,7 @@ enum DestinationType: string implements HasLabel, HasColor, HasIcon
     };
   }
 
-  public function getFormula(): ?string
+  public function getDescription(): string|null
   {
     return match ($this) {
       self::SISWA_ONLY => 'Paket Anak',

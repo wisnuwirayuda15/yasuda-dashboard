@@ -22,7 +22,6 @@ return new class extends Migration
             $table->bigInteger('income');
             $table->bigInteger('expense');
             $table->timestamps();
-            $table->softDeletes();
         });
 
         Schema::enableForeignKeyConstraints();

@@ -43,8 +43,6 @@ class Fleet extends Model
   {
     $fleets = Fleet::all()->groupBy('category');
 
-    $fleetArray = [];
-
     foreach ($fleets as $category => $fleetGroup) {
       foreach ($fleetGroup as $fleet) {
         $fleetArray[ucwords($category) . " Bus"][$fleet->id] = "{$fleet->name} • {$fleet->seat_set->getLabel()}";

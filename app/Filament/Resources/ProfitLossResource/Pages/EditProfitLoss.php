@@ -14,16 +14,7 @@ class EditProfitLoss extends EditRecord
   {
     return [
       Actions\ViewAction::make(),
-      Actions\DeleteAction::make(),
-      Actions\ForceDeleteAction::make(),
-      Actions\RestoreAction::make(),
+      // Actions\DeleteAction::make(),
     ];
   }
-
-  // protected function mutateFormDataBeforeFill(array $data): array
-  // {
-  //   dd($data);
-
-  //   return $data;
-  // }
 }

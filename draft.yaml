@@ -18,7 +18,6 @@ models:
     lat: string
     lng: string
     google_place_id: string
-    softDeletes
     relationships:
       hasMany: Regency
 
@@ -29,7 +28,6 @@ models:
     lat: string
     lng: string
     google_place_id: string
-    softDeletes
     relationships:
       hasMany: District
       belongsTo: Province
@@ -41,7 +39,6 @@ models:
     lat: string
     lng: string
     google_place_id: string
-    softDeletes
     relationships:
       hasMany: village
       belongsTo: Regency
@@ -198,8 +195,6 @@ models:
     big_subs_bonus: bigInteger nullable
     legrest_subs_bonus: bigInteger nullable
 
-    softDeletes
-
   TourReport:
     invoice_id: foreign constrained onDelete:cascade
     status: string:50
@@ -207,7 +202,6 @@ models:
     other_costs: json
     income: bigInteger
     expense: bigInteger
-    softDeletes
 
   EmployeeSalary:
     user_id: foreign constrained onDelete:cascade
