@@ -8,5 +8,7 @@ use Filament\Resources\Pages\CreateRecord;
 
 class CreateInvoice extends CreateRecord
 {
-    protected static string $resource = InvoiceResource::class;
+  protected static string $resource = InvoiceResource::class;
+
+  protected static bool $canCreateAnother = false;
 }

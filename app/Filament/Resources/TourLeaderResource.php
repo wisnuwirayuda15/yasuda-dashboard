@@ -2,13 +2,14 @@
 
 namespace App\Filament\Resources;
 
-use App\Enums\Gender;
 use Filament\Forms;
 use Filament\Tables;
+use App\Enums\Gender;
 use Filament\Forms\Form;
 use App\Models\TourLeader;
 use Filament\Tables\Table;
 use Filament\Resources\Resource;
+use App\Enums\NavigationGroupLabel;
 use Illuminate\Database\Eloquent\Builder;
 use Ysfkaya\FilamentPhoneInput\Forms\PhoneInput;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
@@ -21,6 +22,8 @@ class TourLeaderResource extends Resource
   protected static ?string $model = TourLeader::class;
 
   protected static ?string $navigationIcon = 'gmdi-tour-r';
+
+  protected static ?string $navigationGroup = NavigationGroupLabel::MASTER_DATA->value;
 
   public static function form(Form $form): Form
   {
@@ -64,8 +67,6 @@ class TourLeaderResource extends Resource
       ->columns(3);
   }
 
-
-
   public static function table(Table $table): Table
   {
     return $table
@@ -92,17 +93,12 @@ class TourLeaderResource extends Resource
           ->toggleable(isToggledHiddenByDefault: true),
       ])
       ->filters([
-        Tables\Filters\TrashedFilter::make(),
       ])
       ->actions([
-        Tables\Actions\ViewAction::make(),
-        Tables\Actions\EditAction::make(),
-      ])
-      ->bulkActions([
-        Tables\Actions\BulkActionGroup::make([
-          Tables\Actions\DeleteBulkAction::make(),
-          Tables\Actions\ForceDeleteBulkAction::make(),
-          Tables\Actions\RestoreBulkAction::make(),
+        Tables\Actions\ActionGroup::make([
+          Tables\Actions\ViewAction::make(),
+          Tables\Actions\EditAction::make(),
+          Tables\Actions\DeleteAction::make(),
         ]),
       ]);
   }
@@ -122,13 +118,5 @@ class TourLeaderResource extends Resource
       'view' => Pages\ViewTourLeader::route('/{record}'),
       'edit' => Pages\EditTourLeader::route('/{record}/edit'),
     ];
-  }
-
-  public static function getEloquentQuery(): Builder
-  {
-    return parent::getEloquentQuery()
-      ->withoutGlobalScopes([
-        SoftDeletingScope::class,
-      ]);
   }
 }

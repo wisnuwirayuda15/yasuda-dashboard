@@ -40,7 +40,6 @@ models:
     lng: string
     google_place_id: string
     relationships:
-      hasMany: village
       belongsTo: Regency
 
 
@@ -56,7 +55,6 @@ models:
     seat_set: tinyInteger
     pic_name: string
     pic_phone: string
-    softDeletes
     relationships:
       hasMany: OrderFleet
 
@@ -75,7 +73,6 @@ models:
     lng: string nullable
     status: string:50
     loyalty_point: bigInteger default:0
-    softDeletes
     relationships:
       hasMany: Order,Feedback
 
@@ -87,7 +84,6 @@ models:
     weekday_price: bigInteger
     weekend_price: bigInteger nullable
     high_season_price: bigInteger nullable
-    softDeletes
 
   TourTemplate:
     name: string
@@ -108,7 +104,6 @@ models:
     phone: string
     gender: string:50
     role: string:50
-    softDeletes
     
   TourLeader:
     user_id: foreign constrained onDelete:cascade nullable
@@ -116,7 +111,6 @@ models:
     photo: string nullable
     phone: string unique
     gender: string:50
-    softDeletes
     relationships:
       hasMany: OrderFleet
 
@@ -159,7 +153,6 @@ models:
     down_payments: json nullable
     other_cost: bigInteger nullable
     notes: longText nullable
-    softDeletes
     relationships:
       hasOne: ProfitLoss, TourReport
 
@@ -167,41 +160,48 @@ models:
     invoice_id: foreign constrained onDelete:cascade
 
     #operational_cost
-    medium_rent_price: bigInteger nullable
-    big_rent_price: bigInteger nullable
-    legrest_rent_price: bigInteger nullable
-    toll_price: bigInteger nullable
-    banner_price: bigInteger nullable
-    crew_price: bigInteger nullable
-    tour_leader_price: bigInteger nullable
-    documentation_qty: integer nullable
-    documentation_price: bigInteger nullable
+    medium_rent_price: bigInteger default:0
+    big_rent_price: bigInteger default:0
+    legrest_rent_price: bigInteger default:0
+    toll_price: bigInteger default:0
+    banner_price: bigInteger default:0
+    crew_price: bigInteger default:0
+    tour_leader_price: bigInteger default:0
+    documentation_qty: integer default:0
+    documentation_price: bigInteger default:0
 
     #special_cost
-    teacher_shirt_price: bigInteger nullable
-    souvenir_price: bigInteger nullable
+    teacher_shirt_qty: bigInteger default:0 #adjustable
+    teacher_shirt_price: bigInteger default:0
+    souvenir_price: bigInteger default:0
 
     #variable_cost
-    child_shirt_price: bigInteger nullable
-    adult_shirt_price: bigInteger nullable
-    photo_price: bigInteger nullable
-    snack_price: bigInteger nullable
-    eat_price: bigInteger nullable
+    child_shirt_price: bigInteger default:0
+    adult_shirt_price: bigInteger default:0
+    photo_price: bigInteger default:0
+    snack_price: bigInteger default:0
+    eat_price: bigInteger default:0
+    eat_child_price: bigInteger default:0
+    eat_prasmanan_price: bigInteger default:0
 
     #other_cost
-    backup_price: bigInteger nullable
-    others_income: bigInteger nullable
-    medium_subs_bonus: bigInteger nullable
-    big_subs_bonus: bigInteger nullable
-    legrest_subs_bonus: bigInteger nullable
+    backup_price: bigInteger default:0
+    emergency_cost_price: bigInteger default:0
+    others_income: bigInteger default:0
+    medium_subs_bonus: bigInteger default:0
+    big_subs_bonus: bigInteger default:0
+    legrest_subs_bonus: bigInteger default:0
 
   TourReport:
     invoice_id: foreign constrained onDelete:cascade
-    status: string:50
-    costs_detail: json
-    other_costs: json
-    income: bigInteger
-    expense: bigInteger
+    main_costs: json
+    other_costs: json nullable
+    customer_repayment: bigInteger default:0
+    difference: bigInteger default:0
+    income_total: bigInteger default:0
+    expense_total: bigInteger default:0
+    defisit_surplus: bigInteger default:0
+    refundable: bigInteger default:0
 
   EmployeeSalary:
     user_id: foreign constrained onDelete:cascade

@@ -13,16 +13,16 @@ return new class extends Migration
     {
         Schema::disableForeignKeyConstraints();
 
-        Schema::create('employees', function (Blueprint $table) {
+        Schema::create('destinations', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->nullable()->constrained()->cascadeOnDelete();
-            $table->string('name')->index();
-            $table->string('photo')->nullable();
-            $table->string('phone');
-            $table->string('gender', 50);
-            $table->string('role', 50);
+            $table->string('name')->unique()->index();
+            $table->string('type', 50);
+            $table->string('marketing_name');
+            $table->string('marketing_phone');
+            $table->bigInteger('weekday_price');
+            $table->bigInteger('weekend_price')->nullable();
+            $table->bigInteger('high_season_price')->nullable();
             $table->timestamps();
-            $table->softDeletes();
         });
 
         Schema::enableForeignKeyConstraints();
@@ -33,6 +33,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('employees');
+        Schema::dropIfExists('destinations');
     }
 };

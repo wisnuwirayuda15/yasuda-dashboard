@@ -15,6 +15,7 @@ use App\Enums\InvoiceStatus;
 use Filament\Infolists\Infolist;
 use Filament\Resources\Resource;
 use Awcodes\TableRepeater\Header;
+use App\Enums\NavigationGroupLabel;
 use Filament\Forms\Components\Tabs;
 use Illuminate\Contracts\View\View;
 use Filament\Forms\Components\Group;
@@ -23,13 +24,14 @@ use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Select;
 use Filament\Support\Enums\Alignment;
 use Filament\Forms\Components\Section;
+use Filament\Forms\Components\Checkbox;
 use Filament\Forms\Components\Fieldset;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Tabs\Tab;
+use Filament\Tables\Columns\TextColumn;
 use Illuminate\Database\Eloquent\Model;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
-use Filament\Tables\Actions\ActionGroup;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\RichEditor;
 use Illuminate\Database\Eloquent\Builder;
@@ -39,8 +41,7 @@ use App\Infolists\Components\InvoiceTemplate;
 use Filament\Forms\Components\Actions\Action;
 use App\Filament\Resources\InvoiceResource\Pages;
 use Awcodes\TableRepeater\Components\TableRepeater;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
-use App\Filament\Resources\InvoiceResource\RelationManagers;
+use Filament\Resources\RelationManagers\RelationGroup;
 use App\Filament\Resources\InvoiceResource\RelationManagers\ProfitLossRelationManager;
 use App\Filament\Resources\InvoiceResource\RelationManagers\TourReportRelationManager;
 
@@ -50,18 +51,24 @@ class InvoiceResource extends Resource
 
   protected static ?string $navigationIcon = 'fas-file-invoice';
 
+  protected static ?string $navigationGroup = NavigationGroupLabel::FINANCE->value;
+
   protected static ?Order $order = null;
 
   public static function form(Form $form): Form
   {
     return $form
       ->schema([
-        self::getGeneralInfoSection(),
+        static::getGeneralInfoSection(),
         Group::make([
-          self::getCostTabs(),
-          self::getPaymentDetailSection(),
+          static::getCostTabs(),
+          static::getPaymentDetailSection(),
           RichEditor::make('notes')
             ->label('Special Notes'),
+          Checkbox::make('confirmation')
+            ->required()
+            ->hiddenOn('view')
+            ->label('Semua perhitungan sudah dicek dan tidak ada kesalahan')
         ])
           ->columnSpanFull()
           ->visible(fn(Get $get) => $get('order_id')),
@@ -72,53 +79,36 @@ class InvoiceResource extends Resource
   {
     return $table
       ->columns([
-        Tables\Columns\TextColumn::make('code')
+        TextColumn::make('code')
           ->searchable(),
-        Tables\Columns\TextColumn::make('order.customer.name')
+        TextColumn::make('order.customer.name')
           ->numeric()
           ->sortable(),
-        Tables\Columns\TextColumn::make('order.trip_date')
+        TextColumn::make('order.trip_date')
           ->date()
           ->sortable(),
-        Tables\Columns\TextColumn::make('created_at')
+        TextColumn::make('created_at')
           ->dateTime()
           ->sortable()
           ->toggleable(isToggledHiddenByDefault: true),
-        Tables\Columns\TextColumn::make('updated_at')
-          ->dateTime()
-          ->sortable()
-          ->toggleable(isToggledHiddenByDefault: true),
-        Tables\Columns\TextColumn::make('deleted_at')
+        TextColumn::make('updated_at')
           ->dateTime()
           ->sortable()
           ->toggleable(isToggledHiddenByDefault: true),
       ])
       ->filters([
-        Tables\Filters\TrashedFilter::make(),
       ])
       ->actions([
-        ActionGroup::make([
-          Tables\Actions\ViewAction::make()
-            ->hidden(fn(Model $record) => $record->trashed()),
-          Tables\Actions\EditAction::make()
-            ->hidden(fn(Model $record) => $record->trashed()),
+        Tables\Actions\ActionGroup::make([
+          Tables\Actions\ViewAction::make()->modalWidth(MaxWidth::MaxContent),
+          Tables\Actions\EditAction::make(),
           Tables\Actions\DeleteAction::make(),
-          Tables\Actions\RestoreAction::make(),
-          Tables\Actions\ForceDeleteAction::make(),
           Tables\Actions\Action::make('export_pdf')
             ->label('Export to PDF')
             ->color('danger')
             ->icon('tabler-pdf')
-            ->hidden(fn(Model $record) => $record->trashed())
-            ->url(fn(Model $record) => route('generate.invoice', $record->code), true),
+            ->url(fn(Invoice $record) => route('generate.invoice', $record->code), true),
         ])
-      ])
-      ->bulkActions([
-        Tables\Actions\BulkActionGroup::make([
-          Tables\Actions\DeleteBulkAction::make(),
-          Tables\Actions\ForceDeleteBulkAction::make(),
-          Tables\Actions\RestoreBulkAction::make(),
-        ]),
       ]);
   }
 
@@ -135,8 +125,10 @@ class InvoiceResource extends Resource
   public static function getRelations(): array
   {
     return [
-      ProfitLossRelationManager::class,
-      TourReportRelationManager::class,
+      RelationGroup::make('', [
+        ProfitLossRelationManager::class,
+        TourReportRelationManager::class,
+      ]),
     ];
   }
 
@@ -150,14 +142,6 @@ class InvoiceResource extends Resource
     ];
   }
 
-  public static function getEloquentQuery(): Builder
-  {
-    return parent::getEloquentQuery()
-      ->withoutGlobalScopes([
-        SoftDeletingScope::class,
-      ]);
-  }
-
   public static function getCostTabs(): Tabs
   {
     return Tabs::make()
@@ -167,17 +151,17 @@ class InvoiceResource extends Resource
         Tab::make('Biaya Utama')
           ->icon('fas-money-bill-wave')
           ->schema([
-            self::getMainCostsSection(),
+            static::getMainCostsSection(),
           ]),
         Tab::make('Tambahan Kaos')
           ->icon('fas-shirt')
           ->schema([
-            self::getShirtsSection(),
+            static::getShirtsSection(),
           ]),
         Tab::make('Charge Kursi')
           ->icon('phosphor-seat-fill')
           ->schema([
-            self::getSeatChargeSection(),
+            static::getSeatChargeSection(),
           ]),
       ]);
   }
@@ -235,7 +219,7 @@ class InvoiceResource extends Resource
                 }
                 return '-';
               }),
-            self::getFleetDetailSection()
+            static::getFleetDetailSection()
           ])
       ]);
   }
@@ -304,7 +288,7 @@ class InvoiceResource extends Resource
           ->addable(false)
           ->reorderable(false)
           ->columnSpanFull()
-          ->default(self::getDefaultMainCostItems())
+          ->default(static::getDefaultMainCostItems())
           ->headers([
             Header::make('Keterangan')
               ->align(Alignment::Center)
@@ -329,72 +313,68 @@ class InvoiceResource extends Resource
               ->width('150px'),
           ])
           ->schema([
-            Hidden::make('slug'),
+            Hidden::make('slug')
+              ->distinct()
+              ->required(),
             TextInput::make('name')
               ->required()
-              ->readOnly()
               ->distinct()
+              ->disabled()
+              ->dehydrated()
+              ->extraAttributes(fn($state) => ['title' => $state])
               ->columnSpanFull(),
             TextInput::make('qty')
               ->required()
-              ->integer()
-              ->minValue(0)
               ->default(0)
-              ->preventUnwantedNumberValue('qty'),
+              ->qty(),
             TextInput::make('price')
               ->required()
-              ->numeric()
-              ->prefix('Rp')
-              ->minValue(0)
               ->default(0)
-              ->preventUnwantedNumberValue('price'),
+              ->currency(),
             TextInput::make('cashback')
               ->required()
-              ->numeric()
-              ->prefix('Rp')
-              ->minValue(0)
               ->default(0)
-              ->preventUnwantedNumberValue('cashback'),
+              ->currency(),
             Placeholder::make('total_gross_transaction')
               ->hiddenLabel()
               ->extraAttributes(['class' => 'text-sky-500'])
-              ->content(fn(Get $get) => idr((int) $get('qty') * (int) $get('price'))),
+              ->content(fn(Get $get) => idr($get('qty') * $get('price'))),
             Placeholder::make('total_cashback')
               ->hiddenLabel()
               ->extraAttributes(['class' => 'text-red-500'])
-              ->content(fn(Get $get) => idr((int) $get('qty') * (int) $get('cashback'))),
+              ->content(fn(Get $get) => idr($get('qty') * $get('cashback'))),
             Placeholder::make('total_net_transaction')
               ->hiddenLabel()
               ->extraAttributes(['class' => 'text-green-500'])
-              ->content(fn(Get $get) => idr((int) $get('qty') * (int) $get('price') - (int) $get('qty') * (int) $get('cashback'))),
+              ->content(fn(Get $get) => idr($get('qty') * $get('price') - $get('qty') * $get('cashback'))),
           ]),
 
         Fieldset::make('Total')
           ->schema([
             Placeholder::make('total_qty')
               ->content(function (Get $get, Set $set) {
-                $qty = array_sum(array_map(fn($cost) => (int) $cost['qty'], $get('main_costs'))) ?: 0;
+                $qty = array_sum(array_map(fn($cost) => $cost['qty'], $get('main_costs'))) ?: 0;
                 $set('total_qty', $qty);
                 return $qty;
               }),
             Placeholder::make('total_gross_transactions')
               ->extraAttributes(['class' => 'text-sky-500'])
               ->content(function (Get $get, Set $set) {
-                $total = array_sum(array_map(fn($cost) => (int) $cost['qty'] * (int) $cost['price'], $get('main_costs'))) ?: 0;
+                $total = array_sum(array_map(fn($cost) => $cost['qty'] * $cost['price'], $get('main_costs'))) ?: 0;
                 $set('total_gross_transactions', $total);
                 return idr($total);
               }),
             Placeholder::make('total_cashbacks')
               ->extraAttributes(['class' => 'text-red-500'])
               ->content(function (Get $get, Set $set) {
-                $total = array_sum(array_map(fn($cost) => (int) $cost['qty'] * (int) $cost['cashback'], $get('main_costs'))) ?: 0;
+                $total = array_sum(array_map(fn($cost) => $cost['qty'] * $cost['cashback'], $get('main_costs'))) ?: 0;
                 $set('total_cashbacks', $total);
                 return idr($total);
               }),
             Placeholder::make('total_net_transactions')
               ->extraAttributes(['class' => 'text-green-500'])
               ->content(function (Get $get, Set $set) {
-                $total = array_sum(array_map(fn($cost) => ((int) $cost['qty'] * (int) $cost['price']) - ((int) $cost['qty'] * (int) $cost['cashback']), $get('main_costs'))) ?: 0;
+                $total = array_sum(array_map(fn($cost) => ($cost['qty'] * $cost['price']) - ($cost['qty'] * $cost['cashback']), $get('main_costs'))) ?: 0;
                 $set('total_net_transactions', $total);
                 return idr($total);
               }),
@@ -412,32 +392,30 @@ class InvoiceResource extends Resource
         TextInput::make('submitted_shirt')
           ->required()
           ->label('Total Kaos Diserahkan')
-          ->integer()
-          ->minValue(0)
           ->default(0)
-          ->preventUnwantedNumberValue(),
+          ->qty(),
         Placeholder::make('shirt_covered_package')
           ->label('Kaos Tercover Paket')
           ->helperText('Program + Ibu & Anak Pangku')
           ->content(
             function (Get $get, Set $set) {
-              $program = self::getCostItem($get, 'main_costs', 'program')['qty'];
-              $anak = self::getCostItem($get, 'main_costs', 'ibu-anak-pangku')['qty'];
-              $paket = (int) $program + (int) $anak;
+              $program = static::getCostItem($get, 'main_costs', 'program')['qty'];
+              $anak = static::getCostItem($get, 'main_costs', 'ibu-anak-pangku')['qty'];
+              $paket = $program + $anak;
               $set('shirt_covered_package', $paket);
               $kaos = $get('submitted_shirt') - $get('shirt_covered_package');
               $set('child_shirt_qty', $kaos);
               return $paket;
             }
           ),
-        self::getShirtFields('child_shirt', 'Selisih Kaos Anak', 25000, 'Total Kaos Diserahkan - Kaos Tercover Paket'),
-        self::getShirtFields('teacher_shirt', 'Tambahan 1-Stel Guru', 120000),
-        self::getShirtFields('adult_shirt', 'Tambahan Kaos Dewasa', 80000),
+        static::getShirtFields('child_shirt', 'Selisih Kaos Anak', 25000, 'Total Kaos Diserahkan - Kaos Tercover Paket'),
+        static::getShirtFields('teacher_shirt', 'Tambahan 1-Stel Guru', 120000),
+        static::getShirtFields('adult_shirt', 'Tambahan Kaos Dewasa', 80000),
         Placeholder::make('additional_shirts_total')
           ->label('Total')
           ->extraAttributes(['class' => 'text-green-500 text-xl font-bolder'])
           ->content(function (Get $get, Set $set): string {
-            $total = (int) $get('child_shirt_total') + (int) $get('teacher_shirt_total') + (int) $get('adult_shirt_total');
+            $total = $get('child_shirt_total') + $get('teacher_shirt_total') + $get('adult_shirt_total');
             $set('additional_shirts_total', $total);
             return idr($total);
           }),
@@ -451,28 +429,22 @@ class InvoiceResource extends Resource
         TextInput::make("{$name}_qty")
           ->required()
           ->label('Jumlah')
-          ->integer()
-          ->minValue(0)
           ->default(0)
           ->disabled(fn() => $name == 'child_shirt')
           ->dehydrated()
           ->helperText($helperText)
-          ->preventUnwantedNumberValue(),
+          ->qty(fn() => $name == 'child_shirt' ? -99999999 : 0),
         TextInput::make("{$name}_price")
           ->required()
           ->label('Harga')
-          ->numeric()
-          ->minValue(0)
           ->default($price)
-          ->dehydrated()
-          ->prefix('Rp')
-          ->preventUnwantedNumberValue(),
+          ->currency(),
         Placeholder::make("{$name}_total")
           ->label('Total Biaya')
           ->extraAttributes(['class' => 'text-green-500'])
           ->content(function (Get $get, Set $set) use ($name) {
             if (!str_contains($get('slug'), 'total')) {
-              $total = (int) $get("{$name}_qty") * (int) $get("{$name}_price");
+              $total = $get("{$name}_qty") * $get("{$name}_price");
               $set("{$name}_total", $total);
               return idr($total);
             }
@@ -493,16 +465,16 @@ class InvoiceResource extends Resource
           ->inlineLabel()
           ->content(fn(Get $get) => $get('total_qty') ?? '-'),
         TextInput::make('adjusted_seat')
-          ->integer()
+          ->required()
           ->inlineLabel()
           ->default(0)
           ->extraAttributes(['class' => 'w-max'])
-          ->preventUnwantedNumberValue(),
+          ->qty(),
         Placeholder::make('empty_seat')
           ->inlineLabel()
           ->content(
             function (Get $get, Set $set): View {
-              $emptySeat = (int) $get('total_seat') - (int) $get('total_qty') - (int) $get('adjusted_seat');
+              $emptySeat = $get('total_seat') - $get('total_qty') - $get('adjusted_seat');
               $set('empty_seat', $emptySeat);
               $color = $emptySeat < 0 ? 'danger' : ($emptySeat == 0 ? 'warning' : 'success');
               return view('filament.components.badges.default', ['text' => $emptySeat, 'color' => $color]);
@@ -513,7 +485,7 @@ class InvoiceResource extends Resource
           ->helperText('50% x Kursi kosong x (Beli Kursi - Cashback)')
           ->content(
             function (Get $get, Set $set) {
-              $seat = self::getCostItem($get, 'main_costs', 'beli-kursi');
+              $seat = static::getCostItem($get, 'main_costs', 'beli-kursi');
               $kursi = $seat['price'] - $seat['cashback'];
               $charge = 0.5 * $get('empty_seat') * $kursi;
               $set('seat_charge', $charge);
@@ -557,13 +529,10 @@ class InvoiceResource extends Resource
           ->content(fn(Get $get) => idr($get('additional_shirts_total'))),
         TextInput::make('other_cost')
           ->required()
-          ->numeric()
           ->inlineLabel()
-          ->prefix('Rp')
-          ->minValue(0)
           ->default(0)
           ->extraAttributes(['class' => 'w-max'])
-          ->preventUnwantedNumberValue(),
+          ->currency(),
         Placeholder::make('total_transactions')
           ->inlineLabel()
           ->label('Total Tagihan')
@@ -573,13 +542,13 @@ class InvoiceResource extends Resource
             $set('total_transactions', $total);
             return idr($total);
           }),
-        self::getDownPaymentReapeter(),
+        static::getDownPaymentReapeter(),
         Placeholder::make('kekurangan')
           ->inlineLabel()
           ->label('Kekurangan/Kelebihan')
           ->extraAttributes(['class' => '!font-bolder !text-2xl !text-red-500'])
           ->content(function (Get $get, Set $set): View {
-            $dp = array_sum(array_map(fn($dp) => (int) $dp['amount'], $get('down_payments'))) ?: 0;
+            $dp = array_sum(array_map(fn($dp) => $dp['amount'], $get('down_payments'))) ?: 0;
             $total = $get('total_transactions') - $dp;
             $set('kekurangan', $total);
             $set('status', match (true) {
@@ -587,7 +556,7 @@ class InvoiceResource extends Resource
               $total > 0 => InvoiceStatus::UNDER_PAYMENT->value,
               default => InvoiceStatus::OVER_PAYMENT->value,
             });
-            $color = $total > 0 ? 'danger' : 'success';
+            $color = $total > 0 ? 'danger' : 'warning';
             return view('filament.components.badges.default', ['text' => idr($total), 'color' => $color, 'big' => true]);
           }),
         ToggleButtons::make('status')
@@ -619,18 +588,11 @@ class InvoiceResource extends Resource
           }),
         TextInput::make('amount')
           ->required()
-          ->numeric()
-          ->prefix('Rp')
-          ->minValue(1)
-          ->default(0)
-          ->preventUnwantedNumberValue(),
+          ->currency(minValue: 1)
+          ->default(0),
         DatePicker::make('date')
           ->required()
-          ->default(today())
-          ->native(false)
-          ->closeOnDateSelection()
-          ->prefixIcon('heroicon-s-calendar-days')
-          ->displayFormat('d mm Y'),
+          ->default(today()),
       ])
       ->deleteAction(
         fn(Action $action) => $action

@@ -3,9 +3,10 @@
 namespace App\Enums;
 
 use Filament\Support\Contracts\HasColor;
+use Filament\Support\Contracts\HasIcon;
 use Filament\Support\Contracts\HasLabel;
 
-enum CustomerCategory: string implements HasLabel, HasColor
+enum CustomerCategory: string implements HasLabel, HasColor, HasIcon
 {
   case TK = 'tk';
   case SD = 'sd';
@@ -24,6 +25,17 @@ enum CustomerCategory: string implements HasLabel, HasColor
     };
   }
 
+  public function getIcon(): ?string
+  {
+    return match ($this) {
+      self::UMUM => 'heroicon-s-user-group',
+      self::SD => 'fas-child',
+      self::TK => 'maki-playground',
+      self::SMP => 'fas-book-open',
+      self::SMA => 'fas-book',
+    };
+  }
+
   public function getColor(): string|array|null
   {
     return match ($this) {
@@ -31,7 +43,7 @@ enum CustomerCategory: string implements HasLabel, HasColor
       self::SD => 'warning',
       self::TK => 'success',
       self::SMP => 'primary',
-      self::SMA => 'danger',
+      self::SMA => 'secondary',
     };
   }
 }

@@ -17,4 +17,12 @@ class EditProfitLoss extends EditRecord
       // Actions\DeleteAction::make(),
     ];
   }
+
+  protected function mutateFormDataBeforeSave(array $data): array
+  {
+    // Prevent user change the invoice_id using javascript
+    $data['invoice_id'] = $this->getRecord()->invoice->id;
+
+    return $data;
+  }
 }

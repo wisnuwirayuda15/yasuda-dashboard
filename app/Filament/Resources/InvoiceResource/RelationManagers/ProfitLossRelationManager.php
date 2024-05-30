@@ -2,23 +2,18 @@
 
 namespace App\Filament\Resources\InvoiceResource\RelationManagers;
 
-use App\Filament\Resources\ProfitLossResource;
 use Filament\Forms;
-use Filament\Forms\Form;
-use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Tables;
+use Filament\Forms\Form;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use App\Filament\Resources\ProfitLossResource;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Filament\Resources\RelationManagers\RelationManager;
 
 class ProfitLossRelationManager extends RelationManager
 {
   protected static string $relationship = 'profitLoss';
-
-  public function isReadOnly(): bool
-  {
-    return false;
-  }
 
   public function form(Form $form): Form
   {

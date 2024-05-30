@@ -1,22 +1,22 @@
 <?php
 
-namespace App\Filament\Resources\ProfitLossResource\Pages;
+namespace App\Filament\Resources\TourReportResource\Pages;
 
 use Filament\Actions;
 use Filament\Resources\Pages\ListRecords;
 use App\Filament\Resources\InvoiceResource;
-use App\Filament\Resources\ProfitLossResource;
+use App\Filament\Resources\TourReportResource;
 
-class ListProfitLosses extends ListRecords
+class ListTourReports extends ListRecords
 {
-  protected static string $resource = ProfitLossResource::class;
+  protected static string $resource = TourReportResource::class;
 
   protected function getHeaderActions(): array
   {
     return [
       Actions\Action::make('list_invoice')
         ->label('Lihat Invoice')
-        ->tooltip('Anda bisa membuat analisis profit & loss dari halaman invoice')
+        ->tooltip('Anda bisa membuat tour report dari halaman invoice')
         ->icon(InvoiceResource::getNavigationIcon())
         ->url(InvoiceResource::getUrl('index')),
     ];

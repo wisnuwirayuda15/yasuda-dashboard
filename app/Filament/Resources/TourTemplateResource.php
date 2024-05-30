@@ -12,7 +12,13 @@ use Filament\Tables\Table;
 use App\Models\Destination;
 use App\Models\TourTemplate;
 use Filament\Resources\Resource;
+use App\Enums\NavigationGroupLabel;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Component;
+use Filament\Forms\Components\TextInput;
+use Filament\Tables\Actions\ActionGroup;
 use Illuminate\Database\Eloquent\Builder;
+use Filament\Forms\Components\Actions\Action;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use App\Filament\Resources\TourTemplateResource\Pages;
 use App\Filament\Resources\TourTemplateResource\RelationManagers;
@@ -23,38 +29,37 @@ class TourTemplateResource extends Resource
 
   protected static ?string $navigationIcon = 'eos-templates';
 
+  protected static ?string $navigationGroup = NavigationGroupLabel::MASTER_DATA->value;
+
   public static function form(Form $form): Form
   {
     return $form
       ->schema([
-        Forms\Components\TextInput::make('name')
+        TextInput::make('name')
           ->required()
           ->live()
           ->helperText('You can generate name based on selected regency and destinations.')
           ->maxLength(255)
           ->hintAction(
-            Forms\Components\Actions\Action::make('generate_name')
-              ->action(fn(Get $get, Set $set) => self::setTourTemplateName($get, $set))
+            Action::make('generate_name')
+              ->action(function (Get $get, Set $set, TextInput $component) {
+                $regency = Regency::find($get('regency_id'));
+                $destinations = Destination::find($get('destinations'));
+                if (blank($regency) || blank($destinations)) {
+                  $set($component, null);
+                } else {
+                  $set($component, "{$regency->name} ({$destinations->implode('name', ' + ')})");
+                }
+              })
           ),
-        Forms\Components\Select::make('regency_id')
+        Select::make('regency_id')
           ->required()
           ->relationship('regency', 'name'),
-        Forms\Components\Select::make('destinations')
+        Select::make('destinations')
           ->required()
           ->multiple()
           ->options(Destination::pluck('name', 'id')),
       ])->columns(1);
-  }
-
-  public static function setTourTemplateName(Get $get, Set $set): void
-  {
-    $regency = Regency::find($get('regency_id'))?->name;
-    $destinations = Destination::find($get('destinations'));
-    if (blank($regency) || blank($destinations)) {
-      $set('name', null);
-    } else {
-      $set('name', "{$regency} ({$destinations->implode('name', ' + ')})");
-    }
   }
 
   public static function table(Table $table): Table
@@ -82,9 +87,11 @@ class TourTemplateResource extends Resource
         //
       ])
       ->actions([
-        Tables\Actions\ViewAction::make(),
-        Tables\Actions\EditAction::make(),
-        Tables\Actions\DeleteAction::make(),
+        ActionGroup::make([
+          Tables\Actions\ViewAction::make(),
+          Tables\Actions\EditAction::make(),
+          Tables\Actions\DeleteAction::make(),
+        ])
       ])
       ->bulkActions([
         Tables\Actions\BulkActionGroup::make([

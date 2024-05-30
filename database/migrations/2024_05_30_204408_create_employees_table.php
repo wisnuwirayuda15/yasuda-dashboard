@@ -13,15 +13,15 @@ return new class extends Migration
     {
         Schema::disableForeignKeyConstraints();
 
-        Schema::create('tour_leaders', function (Blueprint $table) {
+        Schema::create('employees', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->nullable()->constrained()->cascadeOnDelete();
             $table->string('name')->index();
             $table->string('photo')->nullable();
-            $table->string('phone')->unique();
+            $table->string('phone');
             $table->string('gender', 50);
+            $table->string('role', 50);
             $table->timestamps();
-            $table->softDeletes();
         });
 
         Schema::enableForeignKeyConstraints();
@@ -32,6 +32,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('tour_leaders');
+        Schema::dropIfExists('employees');
     }
 };

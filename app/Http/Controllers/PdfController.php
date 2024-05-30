@@ -3,9 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\Invoice;
-use Illuminate\Http\Request;
 use Spatie\LaravelPdf\PdfBuilder;
 use Spatie\LaravelPdf\Facades\Pdf;
+use Spatie\Browsershot\Browsershot;
 use Spatie\LaravelPdf\Enums\Format;
 
 class PdfController extends Controller
@@ -20,8 +20,16 @@ class PdfController extends Controller
   public function invoice(Invoice $invoice): PdfBuilder
   {
     return Pdf::view('pdf.invoice-pdf', compact('invoice'))
+      // ->withBrowsershot(function (Browsershot $browsershot) {
+      // $browsershot
+      // ->noSandbox()
+      // ->setNodeBinary('C:/Program Files/nodejs %~dp0;%PATH%;')
+      // ->setNodeBinary('/usr/bin/node')->setNpmBinary('/usr/bin/npm')
+      // ;
+      // })
       ->margins(10, 0, 10, 0)
       ->format(Format::A2)
-      ->name("{$invoice->code}_{$invoice->order->customer->name}_{$invoice->order->trip_date->translatedFormat('d-m-Y')}.pdf");
+      ->name("{$invoice->code}_{$invoice->order->customer->name}_{$invoice->order->trip_date->translatedFormat('d-m-Y')}.pdf")
+    ;
   }
 }

@@ -2,28 +2,32 @@
 
 namespace App\Filament\Resources;
 
+use Closure;
 use Filament\Forms;
 use Filament\Tables;
 use App\Models\Fleet;
 use App\Models\Order;
 use Filament\Forms\Get;
 use Filament\Forms\Set;
-use App\Models\Customer;
 use Filament\Forms\Form;
 use App\Enums\OrderStatus;
 use App\Models\OrderFleet;
+use App\Models\TourLeader;
 use Filament\Tables\Table;
 use Filament\Resources\Resource;
 use App\Enums\FleetPaymentStatus;
 use Filament\Tables\Actions\Action;
 use Filament\Forms\Components\Select;
-use Filament\Tables\Columns\IconColumn;
-use Illuminate\Database\Eloquent\Model;
+use Filament\Tables\Actions\EditAction;
+use Filament\Tables\Actions\ViewAction;
 use Filament\Notifications\Notification;
 use Filament\Tables\Actions\ActionGroup;
 use App\Filament\Resources\OrderResource;
-use Filament\Tables\Columns\SelectColumn;
+use Filament\Tables\Actions\DeleteAction;
 use Illuminate\Database\Eloquent\Builder;
+use Filament\Tables\Actions\BulkActionGroup;
+use Filament\Tables\Actions\ReplicateAction;
+use Filament\Tables\Actions\DeleteBulkAction;
 use App\Filament\Resources\OrderFleetResource\Pages;
 use App\Filament\Resources\OrderFleetResource\RelationManagers;
 use Malzariey\FilamentDaterangepickerFilter\Filters\DateRangeFilter;
@@ -40,39 +44,44 @@ class OrderFleetResource extends Resource
       ->schema([
         Forms\Components\TextInput::make('code')
           ->code(get_code(new OrderFleet, 'OF')),
-        Forms\Components\Select::make('order_id')
-          ->allowHtml()
-          ->relationship('order', 'id')
-          ->prefixIcon(fn() => OrderResource::getNavigationIcon())
-          ->editOptionForm(fn(Form $form) => OrderResource::form($form))
-          ->createOptionForm(fn(Form $form) => OrderResource::form($form))
-          ->editOptionModalHeading('Edit Order')
-          ->createOptionModalHeading('Create Order')
-          ->getOptionLabelFromRecordUsing(fn(Order $record) => view('filament.components.badges.order', compact('record'))),
+        // Forms\Components\Select::make('order_id')
+        //   ->allowHtml()
+        //   ->live(true)
+        //   ->prefixIcon(OrderResource::getNavigationIcon())
+        //   ->editOptionForm(fn(Form $form) => OrderResource::form($form))
+        //   ->createOptionForm(fn(Form $form) => OrderResource::form($form))
+        //   ->editOptionModalHeading('Edit Order')
+        //   ->createOptionModalHeading('Create Order')
+        //   ->relationship('order', modifyQueryUsing: fn(Builder $query, Get $get): Builder => $query->whereDate('trip_date', $get('trip_date'))->with('customer'))
+        //   ->getOptionLabelFromRecordUsing(fn(Order $record) => view('filament.components.badges.order', compact('record')))
+        //   ->rules([
+        //     fn(Get $get): Closure => function (string $attribute, $value, Closure $fail) use ($get) {
+        //       $order = Order::findOrFail($value);
+        //       if (!$order->trip_date->isSameDay($get('trip_date'))) {
+        //         $fail('Order trip date must be the same as the order fleet trip date');
+        //       }
+        //     },
+        //   ]),
         Forms\Components\Select::make('fleet_id')
           ->required()
           ->optionsLimit(false)
-          // ->relationship('fleet', 'name')
           ->allowHtml()
           ->options(Fleet::getGroupOptionsByCategories())
           ->getOptionLabelFromRecordUsing(fn(Fleet $record) => view('filament.components.badges.fleet-options', compact('record'))),
         Forms\Components\DatePicker::make('trip_date')
           ->required()
-          ->native(false)
-          ->closeOnDateSelection()
+          ->live(true)
+          ->default(today())
           ->minDate(today())
-          ->prefixIcon('heroicon-s-calendar-days')
-          ->displayFormat('d mm Y'),
+          ->afterStateUpdated(fn(Set $set) => $set('order_id', null)),
         Forms\Components\TextInput::make('duration')
           ->required()
           ->default(1)
-          ->numeric()
-          ->minValue(1)
           ->maxValue(100)
           ->suffix('Hari')
           ->prefixIcon('heroicon-s-clock')
-          ->live()
-          ->afterStateUpdated(fn(?int $state, Set $set) => $state <= 1 ? $set('duration', 1) : $state > 100 && $set('duration', 100)),
+          ->afterStateUpdated(fn(?int $state, Set $set) => $state <= 1 ? $set('duration', 1) : $state > 100 && $set('duration', 100))
+          ->qty(minValue: 1),
         Forms\Components\ToggleButtons::make('status')
           ->required()
           ->inline()
@@ -100,11 +109,7 @@ class OrderFleetResource extends Resource
               ->schema([
                 Forms\Components\DatePicker::make('payment_date')
                   ->required()
-                  ->native(false)
-                  ->minDate(today())
-                  ->closeOnDateSelection()
-                  ->prefixIcon('iconsax-bol-money-time')
-                  ->displayFormat('d mm Y'),
+                  ->minDate(today()),
                 Forms\Components\TextInput::make('payment_amount')
                   ->required()
                   ->numeric()
@@ -128,30 +133,9 @@ class OrderFleetResource extends Resource
           ->searchable(),
         Tables\Columns\TextColumn::make('order.customer.name')
           ->sortable()
-          ->placeholder('No customer'),
-        // SelectColumn::make('order_id')
-        //   ->label('Customer')
-        //   ->extraAttributes(['class' => 'w-52'])
-        //   ->placeholder(
-        //     function (OrderFleet $record) {
-        //       $orders = Order::whereDate('trip_date', $record->trip_date)->get();
-        //       return blank($orders) ? 'No order' : 'Select order';
-        //     }
-        //   )
-        //   ->disabled(
-        //     function (OrderFleet $record) {
-        //       $orders = Order::whereDate('trip_date', $record->trip_date)->get();
-        //       return blank($orders) ? true : false;
-        //     }
-        //   )
-        //   ->options(function (OrderFleet $record) {
-        //     $orders = Order::whereDate('trip_date', $record->trip_date)->get();
-        //     $orderArray = [];
-        //     foreach ($orders as $order) {
-        //       $orderArray[$order->id] = "{$order->code} • {$order->customer->name}";
-        //     }
-        //     return $orderArray;
-        //   }),
+          ->placeholder('No customer')
+          ->tooltip(fn(OrderFleet $record): string => $record->order ? 'Change order' : 'Select order')
+          ->action(self::getSelectOrderAction()),
         Tables\Columns\TextColumn::make('trip_date')
           ->date()
           ->sortable()
@@ -217,44 +201,56 @@ class OrderFleetResource extends Resource
       ])
       ->actions([
         ActionGroup::make([
-          Tables\Actions\ViewAction::make(),
-          Tables\Actions\EditAction::make(),
-          Tables\Actions\DeleteAction::make(),
-          Action::make('order_id')
-            ->icon(OrderResource::getNavigationIcon())
-            ->label('Select Order')
-            ->color('info')
-            ->form([
-              Select::make('order_id')
-                ->hiddenLabel()
-                ->prefixIcon(fn() => OrderResource::getNavigationIcon())
-                ->options(function (OrderFleet $record) {
-                  $orders = Order::whereDate('trip_date', $record->trip_date)->get();
-                  $orderArray = [];
-                  foreach ($orders as $order) {
-                    $orderArray[$order->id] = "{$order->code} • {$order->customer->name}";
-                  }
-                  return $orderArray;
-                })
-                ->required(),
-            ])
-            ->action(function (array $data, OrderFleet $record): void {
-              $record->update(['order_id' => $data['order_id']]);
+          ViewAction::make(),
+          EditAction::make(),
+          DeleteAction::make(),
+          ReplicateAction::make()
+            ->excludeAttributes(['order_id', 'tour_leader_id'])
+            ->before(function (OrderFleet $record) {
+              $record->code = get_code(new OrderFleet, 'OF');
             }),
+          self::getSelectOrderAction(),
+          self::getSelectTourLeaderAction(),
           Action::make('delete_order_id')
             ->requiresConfirmation()
             ->icon('heroicon-s-trash')
             ->label('Remove Order')
-            ->color('warning')
+            ->color('danger')
             ->hidden(fn(OrderFleet $record): bool => blank($record->order_id))
-            ->action(fn(OrderFleet $record) => $record->update(['order_id' => null])),
+            ->action(
+              function (OrderFleet $record) {
+                $record->update(['order_id' => null]);
+                Notification::make()
+                  ->success()
+                  ->title('Success')
+                  ->body("Order removed from {$record->code}")
+                  ->send();
+              }
+            ),
+          Action::make('delete_tour_leader_id')
+            ->requiresConfirmation()
+            ->icon('heroicon-s-trash')
+            ->label('Remove Tour Leader')
+            ->color('danger')
+            ->hidden(fn(OrderFleet $record): bool => blank($record->tour_leader_id))
+            ->action(
+              function (OrderFleet $record) {
+                $record->update(['tour_leader_id' => null]);
+                Notification::make()
+                  ->success()
+                  ->title('Success')
+                  ->body("Tour leader removed from {$record->code}")
+                  ->send();
+              }
+            ),
         ])
       ])
       ->bulkActions([
-        Tables\Actions\BulkActionGroup::make([
-          Tables\Actions\DeleteBulkAction::make(),
+        BulkActionGroup::make([
+          DeleteBulkAction::make(),
         ]),
-      ]);
+      ])
+    ;
   }
 
   public static function getRelations(): array
@@ -272,5 +268,73 @@ class OrderFleetResource extends Resource
       'view' => Pages\ViewOrderFleet::route('/{record}'),
       'edit' => Pages\EditOrderFleet::route('/{record}/edit'),
     ];
+  }
+
+  public static function getSelectOrderAction(): Action
+  {
+    return Action::make('order_id')
+      ->icon(OrderResource::getNavigationIcon())
+      ->label('Select Order')
+      ->color('info')
+      ->form([
+        Forms\Components\Select::make('order_id')
+          ->required()
+          ->hiddenLabel()
+          ->allowHtml()
+          ->default(fn(OrderFleet $record) => $record->order_id)
+          ->prefixIcon(OrderResource::getNavigationIcon())
+          ->relationship('order', modifyQueryUsing: fn(Builder $query, OrderFleet $record): Builder => $query->whereDate('trip_date', $record->trip_date)->with('customer'))
+          ->getOptionLabelFromRecordUsing(fn(Order $record) => view('filament.components.badges.order', compact('record')))
+          ->rules([
+            fn(OrderFleet $record): Closure => function (string $attribute, $value, Closure $fail) use ($record) {
+              $order = Order::findOrFail($value);
+              if (!$order->trip_date->isSameDay($record->trip_date)) {
+                $fail('Order trip date must be the same as the order fleet trip date');
+              }
+            },
+          ]),
+      ])
+      ->action(function (array $data, OrderFleet $record): void {
+        $record->update(['order_id' => $data['order_id']]);
+        Notification::make()
+          ->success()
+          ->title('Success')
+          ->body("Order added for {$record->code}")
+          ->send();
+      });
+  }
+
+  public static function getSelectTourLeaderAction(): Action
+  {
+    return Action::make('tour_leader_id')
+      ->visible(fn(OrderFleet $record): bool => blank($record->tour_leader_id))
+      ->icon(TourLeaderResource::getNavigationIcon())
+      ->label('Select Tour Leader')
+      ->color('success')
+      ->form([
+        Forms\Components\Select::make('tour_leader_id')
+          ->required()
+          ->hiddenLabel()
+          ->allowHtml()
+          ->default(fn(OrderFleet $record) => $record->tour_leader_id)
+          ->prefixIcon(TourLeaderResource::getNavigationIcon())
+          ->relationship(
+            'tourLeader',
+            'name',
+            function (Builder $query, OrderFleet $record): Builder {
+              return $query->whereDoesntHave('orderFleets', function (Builder $query) use ($record) {
+                $query->where('trip_date', $record->trip_date);
+              });
+            },
+          )
+      ])
+      ->action(function (array $data, OrderFleet $record): void {
+        $record->update(['tour_leader_id' => $data['tour_leader_id']]);
+        Notification::make()
+          ->success()
+          ->title('Success')
+          ->body("Tour leader added for {$record->code}")
+          ->send();
+      });
   }
 }

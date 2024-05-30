@@ -1,4 +1,16 @@
-@import '/vendor/filament/filament/resources/css/theme.css';
-@import '/vendor/awcodes/filament-table-repeater/resources/css/plugin.css';
+@import "/vendor/filament/filament/resources/css/theme.css";
+@import "/vendor/awcodes/filament-table-repeater/resources/css/plugin.css";
 
 @config 'tailwind.config.js';
+
+/* Chrome, Safari, Edge, Opera */
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+/* Firefox */
+input[type="number"] {
+    -moz-appearance: textfield;
+}

@@ -17,11 +17,14 @@ class TourReport extends Model
      */
     protected $fillable = [
         'invoice_id',
-        'status',
-        'costs_detail',
+        'main_costs',
         'other_costs',
-        'income',
-        'expense',
+        'customer_repayment',
+        'difference',
+        'income_total',
+        'expense_total',
+        'defisit_surplus',
+        'refundable',
     ];
 
     /**
@@ -32,10 +35,14 @@ class TourReport extends Model
     protected $casts = [
         'id' => 'integer',
         'invoice_id' => 'integer',
-        'costs_detail' => 'array',
+        'main_costs' => 'array',
         'other_costs' => 'array',
-        'income' => 'integer',
-        'expense' => 'integer',
+        'customer_repayment' => 'integer',
+        'difference' => 'integer',
+        'income_total' => 'integer',
+        'expense_total' => 'integer',
+        'defisit_surplus' => 'integer',
+        'refundable' => 'integer',
     ];
 
     public function invoice(): BelongsTo

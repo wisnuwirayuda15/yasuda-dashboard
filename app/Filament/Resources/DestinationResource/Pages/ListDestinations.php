@@ -13,7 +13,7 @@ class ListDestinations extends ListRecords
 {
   protected static string $resource = DestinationResource::class;
 
-  protected static string $type = DestinationType::class;
+  protected static string $types = DestinationType::class;
 
   protected function getHeaderActions(): array
   {
@@ -25,10 +25,10 @@ class ListDestinations extends ListRecords
   public function getTabs(): array
   {
     $array = [
-      'all' => Tab::make()->icon('fas-people-group'),
+      'all' => Tab::make()->icon('fluentui-grid-dots-28-o'),
     ];
 
-    foreach (static::$type::cases() as $type) {
+    foreach (static::$types::cases() as $type) {
       $array[$type->value] = Tab::make($type->getLabel())
         ->icon($type->getIcon())
         ->modifyQueryUsing(fn(Builder $query) => $query->where('type', $type->value));

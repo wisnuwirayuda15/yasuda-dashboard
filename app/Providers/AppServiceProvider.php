@@ -24,11 +24,11 @@ class AppServiceProvider extends ServiceProvider
   {
     // Use secure connection for production
     if (env('APP_ENV') !== 'local') {
-      URL::forceScheme(scheme: 'https');
+      URL::forceScheme('https');
     }
 
     // Indonesian locale and timezone
-    Carbon::setlocale(config('app.locale'));
+    Carbon::setlocale('id');
 
     // Unguard model
     if ((bool) env('UNGUARD_MODEL', false)) {

@@ -2,7 +2,6 @@
 
 namespace App\Filament\Resources;
 
-use Filament\Forms;
 use Filament\Tables;
 use Filament\Forms\Form;
 use Filament\Tables\Table;
@@ -10,10 +9,10 @@ use App\Models\Destination;
 use App\Enums\DestinationType;
 use Filament\Resources\Resource;
 use App\Enums\NavigationGroupLabel;
-use Illuminate\Database\Eloquent\Builder;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\ToggleButtons;
 use Ysfkaya\FilamentPhoneInput\Forms\PhoneInput;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
-use Ysfkaya\FilamentPhoneInput\PhoneInputNumberType;
 use App\Filament\Resources\DestinationResource\Pages;
 use App\Filament\Resources\DestinationResource\RelationManagers;
 
@@ -29,29 +28,29 @@ class DestinationResource extends Resource
   {
     return $form
       ->schema([
-        Forms\Components\TextInput::make('name')
+        TextInput::make('name')
           ->required()
           ->maxLength(255),
-        Forms\Components\ToggleButtons::make('type')
+        ToggleButtons::make('type')
           ->required()
           ->inline()
           ->default('new')
           ->options(DestinationType::class),
-        Forms\Components\TextInput::make('marketing_name')
+        TextInput::make('marketing_name')
           ->required()
           ->maxLength(255),
         PhoneInput::make('marketing_phone')
           ->required()
           ->idDefaultFormat(),
-        Forms\Components\TextInput::make('weekday_price')
+        TextInput::make('weekday_price')
           ->required()
           ->numeric()
           ->prefix('Rp'),
-        Forms\Components\TextInput::make('weekend_price')
+        TextInput::make('weekend_price')
           ->required()
           ->numeric()
           ->prefix('Rp'),
-        Forms\Components\TextInput::make('high_season_price')
+        TextInput::make('high_season_price')
           ->numeric()
           ->prefix('Rp'),
       ]);
@@ -61,52 +60,43 @@ class DestinationResource extends Resource
   {
     return $table
       ->columns([
-        Tables\Columns\TextColumn::make('name')
+        TextColumn::make('name')
           ->searchable(),
-        Tables\Columns\TextColumn::make('type')
+        TextColumn::make('type')
           ->badge()
           ->searchable(),
-        Tables\Columns\TextColumn::make('marketing_name')
+        TextColumn::make('marketing_name')
           ->searchable(),
-        Tables\Columns\TextColumn::make('marketing_phone')
+        TextColumn::make('marketing_phone')
           ->searchable(),
-        Tables\Columns\TextColumn::make('weekday_price')
+        TextColumn::make('weekday_price')
           ->numeric()
           ->sortable()
           ->money('IDR'),
-        Tables\Columns\TextColumn::make('weekend_price')
+        TextColumn::make('weekend_price')
           ->numeric()
           ->sortable()
           ->money('IDR'),
-        Tables\Columns\TextColumn::make('high_season_price')
+        TextColumn::make('high_season_price')
           ->numeric()
           ->sortable()
           ->money('IDR'),
-        Tables\Columns\TextColumn::make('created_at')
+        TextColumn::make('created_at')
           ->dateTime()
           ->sortable()
           ->toggleable(isToggledHiddenByDefault: true),
-        Tables\Columns\TextColumn::make('updated_at')
-          ->dateTime()
-          ->sortable()
-          ->toggleable(isToggledHiddenByDefault: true),
-        Tables\Columns\TextColumn::make('deleted_at')
+        TextColumn::make('updated_at')
           ->dateTime()
           ->sortable()
           ->toggleable(isToggledHiddenByDefault: true),
       ])
       ->filters([
-        Tables\Filters\TrashedFilter::make(),
       ])
       ->actions([
-        Tables\Actions\ViewAction::make(),
-        Tables\Actions\EditAction::make(),
-      ])
-      ->bulkActions([
-        Tables\Actions\BulkActionGroup::make([
-          Tables\Actions\DeleteBulkAction::make(),
-          Tables\Actions\ForceDeleteBulkAction::make(),
-          Tables\Actions\RestoreBulkAction::make(),
+        Tables\Actions\ActionGroup::make([
+          Tables\Actions\ViewAction::make(),
+          Tables\Actions\EditAction::make(),
+          Tables\Actions\DeleteAction::make(),
         ]),
       ]);
   }
@@ -126,13 +116,5 @@ class DestinationResource extends Resource
       'view' => Pages\ViewDestination::route('/{record}'),
       'edit' => Pages\EditDestination::route('/{record}/edit'),
     ];
-  }
-
-  public static function getEloquentQuery(): Builder
-  {
-    return parent::getEloquentQuery()
-      ->withoutGlobalScopes([
-        SoftDeletingScope::class,
-      ]);
   }
 }

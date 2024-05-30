@@ -16,18 +16,22 @@ use App\Enums\NavigationGroupLabel;
 use Filament\View\PanelsRenderHook;
 use Filament\Livewire\Notifications;
 use Filament\Support\Enums\MaxWidth;
+use Filament\Support\Enums\Platform;
 use Filament\Forms\Components\Select;
 use Filament\Support\Enums\Alignment;
 use Filament\Navigation\NavigationGroup;
 use Filament\Notifications\Notification;
+use Filament\Forms\Components\DatePicker;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Support\Facades\FilamentView;
 use Filament\Tables\Enums\ActionsPosition;
 use Jeffgreco13\FilamentBreezy\BreezyCore;
+use App\Filament\Resources\InvoiceResource;
 use Filament\Support\Facades\FilamentAsset;
 use Filament\Support\Enums\VerticalAlignment;
 use pxlrbt\FilamentSpotlight\SpotlightPlugin;
 use App\Filament\Resources\ProfitLossResource;
+use App\Filament\Resources\TourReportResource;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\Cookie\Middleware\EncryptCookies;
@@ -65,16 +69,24 @@ class AdminPanelProvider extends PanelProvider
     // Global Settings
     Table::configureUsing(function (Table $table): void {
       $table
-        ->paginationPageOptions([5, 10, 15, 20, 25, 30])
         ->extremePaginationLinks()
+        ->paginationPageOptions([5, 10, 15, 20, 25, 30])
         ->actions([
-        ], position: ActionsPosition::BeforeColumns);
+        ], ActionsPosition::BeforeColumns);
     });
     Select::configureUsing(function (Select $select): void {
       $select
         ->preload()
         ->searchable()
-        ->optionsLimit(5);
+        // ->optionsLimit(5)
+      ;
+    });
+    DatePicker::configureUsing(function (DatePicker $datePicker): void {
+      $datePicker
+        ->native(false)
+        ->closeOnDateSelection()
+        ->prefixIcon('heroicon-s-calendar-days')
+        ->displayFormat('d mm Y');
     });
     LanguageSwitch::configureUsing(function (LanguageSwitch $switch): void {
       $switch
@@ -83,8 +95,8 @@ class AdminPanelProvider extends PanelProvider
     });
 
     // Notification alignment
-    Notifications::alignment(Alignment::End);
-    Notifications::verticalAlignment(VerticalAlignment::End);
+    // Notifications::alignment(Alignment::End);
+    // Notifications::verticalAlignment(VerticalAlignment::End);
 
     // Register Tailwind CSS CDN in local
     if (env('APP_ENV') === 'local' && env('TAILWIND_CDN') === true) {
@@ -95,7 +107,7 @@ class AdminPanelProvider extends PanelProvider
 
     return $panel
       ->default()
-      // ->spa()
+      ->spa()
       ->id('admin')
       ->path('')
       ->login(Login::class)
@@ -108,10 +120,15 @@ class AdminPanelProvider extends PanelProvider
       ->darkModeBrandLogo(asset('/img/logo-dark.svg'))
       ->brandLogoHeight('35px')
       ->sidebarCollapsibleOnDesktop(true)
-      // ->darkMode(false)
       ->maxContentWidth(MaxWidth::Full)
-      // ->databaseNotifications()
-      // ->databaseNotificationsPolling('30s')
+      ->databaseNotifications()
+      ->globalSearchKeyBindings(['command+k', 'ctrl+k'])
+      ->globalSearchFieldSuffix(fn(): ?string => match (Platform::detect()) {
+        Platform::Windows, Platform::Linux => 'CTRL+K',
+        Platform::Mac => '⌘K',
+        default => null,
+      })
+      ->readOnlyRelationManagersOnResourceViewPagesByDefault(false)
       ->discoverResources(app_path('Filament/Resources'), 'App\\Filament\\Resources')
       ->discoverPages(app_path('Filament/Pages'), 'App\\Filament\\Pages')
       ->pages([])
@@ -120,15 +137,15 @@ class AdminPanelProvider extends PanelProvider
         Widgets\AccountWidget::class,
         Widgets\FilamentInfoWidget::class,
       ])
-      // ->colors([
-      //   'primary' => Color::Red,
-      //   'secondary' => Color::Indigo,
-      //   'danger' => Color::Red,
-      //   'gray' => Color::Gray,
-      //   'info' => Color::Sky,
-      //   'success' => Color::Green,
-      //   'warning' => Color::Yellow,
-      // ])
+      ->colors([
+        'primary' => Color::Rose,
+        'secondary' => Color::Indigo,
+        'danger' => Color::Red,
+        'gray' => Color::Gray,
+        'info' => Color::Sky,
+        'success' => Color::Green,
+        'warning' => Color::Yellow,
+      ])
       ->middleware([
         EncryptCookies::class,
         AddQueuedCookiesToResponse::class,
@@ -144,7 +161,8 @@ class AdminPanelProvider extends PanelProvider
         Authenticate::class,
       ])
       ->navigationGroups([
-        NavigationGroup::make(NavigationGroupLabel::MASTER_DATA->value)
+        NavigationGroup::make(NavigationGroupLabel::MASTER_DATA->value),
+        NavigationGroup::make(NavigationGroupLabel::FINANCE->value),
       ])
       ->plugins([
         BreezyCore::make()
@@ -160,9 +178,10 @@ class AdminPanelProvider extends PanelProvider
         QuickCreatePlugin::make()
           ->rounded(false)
           ->excludes([
-            ProfitLossResource::class
+            ProfitLossResource::class,
+            TourReportResource::class,
           ]),
-        SpotlightPlugin::make(),
+        // SpotlightPlugin::make(),
       ]);
   }
 }

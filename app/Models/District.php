@@ -5,7 +5,6 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class District extends Model
 {
@@ -34,11 +33,6 @@ class District extends Model
         'id' => 'integer',
         'regency_id' => 'integer',
     ];
-
-    public function villages(): HasMany
-    {
-        return $this->hasMany(Village::class);
-    }
 
     public function regency(): BelongsTo
     {

@@ -1,10 +1,7 @@
 <?php
 
-use App\Http\Controllers\PdfController;
-use App\Models\Invoice;
-use Spatie\LaravelPdf\Facades\Pdf;
-use Spatie\Browsershot\Browsershot;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\PdfController;
 
 /*
 |--------------------------------------------------------------------------
@@ -22,7 +19,6 @@ Route::controller(PdfController::class)
   ->name('generate.')
   ->group(function () {
     Route::get('invoice/{invoice:code}', 'invoice')->name('invoice');
-    Route::get('profit-loss/{profitloss:code}', 'profit-loss')->name('profit-loss');
   });
 
 // Route::get('/', function () {

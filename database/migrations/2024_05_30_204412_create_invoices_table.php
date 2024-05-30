@@ -29,7 +29,6 @@ return new class extends Migration
             $table->bigInteger('other_cost')->nullable();
             $table->longText('notes')->nullable();
             $table->timestamps();
-            $table->softDeletes();
         });
 
         Schema::enableForeignKeyConstraints();

@@ -23,11 +23,14 @@ class TourReportFactory extends Factory
     {
         return [
             'invoice_id' => Invoice::factory(),
-            'status' => $this->faker->regexify('[A-Za-z0-9]{50}'),
-            'costs_detail' => '{}',
+            'main_costs' => '{}',
             'other_costs' => '{}',
-            'income' => $this->faker->numberBetween(-100000, 100000),
-            'expense' => $this->faker->numberBetween(-100000, 100000),
+            'customer_repayment' => $this->faker->numberBetween(-100000, 100000),
+            'difference' => $this->faker->numberBetween(-100000, 100000),
+            'income_total' => $this->faker->numberBetween(-100000, 100000),
+            'expense_total' => $this->faker->numberBetween(-100000, 100000),
+            'defisit_surplus' => $this->faker->numberBetween(-100000, 100000),
+            'refundable' => $this->faker->numberBetween(-100000, 100000),
         ];
     }
 }

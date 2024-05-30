@@ -2,7 +2,6 @@
 
 namespace App\Filament\Resources;
 
-use Filament\Forms;
 use Filament\Tables;
 use App\Models\Fleet;
 use Filament\Forms\Get;
@@ -13,13 +12,18 @@ use App\Enums\BigFleetSeat;
 use App\Enums\FleetCategory;
 use App\Enums\MediumFleetSeat;
 use App\Enums\LegrestFleetSeat;
-use App\Enums\NavigationGroupLabel;
 use Filament\Resources\Resource;
-use Illuminate\Database\Eloquent\Builder;
+use App\Enums\NavigationGroupLabel;
+use Filament\Tables\Columns\TextColumn;
+use Illuminate\Database\Eloquent\Model;
+use Filament\Forms\Components\TextInput;
+use Filament\Tables\Columns\ImageColumn;
+use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\RichEditor;
+use Filament\Forms\Components\ToggleButtons;
 use App\Filament\Resources\FleetResource\Pages;
 use Ysfkaya\FilamentPhoneInput\Forms\PhoneInput;
 use Ysfkaya\FilamentPhoneInput\Tables\PhoneColumn;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Ysfkaya\FilamentPhoneInput\PhoneInputNumberType;
 use App\Filament\Resources\FleetResource\RelationManagers;
 
@@ -31,12 +35,20 @@ class FleetResource extends Resource
 
   protected static ?string $navigationGroup = NavigationGroupLabel::MASTER_DATA->value;
 
+  protected static ?string $recordTitleAttribute = 'name';
+
+  public static function getGlobalSearchResultDetails(Model $record): array
+  {
+    return [
+      $record->category->getLabel() . ' • ' . $record->seat_set->getLabel(),
+    ];
+  }
+
   public static function form(Form $form): Form
   {
     return $form
       ->schema([
-        Forms\Components\FileUpload::make('image')
-          ->required()
+        FileUpload::make('image')
           ->image()
           ->imageEditor()
           ->maxSize(2048)
@@ -44,20 +56,20 @@ class FleetResource extends Resource
           ->imageCropAspectRatio('16:9')
           ->imageResizeMode('cover')
           ->columnSpanFull(),
-        Forms\Components\TextInput::make('name')
+        TextInput::make('name')
           ->required()
           ->maxLength(255),
-        Forms\Components\RichEditor::make('description')
+        RichEditor::make('description')
           ->required()
           ->columnSpanFull(),
-        Forms\Components\ToggleButtons::make('category')
+        ToggleButtons::make('category')
           ->required()
           ->live()
           ->inline()
           ->options(FleetCategory::class)
           ->default(FleetCategory::MEDIUM->value)
           ->afterStateUpdated(fn(Set $set) => $set('seat_set', null)),
-        Forms\Components\ToggleButtons::make('seat_set')
+        ToggleButtons::make('seat_set')
           ->required()
           ->live()
           ->inline()
@@ -69,7 +81,7 @@ class FleetResource extends Resource
             FleetCategory::LEGREST->value => LegrestFleetSeat::class,
             default => [],
           }),
-        Forms\Components\TextInput::make('pic_name')
+        TextInput::make('pic_name')
           ->required()
           ->maxLength(255),
         PhoneInput::make('pic_phone')
@@ -82,44 +94,36 @@ class FleetResource extends Resource
   {
     return $table
       ->columns([
-        Tables\Columns\ImageColumn::make('image'),
-        Tables\Columns\TextColumn::make('name')
+        ImageColumn::make('image'),
+        TextColumn::make('name')
           ->searchable(),
-        Tables\Columns\TextColumn::make('seat_set')
+        TextColumn::make('seat_set')
           ->sortable(),
-        Tables\Columns\TextColumn::make('category')
+        TextColumn::make('category')
           ->badge()
           ->searchable(),
-        Tables\Columns\TextColumn::make('pic_name')
+        TextColumn::make('pic_name')
           ->searchable(),
         PhoneColumn::make('pic_phone')
           ->displayFormat(PhoneInputNumberType::NATIONAL)
           ->searchable(),
-        Tables\Columns\TextColumn::make('created_at')
+        TextColumn::make('created_at')
           ->dateTime()
           ->sortable()
           ->toggleable(isToggledHiddenByDefault: true),
-        Tables\Columns\TextColumn::make('updated_at')
-          ->dateTime()
-          ->sortable()
-          ->toggleable(isToggledHiddenByDefault: true),
-        Tables\Columns\TextColumn::make('deleted_at')
+        TextColumn::make('updated_at')
           ->dateTime()
           ->sortable()
           ->toggleable(isToggledHiddenByDefault: true),
       ])
       ->filters([
-        Tables\Filters\TrashedFilter::make(),
       ])
       ->actions([
-        Tables\Actions\ViewAction::make(),
-        Tables\Actions\EditAction::make(),
-      ])
-      ->bulkActions([
-        Tables\Actions\BulkActionGroup::make([
-          Tables\Actions\DeleteBulkAction::make(),
-          Tables\Actions\ForceDeleteBulkAction::make(),
-          Tables\Actions\RestoreBulkAction::make(),
+        Tables\Actions\ActionGroup::make([
+          Tables\Actions\ViewAction::make(),
+          Tables\Actions\EditAction::make(),
+          Tables\Actions\DeleteAction::make(),
+          Tables\Actions\ReplicateAction::make()
         ]),
       ]);
   }
@@ -139,13 +143,5 @@ class FleetResource extends Resource
       'view' => Pages\ViewFleet::route('/{record}'),
       'edit' => Pages\EditFleet::route('/{record}/edit'),
     ];
-  }
-
-  public static function getEloquentQuery(): Builder
-  {
-    return parent::getEloquentQuery()
-      ->withoutGlobalScopes([
-        SoftDeletingScope::class,
-      ]);
   }
 }

@@ -19,9 +19,9 @@
   $special = $getMainCostQty('special-rate');
   $beliKursi = collect($mainCosts)->firstWhere('slug', 'beli-kursi');
   $destinations = $order->regency->name . ' (' . Destination::find($order->destinations)->implode('name', ' + ') . ')';
-  $totalQty = array_sum(array_map(fn($cost) => (int) $cost['qty'], $mainCosts)) ?: 0;
-  $totalPrices = array_sum(array_map(fn($cost) => (int) $cost['qty'] * (int) $cost['price'], $mainCosts)) ?: 0;
-  $totalCashbacks = array_sum(array_map(fn($cost) => (int) $cost['qty'] * (int) $cost['cashback'], $mainCosts)) ?: 0;
+  $totalQty = array_sum(array_map(fn($cost) => $cost['qty'], $mainCosts)) ?: 0;
+  $totalPrices = array_sum(array_map(fn($cost) => $cost['qty'] * $cost['price'], $mainCosts)) ?: 0;
+  $totalCashbacks = array_sum(array_map(fn($cost) => $cost['qty'] * $cost['cashback'], $mainCosts)) ?: 0;
   $totalNetTransactions = $totalPrices - $totalCashbacks;
 
   // Shirts
@@ -74,7 +74,7 @@
   $otherCost = $inv->other_cost;
   $downPayments = $inv->down_payments;
   $totalTransactions = $totalNetTransactions + $seatCharge + $totalPriceKaos + $otherCost;
-  $totalDp = array_sum(array_map(fn($dp) => (int) $dp['amount'], $downPayments)) ?: 0;
+  $totalDp = array_sum(array_map(fn($dp) => $dp['amount'], $downPayments)) ?: 0;
   $kekurangan = $totalTransactions - $totalDp;
   $status = $kekurangan == 0 ? InvoiceStatus::PAID_OFF->getLabel() : ($kekurangan > 0 ? InvoiceStatus::UNDER_PAYMENT->getLabel() : InvoiceStatus::OVER_PAYMENT->getLabel());
 @endphp
@@ -278,7 +278,11 @@
                           <tr>
                             <td>{{ $name }}</td>
                             <td class="text-center">{{ $date }}</td>
-                            <td class="{{ $loop->iteration == count($downPayments) ? 'border border-transparent border-b-black' : null }} text-end">{{ $amount }}</td>
+                            <td @class([
+                                'text-end',
+                                'border border-transparent border-b-black' =>
+                                    $loop->iteration == count($downPayments),
+                            ])>{{ $amount }}</td>
                             <td>{{ $loop->iteration == count($downPayments) ? '-' : null }}</td>
                           </tr>
                         @endforeach
@@ -484,7 +488,6 @@
               </footer>
             </section>
           </div>
-
           <div class="text-center text-red-500 md:hidden">
             <p>{{ __('invoice.preview-warning') }}</p>
           </div>

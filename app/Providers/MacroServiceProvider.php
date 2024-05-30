@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use Closure;
 use Filament\Forms\Set;
 use Illuminate\Support\ServiceProvider;
 use Filament\Forms\Components\TextInput;
@@ -23,10 +24,32 @@ class MacroServiceProvider extends ServiceProvider
    */
   public function boot(): void
   {
-    TextInput::macro('preventUnwantedNumberValue', function (string $fieldName = null): static {
+    TextInput::macro('qty', function (int|Closure $minValue = 0): static {
       $this
         ->live(true)
-        ->afterStateUpdated(fn(?int $state, Set $set) => blank($state) || !is_int($state) || $state < 0 ? $set($fieldName ?? $this, 0) : false);
+        ->integer()
+        ->minValue($minValue)
+        ->afterStateUpdated(fn(?int $state, Set $set, TextInput $component) => (
+          blank($state)
+          || is_string($state)
+          || is_int($state) && $state < 0
+          || !is_numeric($state)
+        ) ? $set($component, 0) : false);
+      return $this;
+    });
+
+    TextInput::macro('currency', function (int $minValue = 0, string $prefix = 'Rp'): static {
+      $this
+        ->live(true)
+        ->numeric()
+        ->minValue($minValue)
+        ->prefix($prefix)
+        ->afterStateUpdated(fn(?int $state, Set $set, TextInput $component) => (
+          blank($state)
+          || is_string($state)
+          || is_int($state) && $state < 0
+          || !is_numeric($state)
+        ) ? $set($component, 0) : false);
       return $this;
     });
 

@@ -16,7 +16,13 @@ class CreateOrder extends CreateRecord
   {
     $record = static::getModel()::create($data);
 
-    OrderFleet::findOrFail($data['order_fleets_id'])->update(['order_id' => $record->id]);
+    if (filled($data['order_fleet_ids'])) {
+      $orderFleets = OrderFleet::findOrFail($data['order_fleet_ids']);
+      
+      foreach ($orderFleets as $of) {
+        $of->update(['order_id' => $record->id]);
+      }
+    }
 
     return $record;
   }

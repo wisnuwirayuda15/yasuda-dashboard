@@ -12,19 +12,23 @@ class CreateProfitLoss extends CreateRecord
 {
   protected static string $resource = ProfitLossResource::class;
 
-  public function getTitle(): string|Htmlable
+  protected static bool $canCreateAnother = false;
+
+  public function beforeFill(): void
   {
-    $invoice = request('invoice');
+    $pnl = Invoice::where('code', request('invoice'))->firstOrFail()->profitLoss;
 
-    if (blank($invoice) && Route::current()->getName() == 'livewire.update') {
-      $parameters = getUrlQueryParameters(url()->previous());
-      $invoice = $parameters['invoice'];
-    }
+    // Each invoice should only has one profit & loss
+    $pnl ? redirect(ProfitLossResource::getUrl('view', ['record' => $pnl->id])) : null;
+  }
 
-    if (Invoice::where('code', $invoice)->first()->profitLoss()->exists()) {
-      abort(404);
-    }
+  protected function mutateFormDataBeforeCreate(array $data): array
+  {
+    $pnl = Invoice::findOrFail($data['invoice_id'])->profitLoss;
 
-    return 'Create Profit & Loss Analysis: ' . $invoice;
+    // Each invoice should only has one profit & loss
+    $pnl ? $this->halt() : null;
+
+    return $data;
   }
 }

@@ -18,11 +18,11 @@ enum DestinationType: string implements HasLabel, HasColor, HasIcon, HasDescript
   public function getLabel(): ?string
   {
     return match ($this) {
-      self::SISWA_ONLY => 'Siswa Only',
-      self::SISWA_DEWASA => 'Siswa & Dewasa',
-      self::SISWA_DEWASA_PEMBINA => 'Siswa, Dewasa, Pembina',
-      self::SISWA_TAMBAHAN => 'Siswa, Tambahan',
-      self::DEWASA => 'Dewasa',
+      self::SISWA_ONLY => 'AA - Siswa Only',
+      self::SISWA_DEWASA => 'AO - Siswa & Dewasa',
+      self::SISWA_DEWASA_PEMBINA => 'LL - Siswa, Dewasa, Pembina',
+      self::SISWA_TAMBAHAN => 'AR - Siswa, Tambahan',
+      self::DEWASA => 'DO - Dewasa',
     };
   }
 

@@ -30,7 +30,6 @@ return new class extends Migration
             $table->string('status', 50);
             $table->bigInteger('loyalty_point')->default(0);
             $table->timestamps();
-            $table->softDeletes();
         });
 
         Schema::enableForeignKeyConstraints();
