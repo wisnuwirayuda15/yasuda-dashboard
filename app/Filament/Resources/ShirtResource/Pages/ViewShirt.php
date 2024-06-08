@@ -2,19 +2,20 @@
 
 namespace App\Filament\Resources\ShirtResource\Pages;
 
-use App\Filament\Resources\ShirtResource;
 use Filament\Actions;
+use Filament\Forms\Components\TextInput;
 use Filament\Resources\Pages\ViewRecord;
+use App\Filament\Resources\ShirtResource;
+use Illuminate\Support\HtmlString;
+use Ysfkaya\FilamentPhoneInput\Forms\PhoneInput;
 
 class ViewShirt extends ViewRecord
 {
   protected static string $resource = ShirtResource::class;
 
-  protected function getWhatsAppUrl(): string
+  protected function getWhatsAppUrl(string $phone): string
   {
     $shirt = $this->getRecord();
-
-    $phone = '6281283435423';
 
     $customer = $shirt->invoice->order->customer->name;
 
@@ -53,11 +54,18 @@ class ViewShirt extends ViewRecord
   {
     return [
       Actions\Action::make('whatsapp_send')
+        ->form([
+          PhoneInput::make('vendor_phone')
+            ->required()
+            ->label('Nomor Vendor')
+            ->default(env('SHIRT_VENDOR_PHONE'))
+            ->idDefaultFormat(),
+        ])
         ->label('Kirim')
-        ->tooltip('Kirim WhatsApp')
+        ->tooltip('Kirim informasi baju kepada vendor via WhatsApp')
         ->color('success')
         ->icon('gmdi-whatsapp-r')
-        ->url(static::getWhatsAppUrl(), true),
+        ->action(fn(array $data) => redirect(static::getWhatsAppUrl($data['vendor_phone']))),
       Actions\EditAction::make(),
     ];
   }
