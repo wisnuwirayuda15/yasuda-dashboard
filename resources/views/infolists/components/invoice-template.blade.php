@@ -81,7 +81,7 @@
 
 <x-dynamic-component :component="$getEntryWrapperView()" :entry="$entry">
   <div class="flex justify-center overflow-x-auto">
-    <div class="w-[1000px] rounded-lg border-2 border-slate-500 bg-white text-black">
+    <div class="rounded-lg border-2 border-slate-500 bg-white text-black">
       <div class="container mx-auto">
         <div class="mx-8 my-6">
           <div class="hidden md:block">

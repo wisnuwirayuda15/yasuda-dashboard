@@ -2,14 +2,20 @@
 
 namespace App\Enums;
 
+use Filament\Support\Colors\Color;
 use Filament\Support\Contracts\HasColor;
 use Filament\Support\Contracts\HasLabel;
 
-enum OrderStatus: string implements HasLabel, HasColor
+enum OrderFleetStatus: string implements HasLabel, HasColor
 {
   case READY = 'ready';
+
   case ON_TRIP = 'on_trip';
+
   case FINISHED = 'finished';
+
+  case BOOKED = 'booked';
+
   case CANCELED = 'canceled';
 
   public function getLabel(): ?string
@@ -18,6 +24,7 @@ enum OrderStatus: string implements HasLabel, HasColor
       self::READY => 'Belum Berangkat',
       self::ON_TRIP => 'Dalam Perjalanan',
       self::FINISHED => 'Selesai',
+      self::BOOKED => 'Dipesan',
       self::CANCELED => 'Dibatalkan',
     };
   }
@@ -25,10 +32,11 @@ enum OrderStatus: string implements HasLabel, HasColor
   public function getColor(): string|array|null
   {
     return match ($this) {
-      self::READY => 'info',
-      self::ON_TRIP => 'warning',
-      self::FINISHED => 'success',
-      self::CANCELED => 'danger',
+      self::READY => Color::Indigo,
+      self::ON_TRIP => Color::Sky,
+      self::FINISHED => Color::Green,
+      self::BOOKED => Color::Yellow,
+      self::CANCELED => Color::Red,
     };
   }
 }

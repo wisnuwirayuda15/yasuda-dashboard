@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources;
 
+use App\Enums\CustomerStatus;
 use Filament\Forms;
 use Filament\Tables;
 use App\Models\Order;
@@ -36,6 +37,11 @@ class OrderResource extends Resource
 
   protected static ?string $navigationIcon = 'heroicon-s-check-badge';
 
+  public static function getNavigationBadge(): ?string
+  {
+    return static::getModel()::count();
+  }
+
   public static function form(Form $form): Form
   {
     return $form
@@ -44,7 +50,7 @@ class OrderResource extends Resource
           ->code(get_code(new Order, 'OR')),
         Forms\Components\Select::make('customer_id')
           ->required()
-          ->relationship('customer', 'name', fn(Builder $query) => $query->orderBy('created_at', 'desc'))
+          ->relationship('customer', 'name', fn(Builder $query) => $query->whereNot('status', CustomerStatus::CANDIDATE->value)->orderBy('created_at', 'desc'))
           ->editOptionModalHeading('Edit Customer')
           ->createOptionModalHeading('Create Customer')
           ->prefixIcon(fn() => CustomerResource::getNavigationIcon())

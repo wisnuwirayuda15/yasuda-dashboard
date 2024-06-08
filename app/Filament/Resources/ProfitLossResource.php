@@ -42,9 +42,7 @@ class ProfitLossResource extends Resource
 
   protected static ?string $navigationIcon = 'gmdi-attach-money-o';
 
-  protected static ?string $navigationGroup = NavigationGroupLabel::FINANCE->value;
-
-  protected static ?Invoice $invoice = null;
+  protected static ?Invoice $invoice;
 
   public static function form(Form $form): Form
   {
@@ -81,6 +79,7 @@ class ProfitLossResource extends Resource
     return $table
       ->columns([
         TextColumn::make('invoice.code')
+          ->searchable()
           ->numeric(),
         TextColumn::make('created_at')
           ->dateTime()
@@ -142,32 +141,24 @@ class ProfitLossResource extends Resource
       ->schema([
         Select::make('invoice_id')
           ->required()
+          ->unique(ignoreRecord: true)
           ->disabled()
           ->dehydrated()
           ->allowHtml()
           ->prefixIcon(InvoiceResource::getNavigationIcon())
           ->default(static::$invoice->id)
           ->relationship('invoice', 'id')
-          ->getOptionLabelFromRecordUsing(fn(Invoice $record) => view('filament.components.badges.invoice', compact('record')))
-          ->rules([
-            fn(string $operation): Closure => function (string $attribute, $value, Closure $fail) use ($operation) {
-              if ($operation !== 'edit') {
-                if (Invoice::find($value)->profitLoss()->exists()) {
-                  $fail('Profit & Loss untuk invoice ini sudah ada.');
-                }
-              }
-            },
-          ]),
+          ->getOptionLabelFromRecordUsing(fn(Invoice $record) => view('filament.components.badges.invoice', compact('record'))),
         Placeholder::make('invoice_code')
           ->label('Invoice :')
           ->inlineLabel()
           ->extraAttributes(['class' => 'font-bold'])
-          ->content(static::$invoice->code),
+          ->content(fn() => static::$invoice->code),
         Placeholder::make('order_code')
           ->label('Order :')
           ->inlineLabel()
           ->extraAttributes(['class' => 'font-bold'])
-          ->content(static::$invoice->order->code),
+          ->content(fn() => static::$invoice->order->code),
         Placeholder::make('customer_name')
           ->label('Customer :')
           ->inlineLabel()

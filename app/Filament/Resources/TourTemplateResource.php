@@ -29,8 +29,6 @@ class TourTemplateResource extends Resource
 
   protected static ?string $navigationIcon = 'eos-templates';
 
-  protected static ?string $navigationGroup = NavigationGroupLabel::MASTER_DATA->value;
-
   public static function form(Form $form): Form
   {
     return $form
@@ -68,11 +66,14 @@ class TourTemplateResource extends Resource
 
     return $table
       ->columns([
-        Tables\Columns\TextColumn::make('name'),
+        Tables\Columns\TextColumn::make('name')
+          ->searchable(),
         Tables\Columns\TextColumn::make('regency.name')
+          ->searchable()
           ->sortable(),
         Tables\Columns\TextColumn::make('destinations')
           ->badge()
+          ->searchable()
           ->formatStateUsing(fn(string $state): string => $destination->find($state)->name),
         Tables\Columns\TextColumn::make('created_at')
           ->dateTime()

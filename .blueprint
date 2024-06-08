@@ -14,27 +14,29 @@ created:
     - database/factories/InvoiceFactory.php
     - database/factories/ProfitLossFactory.php
     - database/factories/TourReportFactory.php
+    - database/factories/ShirtFactory.php
     - database/factories/EmployeeSalaryFactory.php
     - database/factories/FeedbackFactory.php
     - database/factories/ReceivableFactory.php
-    - database/migrations/2024_05_30_204400_create_provinces_table.php
-    - database/migrations/2024_05_30_204401_create_regencies_table.php
-    - database/migrations/2024_05_30_204402_create_districts_table.php
-    - database/migrations/2024_05_30_204403_create_fleets_table.php
-    - database/migrations/2024_05_30_204404_create_customers_table.php
-    - database/migrations/2024_05_30_204405_create_destinations_table.php
-    - database/migrations/2024_05_30_204406_create_tour_templates_table.php
-    - database/migrations/2024_05_30_204407_create_companies_table.php
-    - database/migrations/2024_05_30_204408_create_employees_table.php
-    - database/migrations/2024_05_30_204409_create_tour_leaders_table.php
-    - database/migrations/2024_05_30_204410_create_orders_table.php
-    - database/migrations/2024_05_30_204411_create_order_fleets_table.php
-    - database/migrations/2024_05_30_204412_create_invoices_table.php
-    - database/migrations/2024_05_30_204413_create_profit_losses_table.php
-    - database/migrations/2024_05_30_204414_create_tour_reports_table.php
-    - database/migrations/2024_05_30_204415_create_employee_salaries_table.php
-    - database/migrations/2024_05_30_204416_create_feedback_table.php
-    - database/migrations/2024_05_30_204417_create_receivables_table.php
+    - database/migrations/2024_06_02_212821_create_provinces_table.php
+    - database/migrations/2024_06_02_212822_create_regencies_table.php
+    - database/migrations/2024_06_02_212823_create_districts_table.php
+    - database/migrations/2024_06_02_212824_create_fleets_table.php
+    - database/migrations/2024_06_02_212825_create_customers_table.php
+    - database/migrations/2024_06_02_212826_create_destinations_table.php
+    - database/migrations/2024_06_02_212827_create_tour_templates_table.php
+    - database/migrations/2024_06_02_212828_create_companies_table.php
+    - database/migrations/2024_06_02_212829_create_employees_table.php
+    - database/migrations/2024_06_02_212830_create_tour_leaders_table.php
+    - database/migrations/2024_06_02_212831_create_orders_table.php
+    - database/migrations/2024_06_02_212832_create_order_fleets_table.php
+    - database/migrations/2024_06_02_212833_create_invoices_table.php
+    - database/migrations/2024_06_02_212834_create_profit_losses_table.php
+    - database/migrations/2024_06_02_212835_create_tour_reports_table.php
+    - database/migrations/2024_06_02_212836_create_shirts_table.php
+    - database/migrations/2024_06_02_212837_create_employee_salaries_table.php
+    - database/migrations/2024_06_02_212838_create_feedback_table.php
+    - database/migrations/2024_06_02_212839_create_receivables_table.php
     - app/Models/Province.php
     - app/Models/Regency.php
     - app/Models/District.php
@@ -50,6 +52,7 @@ created:
     - app/Models/Invoice.php
     - app/Models/ProfitLoss.php
     - app/Models/TourReport.php
+    - app/Models/Shirt.php
     - app/Models/EmployeeSalary.php
     - app/Models/Feedback.php
     - app/Models/Receivable.php
@@ -70,6 +73,7 @@ models:
     Invoice: { code: 'string index unique', order_id: 'foreign constrained onDelete:cascade', main_costs: json, submitted_shirt: integer, teacher_shirt_qty: 'integer nullable', adult_shirt_qty: 'integer nullable', child_shirt_price: 'bigInteger default:25000', teacher_shirt_price: 'bigInteger default:120000', adult_shirt_price: 'bigInteger default:80000', adjusted_seat: 'integer nullable', down_payments: 'json nullable', other_cost: 'bigInteger nullable', notes: 'longText nullable', relationships: { hasOne: 'ProfitLoss, TourReport' } }
     ProfitLoss: { invoice_id: 'foreign constrained onDelete:cascade', medium_rent_price: 'bigInteger default:0', big_rent_price: 'bigInteger default:0', legrest_rent_price: 'bigInteger default:0', toll_price: 'bigInteger default:0', banner_price: 'bigInteger default:0', crew_price: 'bigInteger default:0', tour_leader_price: 'bigInteger default:0', documentation_qty: 'integer default:0', documentation_price: 'bigInteger default:0', teacher_shirt_qty: 'bigInteger default:0', teacher_shirt_price: 'bigInteger default:0', souvenir_price: 'bigInteger default:0', child_shirt_price: 'bigInteger default:0', adult_shirt_price: 'bigInteger default:0', photo_price: 'bigInteger default:0', snack_price: 'bigInteger default:0', eat_price: 'bigInteger default:0', eat_child_price: 'bigInteger default:0', eat_prasmanan_price: 'bigInteger default:0', backup_price: 'bigInteger default:0', emergency_cost_price: 'bigInteger default:0', others_income: 'bigInteger default:0', medium_subs_bonus: 'bigInteger default:0', big_subs_bonus: 'bigInteger default:0', legrest_subs_bonus: 'bigInteger default:0' }
     TourReport: { invoice_id: 'foreign constrained onDelete:cascade', main_costs: json, other_costs: 'json nullable', customer_repayment: 'bigInteger default:0', difference: 'bigInteger default:0', income_total: 'bigInteger default:0', expense_total: 'bigInteger default:0', defisit_surplus: 'bigInteger default:0', refundable: 'bigInteger default:0' }
+    Shirt: { invoice_id: 'foreign constrained onDelete:cascade', child: json, adult: json }
     EmployeeSalary: { user_id: 'foreign constrained onDelete:cascade', amount: bigInteger, date: datetime, working_day: integer }
     Feedback: { customer_id: 'foreign constrained onDelete:cascade', text: longText }
     Receivable: { creditor: string, date: datetime, due_date: 'datetime nullable', amount: bigInteger, status: 'string:50' }

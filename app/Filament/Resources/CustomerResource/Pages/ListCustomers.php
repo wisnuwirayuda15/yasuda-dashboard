@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\CustomerResource\Pages;
 
 use Filament\Actions;
+use App\Enums\CustomerStatus;
 use App\Enums\CustomerCategory;
 use Filament\Resources\Components\Tab;
 use Filament\Resources\Pages\ListRecords;
@@ -14,6 +15,8 @@ class ListCustomers extends ListRecords
   protected static string $resource = CustomerResource::class;
 
   protected static string $categories = CustomerCategory::class;
+
+  protected static string $status = CustomerStatus::class;
 
   protected function getHeaderActions(): array
   {
@@ -38,6 +41,12 @@ class ListCustomers extends ListRecords
       $array[$category->value] = Tab::make($category->getLabel())
         ->icon($category->getIcon())
         ->modifyQueryUsing(fn(Builder $query) => $query->where('category', $category->value));
+    }
+
+    foreach (static::$status::cases() as $status) {
+      $array[$status->value] = Tab::make($status->getLabel())
+        ->icon($status->getIcon())
+        ->modifyQueryUsing(fn(Builder $query) => $query->where('status', $status->value));
     }
 
     return $array;

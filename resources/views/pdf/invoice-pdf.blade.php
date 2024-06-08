@@ -83,7 +83,7 @@
 
 @section('content')
   <div class="flex justify-center overflow-x-auto">
-    <div class="w-[1000px] rounded-lg border-2 border-slate-500 bg-white text-black">
+    <div class="rounded-lg border-2 border-slate-500 bg-white text-black md:w-[1000px]">
       <div class="container mx-auto">
         <div class="mx-8 my-6">
           <div class="hidden md:block">

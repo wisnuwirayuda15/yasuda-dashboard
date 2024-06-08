@@ -51,8 +51,6 @@ class InvoiceResource extends Resource
 
   protected static ?string $navigationIcon = 'fas-file-invoice';
 
-  protected static ?string $navigationGroup = NavigationGroupLabel::FINANCE->value;
-
   protected static ?Order $order = null;
 
   public static function form(Form $form): Form
@@ -154,7 +152,7 @@ class InvoiceResource extends Resource
             static::getMainCostsSection(),
           ]),
         Tab::make('Tambahan Kaos')
-          ->icon('fas-shirt')
+          ->icon(ShirtResource::getNavigationIcon())
           ->schema([
             static::getShirtsSection(),
           ]),

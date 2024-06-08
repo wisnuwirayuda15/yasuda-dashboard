@@ -8,12 +8,14 @@ use Filament\Support\Contracts\HasLabel;
 
 enum CustomerStatus: string implements HasLabel, HasColor, HasIcon
 {
+  case CANDIDATE = 'candidate';
   case NEW = 'new';
   case SUBSCRIBER = 'subscriber';
 
   public function getLabel(): ?string
   {
     return match ($this) {
+      self::CANDIDATE => 'Calon Customer',
       self::NEW => 'New Customer',
       self::SUBSCRIBER => 'Berlangganan',
     };
@@ -22,6 +24,7 @@ enum CustomerStatus: string implements HasLabel, HasColor, HasIcon
   public function getColor(): string|array|null
   {
     return match ($this) {
+      self::CANDIDATE => 'warning',
       self::NEW => 'info',
       self::SUBSCRIBER => 'success',
     };
@@ -30,6 +33,7 @@ enum CustomerStatus: string implements HasLabel, HasColor, HasIcon
   public function getIcon(): ?string
   {
     return match ($this) {
+      self::CANDIDATE => 'fas-question',
       self::NEW => 'heroicon-s-sparkles',
       self::SUBSCRIBER => 'heroicon-s-check-badge',
     };

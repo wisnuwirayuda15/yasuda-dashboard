@@ -3,7 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\Fleet;
-use App\Enums\OrderStatus;
+use App\Enums\OrderFleetStatus;
 use App\Models\OrderFleet;
 use App\Models\TourLeader;
 use Illuminate\Database\Seeder;
@@ -22,9 +22,9 @@ class OrderFleetSeeder extends Seeder
         'code' => get_code(new OrderFleet, 'OF'),
         'fleet_id' => Fleet::inRandomOrder()->value('id'),
         'trip_date' => fake()->dateTimeBetween(today()->addWeek(), today()->addMonths(1)),
-        'status' => OrderStatus::READY->value,
+        // 'status' => OrderFleetStatus::READY->value,
         'payment_status' => FleetPaymentStatus::NON_DP->value,
-        'tour_leader_id' => TourLeader::inRandomOrder()->value('id'),
+        // 'tour_leader_id' => TourLeader::inRandomOrder()->value('id'),
       ]);
     }
   }

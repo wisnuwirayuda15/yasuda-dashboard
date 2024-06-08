@@ -42,18 +42,12 @@ class CreateTourReport extends CreateRecord
   {
     $inv = Invoice::findOrFail($data['invoice_id']);
 
-    $pnl = $inv->profitLoss;
-
-    $tr = $inv->tourReport;
-
     $tourLeaderNotAllSet = $inv->order->whereHas('orderFleets', function (Builder $query) {
       $query->whereNull('tour_leader_id');
     })->exists();
 
-    // Invoice must have profit & loss before creating tour report
-    // Each invoice should only has one tour report
     // All order fleets must have tour leader before creating tour report
-    if (!$pnl || $tr || $tourLeaderNotAllSet) {
+    if ($tourLeaderNotAllSet) {
       $this->halt();
     }
 

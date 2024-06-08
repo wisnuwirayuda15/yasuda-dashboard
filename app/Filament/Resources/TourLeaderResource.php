@@ -23,7 +23,10 @@ class TourLeaderResource extends Resource
 
   protected static ?string $navigationIcon = 'gmdi-tour-r';
 
-  protected static ?string $navigationGroup = NavigationGroupLabel::MASTER_DATA->value;
+  public static function getNavigationBadge(): ?string
+  {
+    return static::getModel()::count();
+  }
 
   public static function form(Form $form): Form
   {

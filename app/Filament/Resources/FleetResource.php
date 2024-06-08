@@ -33,9 +33,12 @@ class FleetResource extends Resource
 
   protected static ?string $navigationIcon = 'fas-bus';
 
-  protected static ?string $navigationGroup = NavigationGroupLabel::MASTER_DATA->value;
-
   protected static ?string $recordTitleAttribute = 'name';
+
+  public static function getNavigationBadge(): ?string
+  {
+    return static::getModel()::count();
+  }
 
   public static function getGlobalSearchResultDetails(Model $record): array
   {
@@ -124,6 +127,8 @@ class FleetResource extends Resource
           Tables\Actions\EditAction::make(),
           Tables\Actions\DeleteAction::make(),
           Tables\Actions\ReplicateAction::make()
+            ->color('warning')
+            ->modal(false)
         ]),
       ]);
   }

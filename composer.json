@@ -11,6 +11,7 @@
         "php": "^8.1",
         "awcodes/filament-quick-create": "^3.3",
         "awcodes/filament-table-repeater": "^3.0",
+        "awcodes/filament-versions": "^2.0",
         "awcodes/shout": "^2.0",
         "bezhansalleh/filament-language-switch": "^3.0",
         "blade-ui-kit/blade-icons": "^1.6",

@@ -19,9 +19,7 @@ class CreateOrder extends CreateRecord
     if (filled($data['order_fleet_ids'])) {
       $orderFleets = OrderFleet::findOrFail($data['order_fleet_ids']);
       
-      foreach ($orderFleets as $of) {
-        $of->update(['order_id' => $record->id]);
-      }
+      $orderFleets->each->update(['order_id' => $record->id]);
     }
 
     return $record;

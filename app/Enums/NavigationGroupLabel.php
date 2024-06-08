@@ -6,14 +6,14 @@ use Filament\Support\Contracts\HasLabel;
 
 enum NavigationGroupLabel: string implements HasLabel
 {
-  case OPERATIONAL = 'Operational';
-  case FINANCE = 'Finance';
-  case MARKETING = 'Marketing';
-  case MASTER_DATA = 'Master Data';
-  case SETTING = 'Settings';
-  
+  case OPERATIONAL = 'operational';
+  case FINANCE = 'finance';
+  case MARKETING = 'marketing';
+  case MASTER_DATA = 'master_data';
+  case SETTING = 'settings';
+
   public function getLabel(): ?string
   {
-    return $this->name;
+    return __('navigation.' . $this->value);
   }
 }

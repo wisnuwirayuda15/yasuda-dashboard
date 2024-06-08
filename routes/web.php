@@ -21,6 +21,6 @@ Route::controller(PdfController::class)
     Route::get('invoice/{invoice:code}', 'invoice')->name('invoice');
   });
 
-// Route::get('/', function () {
-//   return view('welcome');
-// });
+Route::get('/', function () {
+  return redirect('/dashboard');
+});

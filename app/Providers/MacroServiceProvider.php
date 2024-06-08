@@ -29,12 +29,25 @@ class MacroServiceProvider extends ServiceProvider
         ->live(true)
         ->integer()
         ->minValue($minValue)
-        ->afterStateUpdated(fn(?int $state, Set $set, TextInput $component) => (
-          blank($state)
-          || is_string($state)
-          || is_int($state) && $state < 0
-          || !is_numeric($state)
-        ) ? $set($component, 0) : false);
+        ->afterStateUpdated(function ($state, Set $set, TextInput $component) {
+          $value = (int) $state;
+          $value < 0 ? $set($component, 0) : $set($component, $value);
+        })
+        ->extraInputAttributes([
+          'x-data' => '{
+            value: $el.value,
+            validate() {
+                if (isNaN(this.value) || !this.value || !Number.isInteger(Number(this.value)) || this.value < 0) {
+                      this.value = 0;
+                  } else if (this.value > 0) {
+                      this.value = this.value.replace(/^0+/, "");
+                  }
+                  $el.value = this.value;
+              }
+          }',
+          'x-model' => 'value',
+          'x-on:input' => 'validate()'
+        ]);
       return $this;
     });
 
@@ -44,12 +57,25 @@ class MacroServiceProvider extends ServiceProvider
         ->numeric()
         ->minValue($minValue)
         ->prefix($prefix)
-        ->afterStateUpdated(fn(?int $state, Set $set, TextInput $component) => (
-          blank($state)
-          || is_string($state)
-          || is_int($state) && $state < 0
-          || !is_numeric($state)
-        ) ? $set($component, 0) : false);
+        ->afterStateUpdated(function ($state, Set $set, TextInput $component) {
+          $value = (int) $state;
+          $value < 0 ? $set($component, 0) : $set($component, $value);
+        })
+        ->extraInputAttributes([
+          'x-data' => '{
+              value: $el.value,
+              validate() {
+                  if (isNaN(this.value) || !this.value || this.value < 0) {
+                      this.value = 0;
+                  } else if (this.value > 0) {
+                      this.value = this.value.replace(/^0+/, "");
+                  }
+                  $el.value = this.value;
+              }
+          }',
+          'x-model' => 'value',
+          'x-on:input' => 'validate()'
+        ]);
       return $this;
     });
 

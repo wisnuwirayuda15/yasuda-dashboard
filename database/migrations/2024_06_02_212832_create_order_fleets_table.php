@@ -19,8 +19,6 @@ return new class extends Migration
             $table->foreignId('order_id')->nullable()->constrained()->cascadeOnDelete();
             $table->foreignId('fleet_id')->constrained()->cascadeOnDelete();
             $table->dateTime('trip_date');
-            $table->integer('duration')->default(1);
-            $table->string('status', 50);
             $table->string('payment_status', 50);
             $table->dateTime('payment_date')->nullable();
             $table->bigInteger('payment_amount')->nullable();

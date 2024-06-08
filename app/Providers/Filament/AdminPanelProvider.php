@@ -13,6 +13,7 @@ use App\Filament\Pages\Auth\Login;
 use Filament\Support\Colors\Color;
 use Illuminate\Support\HtmlString;
 use App\Enums\NavigationGroupLabel;
+use App\Filament\Pages\Dashboard;
 use Filament\View\PanelsRenderHook;
 use Filament\Livewire\Notifications;
 use Filament\Support\Enums\MaxWidth;
@@ -23,15 +24,25 @@ use Filament\Navigation\NavigationGroup;
 use Filament\Notifications\Notification;
 use Filament\Forms\Components\DatePicker;
 use Filament\Http\Middleware\Authenticate;
+use Filament\Navigation\NavigationBuilder;
 use Filament\Support\Facades\FilamentView;
 use Filament\Tables\Enums\ActionsPosition;
 use Jeffgreco13\FilamentBreezy\BreezyCore;
-use App\Filament\Resources\InvoiceResource;
 use Filament\Support\Facades\FilamentAsset;
+use App\Filament\Resources\CustomerResource;
+use App\Filament\Resources\DestinationResource;
+use App\Filament\Resources\FleetResource;
+use App\Filament\Resources\InvoiceResource;
+use App\Filament\Resources\OrderFleetResource;
+use App\Filament\Resources\OrderResource;
+use Awcodes\FilamentVersions\VersionsPlugin;
+use Awcodes\FilamentVersions\VersionsWidget;
 use Filament\Support\Enums\VerticalAlignment;
-use pxlrbt\FilamentSpotlight\SpotlightPlugin;
 use App\Filament\Resources\ProfitLossResource;
+use App\Filament\Resources\ShirtResource;
+use App\Filament\Resources\TourLeaderResource;
 use App\Filament\Resources\TourReportResource;
+use App\Filament\Resources\TourTemplateResource;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\Cookie\Middleware\EncryptCookies;
@@ -47,7 +58,7 @@ use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 
 class AdminPanelProvider extends PanelProvider
 {
-  public function panel(Panel $panel): Panel
+  public function boot(): void
   {
     // Register scroll to top event
     FilamentView::registerRenderHook(
@@ -95,7 +106,7 @@ class AdminPanelProvider extends PanelProvider
     });
 
     // Notification alignment
-    // Notifications::alignment(Alignment::End);
+    Notifications::alignment(Alignment::Center);
     // Notifications::verticalAlignment(VerticalAlignment::End);
 
     // Register Tailwind CSS CDN in local
@@ -104,16 +115,18 @@ class AdminPanelProvider extends PanelProvider
         Js::make('tailwindcss', 'https://cdn.tailwindcss.com'),
       ]);
     }
+  }
 
+  public function panel(Panel $panel): Panel
+  {
     return $panel
       ->default()
       ->spa()
       ->id('admin')
-      ->path('')
+      ->path('dashboard')
       ->login(Login::class)
       ->passwordReset()
       ->font('Poppins')
-      ->breadcrumbs(false)
       ->viteTheme('resources/css/filament/admin/theme.css')
       ->favicon(asset('favicon.svg'))
       ->brandLogo(asset('/img/logo-light.svg'))
@@ -136,6 +149,7 @@ class AdminPanelProvider extends PanelProvider
       ->widgets([
         Widgets\AccountWidget::class,
         Widgets\FilamentInfoWidget::class,
+        VersionsWidget::class,
       ])
       ->colors([
         'primary' => Color::Rose,
@@ -160,11 +174,41 @@ class AdminPanelProvider extends PanelProvider
       ->authMiddleware([
         Authenticate::class,
       ])
-      ->navigationGroups([
-        NavigationGroup::make(NavigationGroupLabel::MASTER_DATA->value),
-        NavigationGroup::make(NavigationGroupLabel::FINANCE->value),
-      ])
+      ->navigation(function (NavigationBuilder $builder): NavigationBuilder {
+        return $builder
+          ->items([
+            ...Dashboard::getNavigationItems(),
+          ])
+          ->groups([
+            NavigationGroup::make()
+              ->label(NavigationGroupLabel::MASTER_DATA->getLabel())
+              ->items([
+                ...FleetResource::getNavigationItems(),
+                ...CustomerResource::getNavigationItems(),
+                ...DestinationResource::getNavigationItems(),
+                ...TourLeaderResource::getNavigationItems(),
+                ...TourTemplateResource::getNavigationItems(),
+              ]),
+            NavigationGroup::make()
+              ->label(NavigationGroupLabel::OPERATIONAL->getLabel())
+              ->items([
+                ...OrderResource::getNavigationItems(),
+                ...OrderFleetResource::getNavigationItems(),
+                ...ShirtResource::getNavigationItems(),
+              ]),
+            NavigationGroup::make()
+              ->label(NavigationGroupLabel::FINANCE->getLabel())
+              ->items([
+                ...InvoiceResource::getNavigationItems(),
+                ...ProfitLossResource::getNavigationItems(),
+                ...TourReportResource::getNavigationItems(),
+              ]),
+          ]);
+      })
       ->plugins([
+        VersionsPlugin::make()
+          ->hasNavigationView(false)
+          ->widgetColumnSpan('full'),
         BreezyCore::make()
           ->avatarUploadComponent(fn($fileUpload) => $fileUpload->disableLabel())
           ->myProfile(
@@ -181,7 +225,6 @@ class AdminPanelProvider extends PanelProvider
             ProfitLossResource::class,
             TourReportResource::class,
           ]),
-        // SpotlightPlugin::make(),
       ]);
   }
 }

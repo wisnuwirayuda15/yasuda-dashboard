@@ -41,8 +41,6 @@ class TourReportResource extends Resource
 
   protected static ?string $navigationIcon = 'heroicon-s-document-check';
 
-  protected static ?string $navigationGroup = NavigationGroupLabel::FINANCE->value;
-
   protected static ?Invoice $invoice = null;
 
   public static function form(Form $form): Form
@@ -80,22 +78,22 @@ class TourReportResource extends Resource
     return $table
       ->columns([
         Tables\Columns\TextColumn::make('invoice.code')
-          ->numeric()
+          ->searchable()
           ->sortable(),
         Tables\Columns\TextColumn::make('customer_repayment')
+          ->searchable()
           ->money('IDR')
           ->sortable(),
         Tables\Columns\TextColumn::make('difference')
+          ->searchable()
           ->money('IDR')
           ->sortable(),
         Tables\Columns\TextColumn::make('created_at')
           ->dateTime()
-          ->sortable()
-          ->toggleable(),
+          ->sortable(),
         Tables\Columns\TextColumn::make('updated_at')
           ->dateTime()
-          ->sortable()
-          ->toggleable(),
+          ->sortable(),
       ])
       ->filters([
         //
@@ -138,22 +136,14 @@ class TourReportResource extends Resource
       ->schema([
         Select::make('invoice_id')
           ->required()
+          ->unique(ignoreRecord: true)
           ->disabled()
           ->dehydrated()
           ->allowHtml()
           ->prefixIcon(InvoiceResource::getNavigationIcon())
           ->default(static::$invoice->id)
           ->relationship('invoice', 'id')
-          ->getOptionLabelFromRecordUsing(fn(Invoice $record) => view('filament.components.badges.invoice', compact('record')))
-          ->rules([
-            fn(string $operation): Closure => function (string $attribute, $value, Closure $fail) use ($operation) {
-              if ($operation !== 'edit') {
-                if (Invoice::find($value)->tourReport()->exists()) {
-                  $fail('Tour report untuk invoice ini sudah ada.');
-                }
-              }
-            },
-          ]),
+          ->getOptionLabelFromRecordUsing(fn(Invoice $record) => view('filament.components.badges.invoice', compact('record'))),
         Placeholder::make('invoice_code')
           ->label('Invoice :')
           ->inlineLabel()

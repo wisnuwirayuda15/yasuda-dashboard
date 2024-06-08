@@ -21,14 +21,4 @@ class CreateProfitLoss extends CreateRecord
     // Each invoice should only has one profit & loss
     $pnl ? redirect(ProfitLossResource::getUrl('view', ['record' => $pnl->id])) : null;
   }
-
-  protected function mutateFormDataBeforeCreate(array $data): array
-  {
-    $pnl = Invoice::findOrFail($data['invoice_id'])->profitLoss;
-
-    // Each invoice should only has one profit & loss
-    $pnl ? $this->halt() : null;
-
-    return $data;
-  }
 }

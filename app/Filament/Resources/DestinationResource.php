@@ -22,7 +22,10 @@ class DestinationResource extends Resource
 
   protected static ?string $navigationIcon = 'fas-map-location-dot';
 
-  protected static ?string $navigationGroup = NavigationGroupLabel::MASTER_DATA->value;
+  public static function getNavigationBadge(): ?string
+  {
+    return static::getModel()::count();
+  }
 
   public static function form(Form $form): Form
   {

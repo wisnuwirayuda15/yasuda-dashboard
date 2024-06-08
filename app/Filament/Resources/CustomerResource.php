@@ -29,9 +29,13 @@ class CustomerResource extends Resource
   protected static ?string $model = Customer::class;
 
   protected static ?string $navigationIcon = 'fas-users';
-  protected static ?string $navigationGroup = NavigationGroupLabel::MASTER_DATA->value;
 
   protected static ?string $recordTitleAttribute = 'name';
+
+  public static function getNavigationBadge(): ?string
+  {
+    return static::getModel()::count();
+  }
 
   public static function getGlobalSearchResultDetails(Model $record): array
   {
@@ -151,7 +155,7 @@ class CustomerResource extends Resource
         ToggleButtons::make('status')
           ->required()
           ->inline()
-          ->default(CustomerStatus::NEW ->value)
+          ->default(CustomerStatus::CANDIDATE->value)
           ->options(CustomerStatus::class),
       ]);
   }
