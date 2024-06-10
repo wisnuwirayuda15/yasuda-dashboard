@@ -86,9 +86,11 @@ models:
     high_season_price: bigInteger nullable
 
   TourTemplate:
+    image: string nullable
     name: string
     regency_id: foreign constrained onDelete:cascade
     destinations: json
+    description: longText nullable
 
   Company:
     name: string default:"Yasuda Jaya Tour & Travel"
@@ -212,7 +214,7 @@ models:
   Meeting:
     title: string
     date: datetime
-    description: longText
+    description: longText nullable
 
   Feedback:
     customer_id: foreign constrained onDelete:cascade

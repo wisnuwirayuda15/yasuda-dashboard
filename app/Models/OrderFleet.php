@@ -20,8 +20,6 @@ class OrderFleet extends Model
         'order_id',
         'fleet_id',
         'trip_date',
-        'duration',
-        'status',
         'payment_status',
         'payment_date',
         'payment_amount',

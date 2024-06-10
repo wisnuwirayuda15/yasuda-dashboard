@@ -25,6 +25,7 @@ class ShirtFactory extends Factory
             'invoice_id' => Invoice::factory(),
             'child' => '{}',
             'adult' => '{}',
+            'total' => $this->faker->numberBetween(-100000, 100000),
         ];
     }
 }

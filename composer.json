@@ -38,6 +38,7 @@
         "pxlrbt/filament-spotlight": "^1.2",
         "ryangjchandler/blade-tabler-icons": "^2.3",
         "saade/blade-iconsax": "^1.2",
+        "saade/filament-fullcalendar": "^3.2",
         "spatie/laravel-pdf": "^1.5",
         "ysfkaya/filament-phone-input": "^2.3"
     },

@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Receivable extends Model
+class Meeting extends Model
 {
     use HasFactory;
 
@@ -15,11 +15,9 @@ class Receivable extends Model
      * @var array
      */
     protected $fillable = [
-        'creditor',
+        'title',
         'date',
-        'due_date',
-        'amount',
-        'status',
+        'description',
     ];
 
     /**
@@ -30,7 +28,5 @@ class Receivable extends Model
     protected $casts = [
         'id' => 'integer',
         'date' => 'datetime',
-        'due_date' => 'datetime',
-        'amount' => 'integer',
     ];
 }

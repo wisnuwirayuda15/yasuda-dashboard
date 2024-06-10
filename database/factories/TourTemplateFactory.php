@@ -22,9 +22,11 @@ class TourTemplateFactory extends Factory
     public function definition(): array
     {
         return [
+            'image' => $this->faker->word(),
             'name' => $this->faker->name(),
             'regency_id' => Regency::factory(),
             'destinations' => '{}',
+            'description' => $this->faker->text(),
         ];
     }
 }

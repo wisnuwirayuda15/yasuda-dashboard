@@ -13,13 +13,13 @@ return new class extends Migration
     {
         Schema::disableForeignKeyConstraints();
 
-        Schema::create('receivables', function (Blueprint $table) {
+        Schema::create('tour_templates', function (Blueprint $table) {
             $table->id();
-            $table->string('creditor');
-            $table->dateTime('date');
-            $table->dateTime('due_date')->nullable();
-            $table->bigInteger('amount');
-            $table->string('status', 50);
+            $table->string('image')->nullable();
+            $table->string('name');
+            $table->foreignId('regency_id')->constrained()->cascadeOnDelete();
+            $table->json('destinations');
+            $table->longText('description')->nullable();
             $table->timestamps();
         });
 
@@ -31,6 +31,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('receivables');
+        Schema::dropIfExists('tour_templates');
     }
 };

@@ -15,7 +15,7 @@ return new class extends Migration
 
         Schema::create('profit_losses', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('invoice_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('invoice_id')->constrained()->cascadeOnDelete()->unique();
             $table->bigInteger('medium_rent_price')->default(0);
             $table->bigInteger('big_rent_price')->default(0);
             $table->bigInteger('legrest_rent_price')->default(0);

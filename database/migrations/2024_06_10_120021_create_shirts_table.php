@@ -15,7 +15,7 @@ return new class extends Migration
 
         Schema::create('shirts', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('invoice_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('invoice_id')->constrained()->cascadeOnDelete()->unique();
             $table->json('child');
             $table->json('adult');
             $table->bigInteger('total');

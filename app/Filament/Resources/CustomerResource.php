@@ -14,15 +14,18 @@ use App\Enums\CustomerCategory;
 use Filament\Resources\Resource;
 use Dotswan\MapPicker\Fields\Map;
 use App\Enums\NavigationGroupLabel;
+use Filament\Tables\Actions\Action;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Section;
 use Filament\Tables\Columns\TextColumn;
 use Illuminate\Database\Eloquent\Model;
 use Filament\Forms\Components\TextInput;
+use Filament\Notifications\Notification;
 use Filament\Forms\Components\ToggleButtons;
 use Ysfkaya\FilamentPhoneInput\Forms\PhoneInput;
 use App\Filament\Resources\CustomerResource\Pages;
 use App\Filament\Resources\CustomerResource\RelationManagers;
+use Filament\Forms\Components\Fieldset;
 
 class CustomerResource extends Resource
 {
@@ -64,6 +67,10 @@ class CustomerResource extends Resource
         TextColumn::make('category')
           ->badge()
           ->searchable(),
+        TextColumn::make('status')
+          ->badge()
+          ->tooltip('Ubah status')
+          ->action(static::getChangeStatusAction()),
         TextColumn::make('name')
           ->searchable(),
         TextColumn::make('address')
@@ -80,9 +87,6 @@ class CustomerResource extends Resource
         TextColumn::make('phone')
           ->searchable(),
         TextColumn::make('email')
-          ->searchable(),
-        TextColumn::make('status')
-          ->badge()
           ->searchable(),
         TextColumn::make('loyalty_point')
           ->numeric(),
@@ -102,13 +106,6 @@ class CustomerResource extends Resource
           ->toggleable(isToggledHiddenByDefault: true),
       ])
       ->filters([
-      ])
-      ->actions([
-        Tables\Actions\ActionGroup::make([
-          Tables\Actions\ViewAction::make(),
-          Tables\Actions\EditAction::make(),
-          Tables\Actions\DeleteAction::make(),
-        ]),
       ]);
   }
 
@@ -213,5 +210,27 @@ class CustomerResource extends Resource
           ->email()
           ->maxLength(255),
       ]);
+  }
+
+  public static function getChangeStatusAction(): Action
+  {
+    return Action::make('change_status')
+      ->label('Ubah Status')
+      ->form([
+        ToggleButtons::make('status')
+          ->required()
+          ->inline()
+          ->hiddenLabel()
+          ->default(fn(Customer $record) => $record->status)
+          ->options(CustomerStatus::class),
+      ])
+      ->action(function (array $data, Customer $record): void {
+        $record->update(['status' => $data['status']]);
+        Notification::make()
+          ->success()
+          ->title('Success')
+          ->body('Status berhasil diubah.')
+          ->send();
+      });
   }
 }

@@ -40,7 +40,7 @@ class Fleet extends Model
 
   public static function getGroupOptionsByCategories(): array
   {
-    $fleets = Fleet::all()->groupBy('category');
+    $fleets = Fleet::query()->groupBy('category');
 
     $fleetArray = [];
 

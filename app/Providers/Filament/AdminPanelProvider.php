@@ -9,42 +9,49 @@ use Filament\Pages\Page;
 use Filament\Tables\Table;
 use Filament\PanelProvider;
 use Filament\Support\Assets\Js;
+use App\Filament\Pages\Dashboard;
 use App\Filament\Pages\Auth\Login;
 use Filament\Support\Colors\Color;
 use Illuminate\Support\HtmlString;
 use App\Enums\NavigationGroupLabel;
-use App\Filament\Pages\Dashboard;
 use Filament\View\PanelsRenderHook;
 use Filament\Livewire\Notifications;
 use Filament\Support\Enums\MaxWidth;
 use Filament\Support\Enums\Platform;
 use Filament\Forms\Components\Select;
 use Filament\Support\Enums\Alignment;
+use Filament\Tables\Actions\EditAction;
+use Filament\Tables\Actions\ViewAction;
 use Filament\Navigation\NavigationGroup;
 use Filament\Notifications\Notification;
+use Filament\Tables\Actions\ActionGroup;
+use App\Filament\Resources\FleetResource;
+use App\Filament\Resources\OrderResource;
+use App\Filament\Resources\ShirtResource;
 use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\FileUpload;
+use Filament\Tables\Actions\DeleteAction;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Navigation\NavigationBuilder;
 use Filament\Support\Facades\FilamentView;
 use Filament\Tables\Enums\ActionsPosition;
 use Jeffgreco13\FilamentBreezy\BreezyCore;
+use App\Filament\Resources\InvoiceResource;
+use App\Filament\Resources\MeetingResource;
 use Filament\Support\Facades\FilamentAsset;
 use App\Filament\Resources\CustomerResource;
-use App\Filament\Resources\DestinationResource;
-use App\Filament\Resources\FleetResource;
-use App\Filament\Resources\InvoiceResource;
-use App\Filament\Resources\OrderFleetResource;
-use App\Filament\Resources\OrderResource;
 use Awcodes\FilamentVersions\VersionsPlugin;
 use Awcodes\FilamentVersions\VersionsWidget;
+use Filament\Forms\Components\DateTimePicker;
 use Filament\Support\Enums\VerticalAlignment;
+use App\Filament\Resources\OrderFleetResource;
 use App\Filament\Resources\ProfitLossResource;
-use App\Filament\Resources\ShirtResource;
 use App\Filament\Resources\TourLeaderResource;
 use App\Filament\Resources\TourReportResource;
-use App\Filament\Resources\TourTemplateResource;
 use Illuminate\Validation\ValidationException;
+use App\Filament\Resources\DestinationResource;
 use Illuminate\Session\Middleware\StartSession;
+use App\Filament\Resources\TourTemplateResource;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Awcodes\FilamentQuickCreate\QuickCreatePlugin;
 use Illuminate\Routing\Middleware\SubstituteBindings;
@@ -54,6 +61,7 @@ use BezhanSalleh\FilamentLanguageSwitch\LanguageSwitch;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
+use Saade\FilamentFullCalendar\FilamentFullCalendarPlugin;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 
 class AdminPanelProvider extends PanelProvider
@@ -83,6 +91,11 @@ class AdminPanelProvider extends PanelProvider
         ->extremePaginationLinks()
         ->paginationPageOptions([5, 10, 15, 20, 25, 30])
         ->actions([
+          ActionGroup::make([
+            ViewAction::make(),
+            EditAction::make(),
+            DeleteAction::make(),
+          ]),
         ], ActionsPosition::BeforeColumns);
     });
     Select::configureUsing(function (Select $select): void {
@@ -98,6 +111,11 @@ class AdminPanelProvider extends PanelProvider
         ->closeOnDateSelection()
         ->prefixIcon('heroicon-s-calendar-days')
         ->displayFormat('d mm Y');
+    });
+    DateTimePicker::configureUsing(function (DateTimePicker $dateTimePicker): void {
+      $dateTimePicker
+        ->prefixIcon('heroicon-s-calendar-days')
+        ->displayFormat('d mm Y • H:i');
     });
     LanguageSwitch::configureUsing(function (LanguageSwitch $switch): void {
       $switch
@@ -195,6 +213,7 @@ class AdminPanelProvider extends PanelProvider
                 ...OrderResource::getNavigationItems(),
                 ...OrderFleetResource::getNavigationItems(),
                 ...ShirtResource::getNavigationItems(),
+                ...MeetingResource::getNavigationItems(),
               ]),
             NavigationGroup::make()
               ->label(NavigationGroupLabel::FINANCE->getLabel())
@@ -210,7 +229,7 @@ class AdminPanelProvider extends PanelProvider
           ->hasNavigationView(false)
           ->widgetColumnSpan('full'),
         BreezyCore::make()
-          ->avatarUploadComponent(fn($fileUpload) => $fileUpload->disableLabel())
+          ->avatarUploadComponent(fn(FileUpload $fileUpload) => $fileUpload->hiddenLabel())
           ->myProfile(
             shouldRegisterUserMenu: true,
             shouldRegisterNavigation: false,
@@ -225,6 +244,9 @@ class AdminPanelProvider extends PanelProvider
             ProfitLossResource::class,
             TourReportResource::class,
           ]),
+        FilamentFullCalendarPlugin::make()
+          ->selectable(true)
+          ->editable(true),
       ]);
   }
 }

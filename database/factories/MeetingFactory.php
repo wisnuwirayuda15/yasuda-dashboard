@@ -4,17 +4,16 @@ namespace Database\Factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
-use App\Models\EmployeeSalary;
-use App\Models\User;
+use App\Models\Meeting;
 
-class EmployeeSalaryFactory extends Factory
+class MeetingFactory extends Factory
 {
     /**
      * The name of the factory's corresponding model.
      *
      * @var string
      */
-    protected $model = EmployeeSalary::class;
+    protected $model = Meeting::class;
 
     /**
      * Define the model's default state.
@@ -22,10 +21,9 @@ class EmployeeSalaryFactory extends Factory
     public function definition(): array
     {
         return [
-            'user_id' => User::factory(),
-            'amount' => $this->faker->numberBetween(-100000, 100000),
+            'title' => $this->faker->sentence(4),
             'date' => $this->faker->dateTime(),
-            'working_day' => $this->faker->numberBetween(-10000, 10000),
+            'description' => $this->faker->text(),
         ];
     }
 }

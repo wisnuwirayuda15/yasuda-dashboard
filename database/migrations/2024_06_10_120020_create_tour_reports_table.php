@@ -15,7 +15,7 @@ return new class extends Migration
 
         Schema::create('tour_reports', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('invoice_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('invoice_id')->constrained()->cascadeOnDelete()->unique();
             $table->json('main_costs');
             $table->json('other_costs')->nullable();
             $table->bigInteger('customer_repayment')->default(0);
