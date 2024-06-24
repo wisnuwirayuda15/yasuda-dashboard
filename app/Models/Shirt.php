@@ -19,6 +19,21 @@ class Shirt extends Model
         'invoice_id',
         'child',
         'adult',
+        'male_teacher',
+        'female_teacher',
+        'child_color',
+        'adult_color',
+        'male_teacher_color',
+        'female_teacher_color',
+        'child_sleeve',
+        'adult_sleeve',
+        'male_teacher_sleeve',
+        'female_teacher_sleeve',
+        'child_material',
+        'adult_material',
+        'male_teacher_material',
+        'female_teacher_material',
+        'status',
         'total',
     ];
 
@@ -32,6 +47,8 @@ class Shirt extends Model
         'invoice_id' => 'integer',
         'child' => 'array',
         'adult' => 'array',
+        'male_teacher' => 'array',
+        'female_teacher' => 'array',
         'total' => 'integer',
     ];
 

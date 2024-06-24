@@ -15,11 +15,17 @@ return new class extends Migration
 
         Schema::create('tour_leaders', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->nullable()->constrained()->cascadeOnDelete();
+            $table->foreignId('user_id')->nullable()->constrained()->cascadeOnDelete()->unique();
+            $table->string('code')->unique()->index();
             $table->string('name')->index();
+            $table->string('alias')->unique();
+            $table->dateTime('join_date');
+            $table->dateTime('exit_date')->nullable();
+            $table->string('ktp')->unique()->nullable();
             $table->string('photo')->nullable();
-            $table->string('phone')->unique();
+            $table->string('phone')->nullable();
             $table->string('gender', 50);
+            $table->string('status', 50);
             $table->timestamps();
         });
 

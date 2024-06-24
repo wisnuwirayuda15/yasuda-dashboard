@@ -63,6 +63,11 @@ class Invoice extends Model
         return $this->hasOne(Shirt::class);
     }
 
+    public function loyaltyPoint(): HasOne
+    {
+        return $this->hasOne(LoyaltyPoint::class);
+    }
+
     public function order(): BelongsTo
     {
         return $this->belongsTo(Order::class);

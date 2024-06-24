@@ -13,10 +13,12 @@ return new class extends Migration
     {
         Schema::disableForeignKeyConstraints();
 
-        Schema::create('feedback', function (Blueprint $table) {
+        Schema::create('loyalty_points', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('customer_id')->constrained()->cascadeOnDelete();
-            $table->longText('text');
+            $table->foreignId('invoice_id')->constrained()->cascadeOnDelete()->unique();
+            $table->string('cash_status', 50)->default('inflow');
+            $table->longText('description')->nullable();
+            $table->bigInteger('amount');
             $table->timestamps();
         });
 
@@ -28,6 +30,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('feedback');
+        Schema::dropIfExists('loyalty_points');
     }
 };

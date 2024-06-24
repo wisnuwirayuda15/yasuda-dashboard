@@ -43,7 +43,8 @@ enum ShirtSize: string implements HasLabel, HasColor, HasIcon
       self::M => Color::Emerald,
       self::L => Color::Green,
       self::XL => Color::Yellow,
-      self::XXL => Color::Red,
+      self::XXL => Color::Orange,
+      self::XXXL => Color::Red,
     };
   }
 }

@@ -4,17 +4,16 @@ namespace Database\Factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
-use App\Models\Customer;
-use App\Models\Feedback;
+use App\Models\Event;
 
-class FeedbackFactory extends Factory
+class EventFactory extends Factory
 {
     /**
      * The name of the factory's corresponding model.
      *
      * @var string
      */
-    protected $model = Feedback::class;
+    protected $model = Event::class;
 
     /**
      * Define the model's default state.
@@ -22,8 +21,9 @@ class FeedbackFactory extends Factory
     public function definition(): array
     {
         return [
-            'customer_id' => Customer::factory(),
-            'text' => $this->faker->text(),
+            'title' => $this->faker->sentence(4),
+            'date' => $this->faker->dateTime(),
+            'description' => $this->faker->text(),
         ];
     }
 }

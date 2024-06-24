@@ -13,4 +13,13 @@ input::-webkit-inner-spin-button {
 /* Firefox */
 input[type="number"] {
     -moz-appearance: textfield;
+    appearance: textfield;
+}
+
+.fi-sidebar-item:not(.fi-sidebar-item-active) {
+    @apply hover:translate-x-2 transition !important;
+}
+
+.fi-ta-ctn {
+    @apply hover:shadow-lg transition !important;
 }

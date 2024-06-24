@@ -4,20 +4,24 @@ namespace App\Filament\Resources;
 
 use Filament\Forms;
 use Filament\Tables;
-use App\Models\Meeting;
+use App\Models\Event;
 use Filament\Forms\Form;
 use Filament\Tables\Table;
 use Filament\Resources\Resource;
+use Filament\Tables\Columns\TextColumn;
 use Illuminate\Database\Eloquent\Builder;
 use App\Filament\Resources\MeetingResource\Pages;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use App\Filament\Resources\MeetingResource\RelationManagers;
+use Illuminate\Support\HtmlString;
 
 class MeetingResource extends Resource
 {
-  protected static ?string $model = Meeting::class;
+  protected static ?string $model = Event::class;
 
-  protected static ?string $navigationIcon = 'fluentui-device-meeting-room-remote-20';
+  protected static ?string $modelLabel = 'Event';
+
+  protected static ?string $navigationIcon = 'gmdi-event';
 
   public static function form(Form $form): Form
   {
@@ -45,29 +49,25 @@ class MeetingResource extends Resource
   public static function table(Table $table): Table
   {
     //TODO: hide the table
+
     return $table
       ->columns([
-        Tables\Columns\TextColumn::make('title')
+        TextColumn::make('title')
           ->searchable(),
-        Tables\Columns\TextColumn::make('date')
+        TextColumn::make('date')
           ->dateTime()
           ->sortable(),
-        Tables\Columns\TextColumn::make('created_at')
+        TextColumn::make('description')
+          ->limit(40)
+          ->html(),
+        TextColumn::make('created_at')
           ->dateTime()
           ->sortable()
           ->toggleable(isToggledHiddenByDefault: true),
-        Tables\Columns\TextColumn::make('updated_at')
+        TextColumn::make('updated_at')
           ->dateTime()
           ->sortable()
           ->toggleable(isToggledHiddenByDefault: true),
-      ])
-      ->filters([
-        //
-      ])
-      ->bulkActions([
-        Tables\Actions\BulkActionGroup::make([
-          Tables\Actions\DeleteBulkAction::make(),
-        ]),
       ])
     ;
   }

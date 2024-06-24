@@ -17,7 +17,7 @@ class CreateShirt extends CreateRecord
   {
     $shirt = Invoice::where('code', request('invoice'))->firstOrFail()->shirt;
 
-    // Each invoice should only has one profit & loss
+    // Each invoice should only has one shirt
     if ($shirt) {
       redirect(ShirtResource::getUrl('view', ['record' => $shirt->id]));
     }

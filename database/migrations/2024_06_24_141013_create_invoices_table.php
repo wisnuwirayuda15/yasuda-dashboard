@@ -21,9 +21,9 @@ return new class extends Migration
             $table->integer('submitted_shirt');
             $table->integer('teacher_shirt_qty')->nullable();
             $table->integer('adult_shirt_qty')->nullable();
-            $table->bigInteger('child_shirt_price')->default(25000);
-            $table->bigInteger('teacher_shirt_price')->default(120000);
-            $table->bigInteger('adult_shirt_price')->default(80000);
+            $table->bigInteger('child_shirt_price')->nullable();
+            $table->bigInteger('teacher_shirt_price')->nullable();
+            $table->bigInteger('adult_shirt_price')->nullable();
             $table->integer('adjusted_seat')->nullable();
             $table->json('down_payments')->nullable();
             $table->bigInteger('other_cost')->nullable();

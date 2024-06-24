@@ -61,12 +61,8 @@ class InvoiceResource extends Resource
         Group::make([
           static::getCostTabs(),
           static::getPaymentDetailSection(),
-          RichEditor::make('notes')
-            ->label('Special Notes'),
-          Checkbox::make('confirmation')
-            ->required()
-            ->hiddenOn('view')
-            ->label('Semua perhitungan sudah dicek dan tidak ada kesalahan')
+          RichEditor::make('notes')->label('Special Notes'),
+          Checkbox::make('confirmation')->confirmation()
         ])
           ->columnSpanFull()
           ->visible(fn(Get $get) => $get('order_id')),
@@ -173,17 +169,18 @@ class InvoiceResource extends Resource
         Select::make('order_id')
           ->required()
           ->allowHtml()
+          ->live(true)
           ->hiddenOn('edit')
           ->unique(ignoreRecord: true)
           ->prefixIcon(fn() => OrderResource::getNavigationIcon())
           ->relationship('order', modifyQueryUsing: fn(Builder $query) => $query->doesntHave('invoice')->has('orderFleets'))
-          ->editOptionModalHeading('Edit Order')
-          ->createOptionModalHeading('Create Order')
-          ->editOptionForm(fn(Form $form) => OrderResource::form($form))
-          ->createOptionForm(fn(Form $form) => OrderResource::form($form))
+          // ->editOptionModalHeading('Edit Order')
+          // ->createOptionModalHeading('Create Order')
+          // ->editOptionForm(fn(Form $form) => OrderResource::form($form))
+          // ->createOptionForm(fn(Form $form) => OrderResource::form($form))
           ->getOptionLabelFromRecordUsing(fn(Order $record) => view('filament.components.badges.order', compact('record'))),
         Group::make()
-          ->visible(fn(Get $get) => filled($get('order_id')))
+          ->visible(fn(Get $get) => $get('order_id'))
           ->schema([
             Placeholder::make('order_code')
               ->inlineLabel()
@@ -391,6 +388,7 @@ class InvoiceResource extends Resource
           ->required()
           ->label('Total Kaos Diserahkan')
           ->default(0)
+          ->minValue(1)
           ->qty(),
         Placeholder::make('shirt_covered_package')
           ->label('Kaos Tercover Paket')

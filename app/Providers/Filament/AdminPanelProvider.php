@@ -20,6 +20,7 @@ use Filament\Support\Enums\MaxWidth;
 use Filament\Support\Enums\Platform;
 use Filament\Forms\Components\Select;
 use Filament\Support\Enums\Alignment;
+use Filament\Forms\Components\Repeater;
 use Filament\Tables\Actions\EditAction;
 use Filament\Tables\Actions\ViewAction;
 use Filament\Navigation\NavigationGroup;
@@ -40,17 +41,21 @@ use App\Filament\Resources\InvoiceResource;
 use App\Filament\Resources\MeetingResource;
 use Filament\Support\Facades\FilamentAsset;
 use App\Filament\Resources\CustomerResource;
+use App\Filament\Resources\EmployeeResource;
 use Awcodes\FilamentVersions\VersionsPlugin;
 use Awcodes\FilamentVersions\VersionsWidget;
+use Filament\Forms\Components\Actions\Action;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Support\Enums\VerticalAlignment;
 use App\Filament\Resources\OrderFleetResource;
 use App\Filament\Resources\ProfitLossResource;
+use App\Filament\Resources\SalesVisitResource;
 use App\Filament\Resources\TourLeaderResource;
 use App\Filament\Resources\TourReportResource;
 use Illuminate\Validation\ValidationException;
 use App\Filament\Resources\DestinationResource;
 use Illuminate\Session\Middleware\StartSession;
+use App\Filament\Resources\LoyaltyPointResource;
 use App\Filament\Resources\TourTemplateResource;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Awcodes\FilamentQuickCreate\QuickCreatePlugin;
@@ -61,8 +66,10 @@ use BezhanSalleh\FilamentLanguageSwitch\LanguageSwitch;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
+use Njxqlus\FilamentProgressbar\FilamentProgressbarPlugin;
 use Saade\FilamentFullCalendar\FilamentFullCalendarPlugin;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
+use SolutionForest\FilamentSimpleLightBox\SimpleLightBoxPlugin;
 
 class AdminPanelProvider extends PanelProvider
 {
@@ -80,12 +87,13 @@ class AdminPanelProvider extends PanelProvider
         Notification::make()
           ->title($exception->getMessage())
           ->danger()
-          ->send();
-        // ->sendToDatabase(auth()->user());
+          ->send()
+          // ->sendToDatabase(auth()->user())
+        ;
       };
     }
 
-    // Global Settings
+    // Components global settings
     Table::configureUsing(function (Table $table): void {
       $table
         ->extremePaginationLinks()
@@ -105,26 +113,45 @@ class AdminPanelProvider extends PanelProvider
         // ->optionsLimit(5)
       ;
     });
+    Repeater::configureUsing(function (Repeater $repeater): void {
+      $repeater
+        ->expandAllAction(fn(Action $action) => $action
+          ->label('Expand')
+          ->icon('heroicon-s-chevron-down')
+          ->color('primary'))
+        ->collapseAllAction(fn(Action $action) => $action
+          ->label('Collapse')
+          ->icon('heroicon-s-chevron-up')
+          ->color('secondary'));
+    });
     DatePicker::configureUsing(function (DatePicker $datePicker): void {
       $datePicker
         ->native(false)
-        ->closeOnDateSelection()
+        // ->closeOnDateSelection()
         ->prefixIcon('heroicon-s-calendar-days')
         ->displayFormat('d mm Y');
     });
     DateTimePicker::configureUsing(function (DateTimePicker $dateTimePicker): void {
       $dateTimePicker
+        ->native(false)
         ->prefixIcon('heroicon-s-calendar-days')
-        ->displayFormat('d mm Y • H:i');
+        // ->displayFormat('d mm Y • H:i')
+      ;
     });
     LanguageSwitch::configureUsing(function (LanguageSwitch $switch): void {
       $switch
         ->locales(['en', 'id'])
-        ->visible(outsidePanels: true);
+        ->visible(outsidePanels: true)
+        ->circular()
+        ->flags([
+          'en' => asset('img/flags/en-circular.svg'),
+          'id' => asset('img/flags/id-circular.svg'),
+        ])
+      ;
     });
 
     // Notification alignment
-    Notifications::alignment(Alignment::Center);
+    // Notifications::alignment(Alignment::Center);
     // Notifications::verticalAlignment(VerticalAlignment::End);
 
     // Register Tailwind CSS CDN in local
@@ -147,8 +174,8 @@ class AdminPanelProvider extends PanelProvider
       ->font('Poppins')
       ->viteTheme('resources/css/filament/admin/theme.css')
       ->favicon(asset('favicon.svg'))
-      ->brandLogo(asset('/img/logo-light.svg'))
-      ->darkModeBrandLogo(asset('/img/logo-dark.svg'))
+      ->brandLogo(asset('/img/logos/logo-light.svg'))
+      ->darkModeBrandLogo(asset('/img/logos/logo-dark.svg'))
       ->brandLogoHeight('35px')
       ->sidebarCollapsibleOnDesktop(true)
       ->maxContentWidth(MaxWidth::Full)
@@ -205,7 +232,14 @@ class AdminPanelProvider extends PanelProvider
                 ...CustomerResource::getNavigationItems(),
                 ...DestinationResource::getNavigationItems(),
                 ...TourLeaderResource::getNavigationItems(),
+                ...EmployeeResource::getNavigationItems(),
                 ...TourTemplateResource::getNavigationItems(),
+              ]),
+            NavigationGroup::make()
+              ->label(NavigationGroupLabel::MARKETING->getLabel())
+              ->items([
+                ...LoyaltyPointResource::getNavigationItems(),
+                ...SalesVisitResource::getNavigationItems(),
               ]),
             NavigationGroup::make()
               ->label(NavigationGroupLabel::OPERATIONAL->getLabel())
@@ -213,7 +247,6 @@ class AdminPanelProvider extends PanelProvider
                 ...OrderResource::getNavigationItems(),
                 ...OrderFleetResource::getNavigationItems(),
                 ...ShirtResource::getNavigationItems(),
-                ...MeetingResource::getNavigationItems(),
               ]),
             NavigationGroup::make()
               ->label(NavigationGroupLabel::FINANCE->getLabel())
@@ -222,27 +255,34 @@ class AdminPanelProvider extends PanelProvider
                 ...ProfitLossResource::getNavigationItems(),
                 ...TourReportResource::getNavigationItems(),
               ]),
+            NavigationGroup::make()
+              ->label(NavigationGroupLabel::OTHER->getLabel())
+              ->items([
+                ...MeetingResource::getNavigationItems(),
+              ]),
           ]);
       })
       ->plugins([
+        FilamentProgressbarPlugin::make(),
         VersionsPlugin::make()
           ->hasNavigationView(false)
           ->widgetColumnSpan('full'),
         BreezyCore::make()
           ->avatarUploadComponent(fn(FileUpload $fileUpload) => $fileUpload->hiddenLabel())
+          ->enableTwoFactorAuthentication()
           ->myProfile(
             shouldRegisterUserMenu: true,
             shouldRegisterNavigation: false,
             navigationGroup: 'Settings',
             hasAvatars: true,
             slug: 'profile'
-          )
-          ->enableTwoFactorAuthentication(),
+          ),
         QuickCreatePlugin::make()
           ->rounded(false)
           ->excludes([
             ProfitLossResource::class,
             TourReportResource::class,
+            ShirtResource::class,
           ]),
         FilamentFullCalendarPlugin::make()
           ->selectable(true)

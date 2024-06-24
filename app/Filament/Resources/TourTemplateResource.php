@@ -29,7 +29,12 @@ class TourTemplateResource extends Resource
 {
   protected static ?string $model = TourTemplate::class;
 
-  protected static ?string $navigationIcon = 'eos-templates';
+  protected static ?string $navigationIcon = 'fontisto-holiday-village';
+
+  public static function getNavigationBadge(): ?string
+  {
+    return static::getModel()::count();
+  }
 
   public static function form(Form $form): Form
   {

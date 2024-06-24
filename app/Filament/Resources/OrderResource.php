@@ -51,11 +51,12 @@ class OrderResource extends Resource
         Forms\Components\Select::make('customer_id')
           ->required()
           ->relationship('customer', 'name', fn(Builder $query) => $query->whereNot('status', CustomerStatus::CANDIDATE->value)->orderBy('created_at', 'desc'))
-          ->editOptionModalHeading('Edit Customer')
-          ->createOptionModalHeading('Create Customer')
           ->prefixIcon(fn() => CustomerResource::getNavigationIcon())
-          ->editOptionForm(fn(Form $form) => CustomerResource::form($form))
-          ->createOptionForm(fn(Form $form) => CustomerResource::form($form)),
+          // ->editOptionModalHeading('Edit Customer')
+          // ->createOptionModalHeading('Create Customer')
+          // ->editOptionForm(fn(Form $form) => CustomerResource::form($form))
+          // ->createOptionForm(fn(Form $form) => CustomerResource::form($form))
+          ,
         Forms\Components\Select::make('regency_id')
           ->required()
           ->relationship('regency', 'name'),
@@ -118,6 +119,8 @@ class OrderResource extends Resource
     return $table
       ->columns([
         Tables\Columns\TextColumn::make('code')
+          ->badge()
+          ->sortable()
           ->searchable(),
         Tables\Columns\TextColumn::make('customer.name')
           ->numeric()

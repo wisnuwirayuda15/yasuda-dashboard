@@ -11,14 +11,16 @@ use App\Models\Order;
 use Filament\Forms\Get;
 use Filament\Forms\Set;
 use Filament\Forms\Form;
-use App\Enums\OrderFleetStatus;
 use App\Models\OrderFleet;
 use App\Models\TourLeader;
 use Filament\Tables\Table;
+use App\Enums\OrderFleetStatus;
 use Filament\Resources\Resource;
 use App\Enums\FleetPaymentStatus;
 use Filament\Tables\Actions\Action;
+use Filament\Forms\Components\Group;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Section;
 use Filament\Tables\Actions\BulkAction;
 use Filament\Tables\Actions\EditAction;
 use Filament\Tables\Actions\ViewAction;
@@ -26,8 +28,10 @@ use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
 use Filament\Tables\Actions\ActionGroup;
 use App\Filament\Resources\OrderResource;
+use Filament\Forms\Components\DatePicker;
 use Filament\Tables\Actions\DeleteAction;
 use Illuminate\Database\Eloquent\Builder;
+use Filament\Forms\Components\ToggleButtons;
 use Filament\Tables\Actions\BulkActionGroup;
 use Filament\Tables\Actions\ReplicateAction;
 use Illuminate\Database\Eloquent\Collection;
@@ -49,51 +53,48 @@ class OrderFleetResource extends Resource
 
   public static function form(Form $form): Form
   {
-    return $form
-      ->schema([
-        Forms\Components\TextInput::make('code')
-          ->code(get_code(new OrderFleet, 'OF')),
-        Forms\Components\Select::make('fleet_id')
-          ->required()
-          ->optionsLimit(false)
-          ->allowHtml()
-          ->options(Fleet::getGroupOptionsByCategories())
-          ->getOptionLabelFromRecordUsing(fn(Fleet $record) => view('filament.components.badges.fleet-options', compact('record'))),
-        Forms\Components\DatePicker::make('trip_date')
-          ->required()
-          ->live(true)
-          ->disabled(fn(OrderFleet $record) => $record->order()->exists())
-          ->helperText(fn(OrderFleet $record) => $record->order()->exists() ? 'Order already added' : null)
-          ->default(today())
-          ->minDate(today())
-          ->afterStateUpdated(fn(Set $set) => $set('order_id', null)),
-        Forms\Components\Section::make('Pembayaran Armada')
-          ->schema([
-            Forms\Components\ToggleButtons::make('payment_status')
-              ->required()
-              ->live()
-              ->inline()
-              ->options(FleetPaymentStatus::class)
-              ->default(FleetPaymentStatus::NON_DP->value)
-              ->afterStateUpdated(function (Get $get, Set $set) {
-                if ($get('payment_status') == FleetPaymentStatus::NON_DP->value) {
-                  $set('payment_date', null);
-                  $set('payment_amount', null);
-                }
-              }),
-            Forms\Components\Group::make()
-              ->visible(fn(Get $get) => $get('payment_status') != FleetPaymentStatus::NON_DP->value)
-              ->columnSpan(2)
-              ->schema([
-                Forms\Components\DatePicker::make('payment_date')
-                  ->required()
-                  ->minDate(today()),
-                Forms\Components\TextInput::make('payment_amount')
-                  ->required()
-                  ->currency(minValue: 1)
-              ])
-          ]),
-      ]);
+    return $form->schema([
+      TextInput::make('code')
+        ->code(get_code(new OrderFleet, 'OF')),
+      Select::make('fleet_id')
+        ->required()
+        ->label('Armada')
+        ->options(Fleet::getGroupOptionsByCategories()),
+      DatePicker::make('trip_date')
+        ->required()
+        ->live(true)
+        ->disabled(fn(?OrderFleet $record) => $record?->order()->exists())
+        ->helperText(fn(?OrderFleet $record) => $record?->order()->exists() ? 'Order already added' : null)
+        ->default(today())
+        ->minDate(today())
+        ->afterStateUpdated(fn(Set $set) => $set('order_id', null)),
+      Section::make('Pembayaran Armada')
+        ->schema([
+          ToggleButtons::make('payment_status')
+            ->required()
+            ->live()
+            ->inline()
+            ->options(FleetPaymentStatus::class)
+            ->default(FleetPaymentStatus::NON_DP->value)
+            ->afterStateUpdated(function (Get $get, Set $set) {
+              if ($get('payment_status') === FleetPaymentStatus::NON_DP->value) {
+                $set('payment_date', null);
+                $set('payment_amount', null);
+              }
+            }),
+          Group::make()
+            ->visible(fn(Get $get) => $get('payment_status') !== FleetPaymentStatus::NON_DP->value)
+            ->columnSpan(2)
+            ->schema([
+              DatePicker::make('payment_date')
+                ->required()
+                ->minDate(today()),
+              TextInput::make('payment_amount')
+                ->required()
+                ->currency(minValue: 1)
+            ])
+        ]),
+    ]);
   }
 
   public static function table(Table $table): Table
@@ -103,6 +104,7 @@ class OrderFleetResource extends Resource
       ->persistSortInSession()
       ->columns([
         Tables\Columns\TextColumn::make('code')
+          ->badge()
           ->sortable()
           ->searchable(),
         Tables\Columns\TextColumn::make('order.customer.name')
@@ -117,7 +119,7 @@ class OrderFleetResource extends Resource
           ->action(static::getSelectTourLeaderAction()),
         Tables\Columns\TextColumn::make('trip_date')
           ->date()
-          ->formatStateUsing(fn($state): string => $state->format('d/m/Y')),
+          ->formatStateUsing(fn($state): string => $state->translatedFormat('d/m/Y')),
         Tables\Columns\TextColumn::make('remaining_day')
           ->badge()
           ->alignCenter()

@@ -67,10 +67,7 @@ class ProfitLossResource extends Resource
         static::getCostTabs(),
         static::getOtherIncomeSection(),
         static::getTotalCostsSection(),
-        Checkbox::make('confirmation')
-          ->required()
-          ->hiddenOn('view')
-          ->label('Semua perhitungan sudah dicek dan tidak ada kesalahan')
+        Checkbox::make('confirmation')->confirmation()
       ]);
   }
 

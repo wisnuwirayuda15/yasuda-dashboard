@@ -32,7 +32,6 @@ class Customer extends Model
     'lat',
     'lng',
     'status',
-    'loyalty_point',
   ];
 
   /**
@@ -44,7 +43,6 @@ class Customer extends Model
     'id' => 'integer',
     'regency_id' => 'integer',
     'district_id' => 'integer',
-    'loyalty_point' => 'integer',
     'category' => CustomerCategory::class,
     'status' => CustomerStatus::class,
   ];
@@ -54,9 +52,9 @@ class Customer extends Model
     return $this->hasMany(Order::class);
   }
 
-  public function feedback(): HasMany
+  public function loyaltyPoints(): HasMany
   {
-    return $this->hasMany(Feedback::class);
+    return $this->hasMany(LoyaltyPoint::class);
   }
 
   public function regency(): BelongsTo

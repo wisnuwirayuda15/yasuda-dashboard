@@ -28,7 +28,6 @@ return new class extends Migration
             $table->string('lat')->nullable();
             $table->string('lng')->nullable();
             $table->string('status', 50);
-            $table->bigInteger('loyalty_point')->default(0);
             $table->timestamps();
         });
 

@@ -3,7 +3,7 @@
 use Illuminate\Support\Number;
 use Haruncpi\LaravelIdGenerator\IdGenerator;
 
-if (!function_exists('get_code')) {
+if (!function_exists('emp_code')) {
   /**
    * Generates a unique code based on the provided model, prefix, connector, column name, number of digits, and reset flag.
    *
@@ -15,12 +15,11 @@ if (!function_exists('get_code')) {
    * @param bool $resetOnPrefixChange Whether to reset the generated code when the prefix changes. Default is true.
    * @return string The generated unique code.
    */
-  function get_code(
+  function emp_code(
     Illuminate\Database\Eloquent\Model $model,
-    string|null $prefix = null,
-    string|bool $connector = '-',
+    string|null $prefix,
     string $column = 'code',
-    int $numberDigit = 5,
+    int $numberDigit = 4,
     bool $resetOnPrefixChange = true
   ): string {
     $table = $model->getTable();
@@ -32,7 +31,7 @@ if (!function_exists('get_code')) {
     $prefix = str_replace(' ', '', trim($prefix));
 
     // Capitalize all characters and add a connector
-    $prefix = mb_strtoupper($prefix) . $connector ?? null;
+    $prefix = mb_strtoupper($prefix);
 
     // Calculate the total length of the generated code
     $length = strlen($prefix) + $numberDigit;
@@ -48,6 +47,54 @@ if (!function_exists('get_code')) {
   }
 }
 
+if (!function_exists('get_code')) {
+  /**
+   * Generate a unique random number code for a model.
+   *
+   * @param Illuminate\Database\Eloquent\Model $model The model to generate the code for.
+   * @param string|null $prefix The prefix for the generated code. If not provided, it will be derived from the model's table name.
+   * @param string|bool $connector The connector to use between the prefix and the generated code. If not provided, a hyphen will be used as the connector.
+   * @param string $column The unique code is obtained based on this column of the model. Default is 'code'.
+   * @param int $numberDigit The number of digits to use for the generated code. Default is 5.
+   * @return string The generated unique code.
+   */
+  function get_code(
+    Illuminate\Database\Eloquent\Model $model,
+    string|null $prefix = null,
+    string|bool $connector = '-',
+    string $column = 'code',
+    int $numberDigit = 6,
+  ): string {
+    // If prefix is not provided, use the first 3 letters of the table name in uppercase
+    if (blank($prefix)) {
+      $prefix = strtoupper(substr($model->getTable(), 0, 3));
+    } else {
+      $prefix = strtoupper(trim($prefix));
+    }
+
+    // Trim the connector if it is a string
+    if (is_string($connector)) {
+      $connector = trim($connector);
+    }
+
+    // Trim the column name
+    $column = trim($column);
+
+    do {
+      // Generate a random number with the specified number of digits
+      $randomNumber = fake()->numerify(str_repeat('#', $numberDigit));
+
+      // Construct the code with prefix and connector if provided
+      $code = $prefix . ($connector !== false ? $connector : '') . $randomNumber;
+
+      // Check if the code exists in the model's table
+      $exists = $model->newQuery()->where($column, $code)->exists();
+    } while ($exists);
+
+    return $code;
+  }
+}
+
 if (!function_exists('idr')) {
   /**
    * A function that formats the given value as an Indonesian Rupiah currency.
@@ -58,11 +105,13 @@ if (!function_exists('idr')) {
    */
   function idr(int|float|null $number, bool $asRupiah = true): string
   {
-    if (blank($number)) $number = 0;
-    
-    $idrString = Number::currency($number, 'IDR', $asRupiah ? 'id' : null);
+    if (blank($number)) {
+      return 'null';
+    }
 
-    return str_replace(',00', '', $idrString);
+    $currencyString = Number::currency($number, 'IDR', $asRupiah ? 'id' : null);
+
+    return str_replace(',00', '', $currencyString);
   }
 }
 
@@ -73,14 +122,27 @@ if (!function_exists('getUrlQueryParameters')) {
    * @param string $url The URL from which to extract the query parameters.
    * @return array An associative array containing the query parameters.
    */
-  function getUrlQueryParameters($url)
+  function getUrlQueryParameters($url): array
   {
     $parsedUrl = parse_url($url);
 
     $queryString = $parsedUrl['query'] ?? '';
 
     parse_str($queryString, $parameters);
-    
+
     return $parameters;
+  }
+}
+
+if (!function_exists('enum_map')) {
+  /**
+   * Maps the values of an array using a callback function.
+   *
+   * @param array $enum The array to map over.
+   * @return array The array of mapped values.
+   */
+  function enum_map(array $enum): array
+  {
+    return array_map(fn($x) => $x->value, $enum);
   }
 }

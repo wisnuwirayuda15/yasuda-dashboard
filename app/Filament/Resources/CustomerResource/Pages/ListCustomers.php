@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\CustomerResource\Pages;
 
 use Filament\Actions;
+use App\Models\Customer;
 use App\Enums\CustomerStatus;
 use App\Enums\CustomerCategory;
 use Filament\Resources\Components\Tab;
@@ -38,15 +39,19 @@ class ListCustomers extends ListRecords
     ];
 
     foreach (static::$categories::cases() as $category) {
-      $array[$category->value] = Tab::make($category->getLabel())
-        ->icon($category->getIcon())
-        ->modifyQueryUsing(fn(Builder $query) => $query->where('category', $category->value));
+      if (Customer::query()->where('category', $category->value)->exists()) {
+        $array[$category->value] = Tab::make($category->getLabel())
+          ->icon($category->getIcon())
+          ->modifyQueryUsing(fn(Builder $query) => $query->where('category', $category->value));
+      }
     }
 
     foreach (static::$status::cases() as $status) {
-      $array[$status->value] = Tab::make($status->getLabel())
-        ->icon($status->getIcon())
-        ->modifyQueryUsing(fn(Builder $query) => $query->where('status', $status->value));
+      if (Customer::query()->where('status', $status->value)->exists()) {
+        $array[$status->value] = Tab::make($status->getLabel())
+          ->icon($status->getIcon())
+          ->modifyQueryUsing(fn(Builder $query) => $query->where('status', $status->value));
+      }
     }
 
     return $array;

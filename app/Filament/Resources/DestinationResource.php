@@ -8,10 +8,9 @@ use Filament\Tables\Table;
 use App\Models\Destination;
 use App\Enums\DestinationType;
 use Filament\Resources\Resource;
-use App\Enums\NavigationGroupLabel;
+use Filament\Forms\Components\Select;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Forms\Components\TextInput;
-use Filament\Forms\Components\ToggleButtons;
 use Ysfkaya\FilamentPhoneInput\Forms\PhoneInput;
 use App\Filament\Resources\DestinationResource\Pages;
 use App\Filament\Resources\DestinationResource\RelationManagers;
@@ -34,10 +33,9 @@ class DestinationResource extends Resource
         TextInput::make('name')
           ->required()
           ->maxLength(255),
-        ToggleButtons::make('type')
+        Select::make('type')
           ->required()
-          ->inline()
-          ->default('new')
+          ->default(DestinationType::SISWA_ONLY->value)
           ->options(DestinationType::class),
         TextInput::make('marketing_name')
           ->required()
@@ -47,15 +45,15 @@ class DestinationResource extends Resource
           ->idDefaultFormat(),
         TextInput::make('weekday_price')
           ->required()
-          ->numeric()
-          ->prefix('Rp'),
+          ->default(0)
+          ->currency(minValue: 0),
         TextInput::make('weekend_price')
           ->required()
-          ->numeric()
-          ->prefix('Rp'),
+          ->default(0)
+          ->currency(minValue: 0),
         TextInput::make('high_season_price')
-          ->numeric()
-          ->prefix('Rp'),
+          ->default(0)
+          ->currency(minValue: 0),
       ]);
   }
 

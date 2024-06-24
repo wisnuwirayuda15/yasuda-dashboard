@@ -2,7 +2,7 @@
 
 namespace App\Filament\Resources\MeetingResource\Widgets;
 
-use App\Models\Meeting;
+use App\Models\Event;
 use Filament\Forms\Form;
 use Illuminate\Database\Eloquent\Model;
 use App\Filament\Resources\MeetingResource;
@@ -14,17 +14,18 @@ use Saade\FilamentFullCalendar\Widgets\FullCalendarWidget;
 
 class MeetingCalendarWidget extends FullCalendarWidget
 {
-  public Model|string|null $model = Meeting::class;
+  public Model|string|null $model = Event::class;
 
   public function fetchEvents(array $fetchInfo): array
   {
-    return Meeting::query()
+    return Event::query()
       ->where('date', '>=', $fetchInfo['start'])
-      ->get()
-      ->map(fn(Meeting $meeting) => EventData::make()
-        ->id($meeting->id)
-        ->title($meeting->title)
-        ->start($meeting->date))
+      ->get()->map(
+        fn(Event $event) => EventData::make()
+          ->id($event->id)
+          ->title($event->title)
+          ->start($event->date)
+      )
       ->toArray();
   }
 
@@ -37,7 +38,7 @@ class MeetingCalendarWidget extends FullCalendarWidget
   {
     return [
       CreateAction::make()
-        ->label('Tambah Jadwal Meeting')
+        ->label('Tambah Event')
         ->icon(MeetingResource::getNavigationIcon())
         ->mountUsing(
           function (Form $form, array $arguments) {
@@ -53,13 +54,14 @@ class MeetingCalendarWidget extends FullCalendarWidget
   {
     return [
       EditAction::make()
-        ->mountUsing(function (Meeting $record, Form $form, array $arguments, EditAction $component) {
+        ->mountUsing(function (Event $record, Form $form, array $arguments, EditAction $component) {
           if (filled($arguments)) {
             $component->modal(false);
           }
           $form->fill([
             'title' => $record->title,
             'date' => $arguments['event']['start'] ?? $record->date,
+            'description' => $record->description,
           ]);
         }),
       DeleteAction::make()

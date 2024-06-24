@@ -13,12 +13,11 @@ return new class extends Migration
     {
         Schema::disableForeignKeyConstraints();
 
-        Schema::create('shirts', function (Blueprint $table) {
+        Schema::create('events', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('invoice_id')->constrained()->cascadeOnDelete()->unique();
-            $table->json('child');
-            $table->json('adult');
-            $table->bigInteger('total');
+            $table->string('title');
+            $table->dateTime('date');
+            $table->longText('description')->nullable();
             $table->timestamps();
         });
 
@@ -30,6 +29,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('shirts');
+        Schema::dropIfExists('events');
     }
 };

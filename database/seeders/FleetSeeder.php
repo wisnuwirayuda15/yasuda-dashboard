@@ -32,14 +32,16 @@ class FleetSeeder extends Seeder
       'Tidal',
     ];
 
-    $mediumSeats = array_map(fn($x) => $x->value, MediumFleetSeat::cases());
-    $bigSeats = array_map(fn($x) => $x->value, BigFleetSeat::cases());
-    $legrestSeats = array_map(fn($x) => $x->value, LegrestFleetSeat::cases());
+    $mediumSeats = enum_map(MediumFleetSeat::cases());
 
-    $categories = array_map(fn($x) => $x->value, FleetCategory::cases());
+    $bigSeats = enum_map(BigFleetSeat::cases());
+
+    $legrestSeats = enum_map(LegrestFleetSeat::cases());
+
+    $categories = enum_map(FleetCategory::cases());
 
     foreach ($busses as $bus) {
-      $code = substr(md5(rand()), 0, 10);
+      $code = fake()->numerify('########');
 
       $image = "https://picsum.photos/seed/$code/1280/720";
 
@@ -59,7 +61,7 @@ class FleetSeeder extends Seeder
         'category' => $category,
         'seat_set' => $seat,
         'pic_name' => fake()->name(),
-        'pic_phone' => fake()->phoneNumber(),
+        'pic_phone' => fake()->numerify('+6281#########'),
       ]);
     }
   }

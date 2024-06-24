@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class Feedback extends Model
+class SalesVisit extends Model
 {
     use HasFactory;
 
@@ -17,7 +17,9 @@ class Feedback extends Model
      */
     protected $fillable = [
         'customer_id',
-        'text',
+        'employee_id',
+        'priority',
+        'visit_status',
     ];
 
     /**
@@ -28,10 +30,16 @@ class Feedback extends Model
     protected $casts = [
         'id' => 'integer',
         'customer_id' => 'integer',
+        'employee_id' => 'integer',
     ];
 
     public function customer(): BelongsTo
     {
         return $this->belongsTo(Customer::class);
+    }
+
+    public function employee(): BelongsTo
+    {
+        return $this->belongsTo(Employee::class);
     }
 }

@@ -10,7 +10,6 @@
 #     hasOne: Employee,TourLeader
 
 models:
-
   # Region
   Province: #Jawa Tengah
     code: string unique index
@@ -31,7 +30,7 @@ models:
     relationships:
       hasMany: District
       belongsTo: Province
-  
+
   District:
     code: string unique index
     regency_id: foreign constrained onDelete:cascade
@@ -42,9 +41,7 @@ models:
     relationships:
       belongsTo: Regency
 
-
-#=============================================================#
-
+  #=============================================================#
 
   # Master Data
   Fleet:
@@ -72,9 +69,8 @@ models:
     lat: string nullable
     lng: string nullable
     status: string:50
-    loyalty_point: bigInteger default:0
     relationships:
-      hasMany: Order,Feedback
+      hasMany: Order, LoyaltyPoint #,Feedback
 
   Destination:
     name: string unique index
@@ -100,23 +96,35 @@ models:
     balance: bigInteger default:0
 
   Employee:
-    user_id: foreign constrained onDelete:cascade nullable
+    user_id: foreign constrained onDelete:cascade unique nullable
+    code: string unique index
     name: string index
+    alias: string unique
+    join_date: datetime
+    exit_date: datetime nullable
+    ktp: string unique nullable
     photo: string nullable
-    phone: string
+    phone: string nullable
     gender: string:50
     role: string:50
-    
+    status: string:50
+
   TourLeader:
-    user_id: foreign constrained onDelete:cascade nullable
+    user_id: foreign constrained onDelete:cascade unique nullable
+    code: string unique index
     name: string index
+    alias: string unique
+    join_date: datetime
+    exit_date: datetime nullable
+    ktp: string unique nullable
     photo: string nullable
-    phone: string unique
+    phone: string nullable
     gender: string:50
+    status: string:50
     relationships:
       hasMany: OrderFleet
 
-#=============================================================#
+  #=============================================================#
 
   Order:
     code: string index unique #OR-00001
@@ -126,7 +134,7 @@ models:
     trip_date: datetime
     description: longText nullable
     relationships:
-      hasMany: OrderFleet
+      hasMany: OrderFleet #, Destination:destinations
       hasOne: Invoice
 
   OrderFleet:
@@ -148,18 +156,18 @@ models:
     submitted_shirt: integer
     teacher_shirt_qty: integer nullable
     adult_shirt_qty: integer nullable
-    child_shirt_price: bigInteger default:25000
-    teacher_shirt_price: bigInteger default:120000
-    adult_shirt_price: bigInteger default:80000
+    child_shirt_price: bigInteger nullable
+    teacher_shirt_price: bigInteger nullable
+    adult_shirt_price: bigInteger nullable
     adjusted_seat: integer nullable
     down_payments: json nullable
     other_cost: bigInteger nullable
     notes: longText nullable
     relationships:
-      hasOne: ProfitLoss, TourReport, Shirt
+      hasOne: ProfitLoss, TourReport, Shirt, LoyaltyPoint
 
   ProfitLoss:
-    invoice_id: foreign constrained onDelete:cascade unique
+    invoice_id: unique foreign constrained onDelete:cascade
 
     #operational_cost
     medium_rent_price: bigInteger default:0
@@ -195,7 +203,7 @@ models:
     legrest_subs_bonus: bigInteger default:0
 
   TourReport:
-    invoice_id: foreign constrained onDelete:cascade unique
+    invoice_id: unique foreign constrained onDelete:cascade
     main_costs: json
     other_costs: json nullable
     customer_repayment: bigInteger default:0
@@ -205,17 +213,45 @@ models:
     defisit_surplus: bigInteger default:0
     refundable: bigInteger default:0
 
+  LoyaltyPoint:
+    invoice_id: unique foreign constrained onDelete:cascade
+    cash_status: string:50 default:inflow # inflow, outflow
+    description: longText nullable
+    amount: bigInteger
+
+  SalesVisit:
+    customer_id: unique foreign constrained onDelete:cascade
+    employee_id: foreign constrained onDelete:cascade nullable
+    priority: string:50
+    visit_status: string:50
+
   Shirt:
-    invoice_id: foreign constrained onDelete:cascade unique
-    child: json
-    adult: json
+    invoice_id: unique foreign constrained onDelete:cascade
+
+    child: json nullable
+    adult: json nullable
+    male_teacher: json nullable
+    female_teacher: json nullable
+
+    child_color: string nullable
+    adult_color: string nullable
+    male_teacher_color: string nullable
+    female_teacher_color: string nullable
+
+    child_sleeve: string:50 nullable
+    adult_sleeve: string:50 nullable
+    male_teacher_sleeve: string:50 nullable
+    female_teacher_sleeve: string:50 nullable
+
+    child_material: string:50 nullable
+    adult_material: string:50 nullable
+    male_teacher_material: string:50 nullable
+    female_teacher_material: string:50 nullable
+
+    status: string:50 default:not_sent
     total: bigInteger
-  
-  Meeting:
+
+  Event:
     title: string
     date: datetime
     description: longText nullable
-
-  Feedback:
-    customer_id: foreign constrained onDelete:cascade
-    text: longText

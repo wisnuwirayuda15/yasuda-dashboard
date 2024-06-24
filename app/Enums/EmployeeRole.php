@@ -2,49 +2,30 @@
 
 namespace App\Enums;
 
-use Filament\Support\Contracts\HasIcon;
-use Filament\Support\Contracts\HasColor;
 use Filament\Support\Contracts\HasLabel;
-use Filament\Support\Contracts\HasDescription;
 
-enum EmployeeRole: string implements HasLabel, HasColor, HasIcon
+enum EmployeeRole: string implements HasLabel
 {
-  case OPERATIONAL = 'operational';
-  case FINANCE = 'finance';
-  case MARKETING = 'marketing';
+  case OPERATIONAL_STAFF = 'operational_staff';
+  case OPERATIONAL_MANAGER = 'operational_manager';
+  case FINANCE_STAFF = 'finance_staff';
+  case FINANCE_MANAGER = 'finance_manager';
+  case MARKETING_STAFF = 'marketing_staff';
+  case MARKETING_MANAGER = 'marketing_manager';
   case MANAGER = 'super_admin';
-  case TOUR_LEADER = 'tour_leader';
+  // case TOUR_LEADER = 'tour_leader';
 
   public function getLabel(): ?string
   {
     return match ($this) {
-      self::OPERATIONAL => 'Operational',
-      self::FINANCE => 'Finance',
-      self::MARKETING => 'Marketing',
-      self::MANAGER => 'Manager',
-      self::TOUR_LEADER => 'Tour Leader',
-    };
-  }
-
-  public function getColor(): string|array|null
-  {
-    return match ($this) {
-      self::OPERATIONAL => 'info',
-      self::FINANCE => 'success',
-      self::MARKETING => 'warning',
-      self::MANAGER => 'primary',
-      self::TOUR_LEADER => 'danger',
-    };
-  }
-
-  public function getIcon(): ?string
-  {
-    return match ($this) {
-      self::OPERATIONAL => 'heroicon-s-cog',
-      self::FINANCE => 'heroicon-s-cash',
-      self::MARKETING => 'heroicon-s-megaphone',
-      self::MANAGER => 'heroicon-s-user-circle',
-      self::TOUR_LEADER => 'heroicon-s-user-group',
+      self::OPERATIONAL_STAFF => 'Operational & Logistic Staff',
+      self::OPERATIONAL_MANAGER => 'Operational & Logistic Manager',
+      self::FINANCE_STAFF => 'Finance Staff',
+      self::FINANCE_MANAGER => 'Finance Manager',
+      self::MARKETING_STAFF => 'Sales & Marketing Staff',
+      self::MARKETING_MANAGER => 'Sales & Marketing Manager',
+      self::MANAGER => 'Company Manager',
+      // self::TOUR_LEADER => 'Tour Leader',
     };
   }
 }

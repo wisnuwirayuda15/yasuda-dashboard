@@ -23,10 +23,16 @@ class TourLeaderFactory extends Factory
     {
         return [
             'user_id' => User::factory(),
+            'code' => $this->faker->word(),
             'name' => $this->faker->name(),
+            'alias' => $this->faker->word(),
+            'join_date' => $this->faker->dateTime(),
+            'exit_date' => $this->faker->dateTime(),
+            'ktp' => $this->faker->word(),
             'photo' => $this->faker->word(),
             'phone' => $this->faker->phoneNumber(),
             'gender' => $this->faker->regexify('[A-Za-z0-9]{50}'),
+            'status' => $this->faker->regexify('[A-Za-z0-9]{50}'),
         ];
     }
 }

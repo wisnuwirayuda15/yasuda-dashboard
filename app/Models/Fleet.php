@@ -40,19 +40,19 @@ class Fleet extends Model
 
   public static function getGroupOptionsByCategories(): array
   {
-    $fleets = Fleet::query()->groupBy('category');
-
-    $fleetArray = [];
-
-    foreach ($fleets as $category => $fleetGroup) {
-      foreach ($fleetGroup as $fleet) {
-        $fleetArray[ucwords($category) . " Bus"][$fleet->id] = "{$fleet->name} • {$fleet->seat_set->getLabel()}";
-      }
-    }
-
-    krsort($fleetArray);
-
-    return $fleetArray;
+    return Fleet::query()
+      ->select('category', 'id', 'name', 'seat_set')
+      ->get()
+      ->groupBy('category')
+      ->mapWithKeys(function ($fleets, $category) {
+        return [
+          ucwords($category) . " Bus" => $fleets->mapWithKeys(function (Fleet $fleet) {
+            return [$fleet->id => "{$fleet->name} • {$fleet->seat_set->getLabel()}"];
+          })->toArray()
+        ];
+      })
+      ->sortKeysDesc()
+      ->toArray();
   }
 
   public function orderFleets(): HasMany

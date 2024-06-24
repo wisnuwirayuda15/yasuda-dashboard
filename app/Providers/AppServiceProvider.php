@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use Carbon\Carbon;
+use Illuminate\Support\Number;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\ServiceProvider;
@@ -23,9 +24,9 @@ class AppServiceProvider extends ServiceProvider
   public function boot(): void
   {
     // Use secure connection for production
-    if (env('APP_ENV') !== 'local') {
-      URL::forceScheme('https');
-    }
+    // if (env('APP_ENV') !== 'local') {
+    //   URL::forceScheme('https');
+    // }
 
     // Indonesian locale and timezone
     Carbon::setlocale('id');
@@ -34,5 +35,7 @@ class AppServiceProvider extends ServiceProvider
     if ((bool) env('UNGUARD_MODEL', false)) {
       Model::unguard();
     }
+
+    Number::useLocale('id');
   }
 }

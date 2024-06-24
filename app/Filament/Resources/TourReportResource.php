@@ -66,10 +66,7 @@ class TourReportResource extends Resource
         static::getMainCostsSection(),
         static::getOtherCostsSection(),
         static::getSummariesSection(),
-        Checkbox::make('confirmation')
-          ->required()
-          ->hiddenOn('view')
-          ->label('Semua perhitungan sudah dicek dan tidak ada kesalahan')
+        Checkbox::make('confirmation')->confirmation()
       ]);
   }
 

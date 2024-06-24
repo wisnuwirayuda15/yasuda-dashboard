@@ -17,11 +17,17 @@ class Employee extends Model
      */
     protected $fillable = [
         'user_id',
+        'code',
         'name',
+        'alias',
+        'join_date',
+        'exit_date',
+        'ktp',
         'photo',
         'phone',
         'gender',
         'role',
+        'status',
     ];
 
     /**
@@ -32,6 +38,8 @@ class Employee extends Model
     protected $casts = [
         'id' => 'integer',
         'user_id' => 'integer',
+        'join_date' => 'datetime',
+        'exit_date' => 'datetime',
     ];
 
     public function user(): BelongsTo

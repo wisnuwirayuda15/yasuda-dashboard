@@ -88,8 +88,6 @@ class CustomerResource extends Resource
           ->searchable(),
         TextColumn::make('email')
           ->searchable(),
-        TextColumn::make('loyalty_point')
-          ->numeric(),
         TextColumn::make('lat')
           ->searchable()
           ->toggleable(isToggledHiddenByDefault: true),
@@ -131,8 +129,8 @@ class CustomerResource extends Resource
     return Section::make('Basic Information')
       ->schema([
         TextInput::make('code')
-          ->live()
-          ->code(get_code(new Customer, CustomerCategory::TK->value)),
+          ->live(true)
+          ->code(fn(Get $get) => get_code(new Customer, $get('category') ?? CustomerCategory::TK->value)),
         TextInput::make('name')
           ->required()
           ->live()

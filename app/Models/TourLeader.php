@@ -18,10 +18,16 @@ class TourLeader extends Model
      */
     protected $fillable = [
         'user_id',
+        'code',
         'name',
+        'alias',
+        'join_date',
+        'exit_date',
+        'ktp',
         'photo',
         'phone',
         'gender',
+        'status',
     ];
 
     /**
@@ -32,6 +38,8 @@ class TourLeader extends Model
     protected $casts = [
         'id' => 'integer',
         'user_id' => 'integer',
+        'join_date' => 'datetime',
+        'exit_date' => 'datetime',
     ];
 
     public function orderFleets(): HasMany

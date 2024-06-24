@@ -33,6 +33,7 @@ class DatabaseSeeder extends Seeder
       DestinationSeeder::class,
       OrderSeeder::class,
       OrderFleetSeeder::class,
+      EmployeeSeeder::class,
     ]);
   }
 }

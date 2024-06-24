@@ -11,9 +11,10 @@ enum NavigationGroupLabel: string implements HasLabel
   case MARKETING = 'marketing';
   case MASTER_DATA = 'master_data';
   case SETTING = 'settings';
+  case OTHER = 'other';
 
   public function getLabel(): ?string
   {
-    return __('navigation.' . $this->value);
+    return __("navigation.{$this->value}");
   }
 }

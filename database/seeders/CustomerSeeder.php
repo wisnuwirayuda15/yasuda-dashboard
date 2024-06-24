@@ -16,9 +16,9 @@ class CustomerSeeder extends Seeder
    */
   public function run(): void
   {
-    $categories = array_map(fn($x) => $x->value, CustomerCategory::cases());
+    $categories = enum_map(CustomerCategory::cases());
 
-    $statuses = array_map(fn($x) => $x->value, CustomerStatus::cases());
+    $statuses = enum_map(CustomerStatus::cases());
 
     for ($x = 1; $x <= 500; $x++) {
       $category = fake()->randomElement($categories);
@@ -29,16 +29,18 @@ class CustomerSeeder extends Seeder
 
       $district = $city->districts()->inRandomOrder()->first();
 
+      $name = ($category === CustomerCategory::UMUM->value ? '' : strtoupper($category) . " ") . strtoupper(fake()->unique()->words(fake()->numberBetween(2, 4), true));
+
       Customer::create([
         'code' => $code,
-        'name' => "TK " . strtoupper(fake()->unique()->words(fake()->numberBetween(2, 4), true)),
+        'name' => $name,
         'address' => fake()->address(),
         'category' => $category,
         'regency_id' => $city->id,
         'district_id' => $district->id,
         'headmaster' => fake()->name(),
         'operator' => fake()->name(),
-        'phone' => fake()->phoneNumber(),
+        'phone' => fake()->numerify('+6281#########'),
         'email' => fake()->safeEmail(),
         'lat' => fake()->latitude(),
         'lng' => fake()->longitude(),

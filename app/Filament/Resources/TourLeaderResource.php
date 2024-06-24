@@ -10,7 +10,14 @@ use App\Models\TourLeader;
 use Filament\Tables\Table;
 use Filament\Resources\Resource;
 use App\Enums\NavigationGroupLabel;
+use Filament\Forms\Components\Grid;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Section;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\FileUpload;
 use Illuminate\Database\Eloquent\Builder;
+use Filament\Forms\Components\ToggleButtons;
 use Ysfkaya\FilamentPhoneInput\Forms\PhoneInput;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use App\Filament\Resources\TourLeaderResource\Pages;
@@ -31,15 +38,21 @@ class TourLeaderResource extends Resource
   public static function form(Form $form): Form
   {
     return $form
+      ->columns(3)
       ->schema([
-        Forms\Components\Section::make('Tour Leader')
+        Section::make('Tour Leader')
           ->schema([
-            Forms\Components\Select::make('user_id')
+            Select::make('user_id')
+              ->unique(ignoreRecord: true)
               ->relationship('user', 'name'),
-            Forms\Components\TextInput::make('name')
+            TextInput::make('name')
               ->required()
               ->maxLength(255),
-            Forms\Components\FileUpload::make('photo')
+            DatePicker::make('join_date')
+              ->required()
+              ->default(today())
+              ->maxDate(today()),
+            FileUpload::make('photo')
               ->required()
               ->image()
               ->imageEditor()
@@ -49,43 +62,55 @@ class TourLeaderResource extends Resource
               ->imageResizeMode('cover'),
           ])
           ->columnSpan(2),
-        Forms\Components\Grid::make()
+        Grid::make()
           ->schema([
-            Forms\Components\Section::make()
+            Section::make()
               ->schema([
-                Forms\Components\ToggleButtons::make('gender')
+                ToggleButtons::make('gender')
                   ->required()
                   ->inline()
                   ->options(Gender::class),
               ]),
-            Forms\Components\Section::make('Contact')
+            Section::make('Contact')
               ->schema([
                 PhoneInput::make('phone')
                   ->required()
                   ->idDefaultFormat(),
               ]),
           ])->columnSpan(1)
-
-      ])
-      ->columns(3);
+      ]);
   }
 
   public static function table(Table $table): Table
   {
     return $table
       ->columns([
-        // Tables\Columns\TextColumn::make('user.name')
-        //   ->numeric()
-        //   ->sortable(),
         Tables\Columns\ImageColumn::make('photo')
-          ->circular()
+          ->circular(),
+        Tables\Columns\TextColumn::make('code')
+          ->badge()
           ->searchable(),
         Tables\Columns\TextColumn::make('name')
+          ->sortable()
           ->searchable(),
-        Tables\Columns\TextColumn::make('phone')
+        Tables\Columns\TextColumn::make('alias')
+          ->sortable()
           ->searchable(),
+        Tables\Columns\TextColumn::make('join_date')
+          ->label('Tanggal Masuk')
+          ->date()
+          ->sortable(),
         Tables\Columns\TextColumn::make('gender')
-          ->searchable(),
+          ->badge(),
+        Tables\Columns\TextColumn::make('working_day')
+          ->label('Masa Kerja (Hari)')
+          ->numeric()
+          ->state(function (TourLeader $record): string {
+            return today()->diffInDays($record->join_date);
+          })
+          ->sortable(query: function (Builder $query, string $direction): Builder {
+            return $query->orderBy('join_date', $direction);
+          }),
         Tables\Columns\TextColumn::make('created_at')
           ->dateTime()
           ->sortable()
@@ -94,8 +119,6 @@ class TourLeaderResource extends Resource
           ->dateTime()
           ->sortable()
           ->toggleable(isToggledHiddenByDefault: true),
-      ])
-      ->filters([
       ]);
   }
 
