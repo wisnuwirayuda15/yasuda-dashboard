@@ -96,7 +96,7 @@ models:
     balance: bigInteger default:0
 
   Employee:
-    user_id: foreign constrained onDelete:cascade unique nullable
+    # user_id: foreign constrained onDelete:cascade unique nullable
     code: string unique index
     name: string index
     alias: string unique
@@ -110,7 +110,7 @@ models:
     status: string:50
 
   TourLeader:
-    user_id: foreign constrained onDelete:cascade unique nullable
+    # user_id: foreign constrained onDelete:cascade unique nullable
     code: string unique index
     name: string index
     alias: string unique

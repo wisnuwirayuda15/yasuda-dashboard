@@ -1,7 +1,7 @@
 <?php
 
 return [
-  'operational' => 'Operasional',
+  'operational' => 'Operasional & Logistik',
   'finance' => 'Keuangan',
   'marketing' => 'Penjualan & Pemasaran',
   'master_data' => 'Data Utama',

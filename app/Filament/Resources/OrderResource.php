@@ -51,12 +51,7 @@ class OrderResource extends Resource
         Forms\Components\Select::make('customer_id')
           ->required()
           ->relationship('customer', 'name', fn(Builder $query) => $query->whereNot('status', CustomerStatus::CANDIDATE->value)->orderBy('created_at', 'desc'))
-          ->prefixIcon(fn() => CustomerResource::getNavigationIcon())
-          // ->editOptionModalHeading('Edit Customer')
-          // ->createOptionModalHeading('Create Customer')
-          // ->editOptionForm(fn(Form $form) => CustomerResource::form($form))
-          // ->createOptionForm(fn(Form $form) => CustomerResource::form($form))
-          ,
+          ->prefixIcon(fn() => CustomerResource::getNavigationIcon()),
         Forms\Components\Select::make('regency_id')
           ->required()
           ->relationship('regency', 'name'),
@@ -78,7 +73,7 @@ class OrderResource extends Resource
               $set('destinations', $tourTemplate['destinations']);
             })),
         Toggle::make('change_date')
-          ->live(true)
+          ->live()
           ->hiddenOn(['create', 'createOption', 'createOption.createOption', 'editOption.createOption']),
         Forms\Components\DatePicker::make('trip_date')
           ->required()

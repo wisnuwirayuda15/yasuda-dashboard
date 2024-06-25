@@ -42,9 +42,9 @@ class TourLeaderResource extends Resource
       ->schema([
         Section::make('Tour Leader')
           ->schema([
-            Select::make('user_id')
-              ->unique(ignoreRecord: true)
-              ->relationship('user', 'name'),
+            // Select::make('user_id')
+            //   ->unique(ignoreRecord: true)
+            //   ->relationship('user', 'name'),
             TextInput::make('name')
               ->required()
               ->maxLength(255),
@@ -53,7 +53,6 @@ class TourLeaderResource extends Resource
               ->default(today())
               ->maxDate(today()),
             FileUpload::make('photo')
-              ->required()
               ->image()
               ->imageEditor()
               ->maxSize(2048)
@@ -74,7 +73,6 @@ class TourLeaderResource extends Resource
             Section::make('Contact')
               ->schema([
                 PhoneInput::make('phone')
-                  ->required()
                   ->idDefaultFormat(),
               ]),
           ])->columnSpan(1)

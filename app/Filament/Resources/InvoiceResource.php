@@ -174,10 +174,6 @@ class InvoiceResource extends Resource
           ->unique(ignoreRecord: true)
           ->prefixIcon(fn() => OrderResource::getNavigationIcon())
           ->relationship('order', modifyQueryUsing: fn(Builder $query) => $query->doesntHave('invoice')->has('orderFleets'))
-          // ->editOptionModalHeading('Edit Order')
-          // ->createOptionModalHeading('Create Order')
-          // ->editOptionForm(fn(Form $form) => OrderResource::form($form))
-          // ->createOptionForm(fn(Form $form) => OrderResource::form($form))
           ->getOptionLabelFromRecordUsing(fn(Order $record) => view('filament.components.badges.order', compact('record'))),
         Group::make()
           ->visible(fn(Get $get) => $get('order_id'))
@@ -198,8 +194,9 @@ class InvoiceResource extends Resource
               ->extraAttributes(['class' => 'font-bold'])
               ->content(function (Get $get) {
                 $date = Order::find($get('order_id'))?->trip_date;
-                if (filled($date))
+                if (filled($date)) {
                   return $date->translatedFormat('j F Y');
+                }
                 return '-';
               }),
             Placeholder::make('tujuan')

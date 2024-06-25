@@ -59,6 +59,7 @@ use App\Filament\Resources\LoyaltyPointResource;
 use App\Filament\Resources\TourTemplateResource;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Awcodes\FilamentQuickCreate\QuickCreatePlugin;
+use BezhanSalleh\FilamentShield\FilamentShieldPlugin;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\AuthenticateSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
@@ -200,7 +201,7 @@ class AdminPanelProvider extends PanelProvider
         'primary' => Color::Rose,
         'secondary' => Color::Indigo,
         'danger' => Color::Red,
-        'gray' => Color::Gray,
+        'gray' => Color::Zinc,
         'info' => Color::Sky,
         'success' => Color::Green,
         'warning' => Color::Yellow,
@@ -219,63 +220,72 @@ class AdminPanelProvider extends PanelProvider
       ->authMiddleware([
         Authenticate::class,
       ])
-      ->navigation(function (NavigationBuilder $builder): NavigationBuilder {
-        return $builder
-          ->items([
-            ...Dashboard::getNavigationItems(),
-          ])
-          ->groups([
-            NavigationGroup::make()
-              ->label(NavigationGroupLabel::MASTER_DATA->getLabel())
-              ->items([
-                ...FleetResource::getNavigationItems(),
-                ...CustomerResource::getNavigationItems(),
-                ...DestinationResource::getNavigationItems(),
-                ...TourLeaderResource::getNavigationItems(),
-                ...EmployeeResource::getNavigationItems(),
-                ...TourTemplateResource::getNavigationItems(),
-              ]),
-            NavigationGroup::make()
-              ->label(NavigationGroupLabel::MARKETING->getLabel())
-              ->items([
-                ...LoyaltyPointResource::getNavigationItems(),
-                ...SalesVisitResource::getNavigationItems(),
-              ]),
-            NavigationGroup::make()
-              ->label(NavigationGroupLabel::OPERATIONAL->getLabel())
-              ->items([
-                ...OrderResource::getNavigationItems(),
-                ...OrderFleetResource::getNavigationItems(),
-                ...ShirtResource::getNavigationItems(),
-              ]),
-            NavigationGroup::make()
-              ->label(NavigationGroupLabel::FINANCE->getLabel())
-              ->items([
-                ...InvoiceResource::getNavigationItems(),
-                ...ProfitLossResource::getNavigationItems(),
-                ...TourReportResource::getNavigationItems(),
-              ]),
-            NavigationGroup::make()
-              ->label(NavigationGroupLabel::OTHER->getLabel())
-              ->items([
-                ...MeetingResource::getNavigationItems(),
-              ]),
-          ]);
-      })
+      // ->navigation(function (NavigationBuilder $builder): NavigationBuilder {
+      //   return $builder
+      //     ->items([
+      //       ...Dashboard::getNavigationItems(),
+      //     ])
+      //     ->groups([
+      //       NavigationGroup::make()
+      //         ->label(NavigationGroupLabel::MASTER_DATA->getLabel())
+      //         ->items([
+      //           ...FleetResource::getNavigationItems(),
+      //           ...CustomerResource::getNavigationItems(),
+      //           ...DestinationResource::getNavigationItems(),
+      //           ...TourLeaderResource::getNavigationItems(),
+      //           ...EmployeeResource::getNavigationItems(),
+      //           ...TourTemplateResource::getNavigationItems(),
+      //         ]),
+      //       NavigationGroup::make()
+      //         ->label(NavigationGroupLabel::MARKETING->getLabel())
+      //         ->items([
+      //           ...LoyaltyPointResource::getNavigationItems(),
+      //           ...SalesVisitResource::getNavigationItems(),
+      //         ]),
+      //       NavigationGroup::make()
+      //         ->label(NavigationGroupLabel::OPERATIONAL->getLabel())
+      //         ->items([
+      //           ...OrderResource::getNavigationItems(),
+      //           ...OrderFleetResource::getNavigationItems(),
+      //           ...ShirtResource::getNavigationItems(),
+      //         ]),
+      //       NavigationGroup::make()
+      //         ->label(NavigationGroupLabel::FINANCE->getLabel())
+      //         ->items([
+      //           ...InvoiceResource::getNavigationItems(),
+      //           ...ProfitLossResource::getNavigationItems(),
+      //           ...TourReportResource::getNavigationItems(),
+      //         ]),
+      //       NavigationGroup::make()
+      //         ->label(NavigationGroupLabel::OTHER->getLabel())
+      //         ->items([
+      //           ...MeetingResource::getNavigationItems(),
+      //         ]),
+      //     ]);
+      // })
       ->plugins([
+        FilamentShieldPlugin::make()
+          ->gridColumns(2)
+          ->sectionColumnSpan(1)
+          ->checkboxListColumns(2)
+          ->resourceCheckboxListColumns(2),
         FilamentProgressbarPlugin::make(),
         VersionsPlugin::make()
           ->hasNavigationView(false)
           ->widgetColumnSpan('full'),
         BreezyCore::make()
-          ->avatarUploadComponent(fn(FileUpload $fileUpload) => $fileUpload->hiddenLabel())
+          ->avatarUploadComponent(
+            fn() => FileUpload::make('avatar_url')
+              ->hiddenLabel()
+              ->avatar()
+              ->disk('profile')
+              ->visible()
+          )
           ->enableTwoFactorAuthentication()
           ->myProfile(
-            shouldRegisterUserMenu: true,
-            shouldRegisterNavigation: false,
-            navigationGroup: 'Settings',
             hasAvatars: true,
-            slug: 'profile'
+            shouldRegisterUserMenu: true,
+            navigationGroup: NavigationGroupLabel::SETTING->getLabel(),
           ),
         QuickCreatePlugin::make()
           ->rounded(false)

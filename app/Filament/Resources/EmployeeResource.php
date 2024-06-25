@@ -56,9 +56,9 @@ class EmployeeResource extends Resource
               ->imageCropAspectRatio('1:1')
               ->imageResizeMode('cover')
               ->columnSpanFull(),
-            Select::make('user_id')
-              ->unique(ignoreRecord: true)
-              ->relationship('user', 'name'),
+            // Select::make('user_id')
+            //   ->unique(ignoreRecord: true)
+            //   ->relationship('user', 'name', fn(Builder $query) => $query->doesntHave('tourLeader')->orDoesntHave('employee')),
             TextInput::make('name')
               ->required(),
             TextInput::make('alias')

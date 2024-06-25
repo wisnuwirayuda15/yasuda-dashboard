@@ -17,6 +17,7 @@ use App\Enums\NavigationGroupLabel;
 use Filament\Tables\Actions\Action;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Section;
+use Filament\Forms\Components\Fieldset;
 use Filament\Tables\Columns\TextColumn;
 use Illuminate\Database\Eloquent\Model;
 use Filament\Forms\Components\TextInput;
@@ -24,8 +25,8 @@ use Filament\Notifications\Notification;
 use Filament\Forms\Components\ToggleButtons;
 use Ysfkaya\FilamentPhoneInput\Forms\PhoneInput;
 use App\Filament\Resources\CustomerResource\Pages;
+use Ysfkaya\FilamentPhoneInput\Tables\PhoneColumn;
 use App\Filament\Resources\CustomerResource\RelationManagers;
-use Filament\Forms\Components\Fieldset;
 
 class CustomerResource extends Resource
 {
@@ -84,15 +85,13 @@ class CustomerResource extends Resource
           ->searchable(),
         TextColumn::make('operator')
           ->searchable(),
-        TextColumn::make('phone')
+        PhoneColumn::make('phone')
           ->searchable(),
         TextColumn::make('email')
           ->searchable(),
         TextColumn::make('lat')
-          ->searchable()
           ->toggleable(isToggledHiddenByDefault: true),
         TextColumn::make('lng')
-          ->searchable()
           ->toggleable(isToggledHiddenByDefault: true),
         TextColumn::make('created_at')
           ->dateTime()
@@ -102,8 +101,6 @@ class CustomerResource extends Resource
           ->dateTime()
           ->sortable()
           ->toggleable(isToggledHiddenByDefault: true),
-      ])
-      ->filters([
       ]);
   }
 

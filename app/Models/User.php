@@ -6,6 +6,7 @@ namespace App\Models;
 use Filament\Panel;
 use Laravel\Sanctum\HasApiTokens;
 use Filament\Models\Contracts\HasName;
+use Spatie\Permission\Traits\HasRoles;
 use Illuminate\Support\Facades\Storage;
 use Filament\Models\Contracts\HasAvatar;
 use Illuminate\Notifications\Notifiable;
@@ -17,11 +18,19 @@ use Jeffgreco13\FilamentBreezy\Traits\TwoFactorAuthenticatable;
 
 class User extends Authenticatable implements HasAvatar, HasName, FilamentUser
 {
-  use HasApiTokens, HasFactory, Notifiable, TwoFactorAuthenticatable;
+  use HasRoles, HasApiTokens, HasFactory, Notifiable, TwoFactorAuthenticatable;
 
   public function getFilamentAvatarUrl(): ?string
   {
-    return $this->avatar_url ? Storage::url($this->avatar_url) : null;
+    // return $this->avatar_url ? Storage::url($this->avatar_url) : null;
+    
+    if ($this->employee?->photo) {
+      return ($this->employee->photo);
+    } else if ($this->tourLeader?->photo) {
+      return ($this->tourLeader->photo);
+    }
+
+    return null;
   }
 
   public function canAccessPanel(Panel $panel): bool
@@ -31,15 +40,7 @@ class User extends Authenticatable implements HasAvatar, HasName, FilamentUser
 
   public function getFilamentName(): string
   {
-    if ($this->employee()->count() > 0) {
-      return $this->employee->name;
-    };
-
-    if ($this->tourLeader()->count() > 0) {
-      return $this->tourLeader->name;
-    };
-
-    return $this->name;
+    return $this->employee?->name ?? $this->tourLeader?->name ?? $this->name;
   }
 
   /**
