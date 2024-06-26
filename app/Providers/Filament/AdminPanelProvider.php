@@ -8,7 +8,6 @@ use Filament\Widgets;
 use Filament\Pages\Page;
 use Filament\Tables\Table;
 use Filament\PanelProvider;
-use Filament\Support\Assets\Js;
 use App\Filament\Pages\Dashboard;
 use App\Filament\Pages\Auth\Login;
 use Filament\Support\Colors\Color;
@@ -26,8 +25,6 @@ use Filament\Tables\Actions\ViewAction;
 use Filament\Navigation\NavigationGroup;
 use Filament\Notifications\Notification;
 use Filament\Tables\Actions\ActionGroup;
-use App\Filament\Resources\FleetResource;
-use App\Filament\Resources\OrderResource;
 use App\Filament\Resources\ShirtResource;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\FileUpload;
@@ -37,26 +34,15 @@ use Filament\Navigation\NavigationBuilder;
 use Filament\Support\Facades\FilamentView;
 use Filament\Tables\Enums\ActionsPosition;
 use Jeffgreco13\FilamentBreezy\BreezyCore;
-use App\Filament\Resources\InvoiceResource;
-use App\Filament\Resources\MeetingResource;
-use Filament\Support\Facades\FilamentAsset;
-use App\Filament\Resources\CustomerResource;
-use App\Filament\Resources\EmployeeResource;
 use Awcodes\FilamentVersions\VersionsPlugin;
 use Awcodes\FilamentVersions\VersionsWidget;
 use Filament\Forms\Components\Actions\Action;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Support\Enums\VerticalAlignment;
-use App\Filament\Resources\OrderFleetResource;
 use App\Filament\Resources\ProfitLossResource;
-use App\Filament\Resources\SalesVisitResource;
-use App\Filament\Resources\TourLeaderResource;
 use App\Filament\Resources\TourReportResource;
 use Illuminate\Validation\ValidationException;
-use App\Filament\Resources\DestinationResource;
 use Illuminate\Session\Middleware\StartSession;
-use App\Filament\Resources\LoyaltyPointResource;
-use App\Filament\Resources\TourTemplateResource;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Awcodes\FilamentQuickCreate\QuickCreatePlugin;
 use BezhanSalleh\FilamentShield\FilamentShieldPlugin;
@@ -154,13 +140,6 @@ class AdminPanelProvider extends PanelProvider
     // Notification alignment
     // Notifications::alignment(Alignment::Center);
     // Notifications::verticalAlignment(VerticalAlignment::End);
-
-    // Register Tailwind CSS CDN in local
-    if (env('APP_ENV') === 'local' && env('TAILWIND_CDN') === true) {
-      FilamentAsset::register([
-        Js::make('tailwindcss', 'https://cdn.tailwindcss.com'),
-      ]);
-    }
   }
 
   public function panel(Panel $panel): Panel
@@ -220,49 +199,6 @@ class AdminPanelProvider extends PanelProvider
       ->authMiddleware([
         Authenticate::class,
       ])
-      // ->navigation(function (NavigationBuilder $builder): NavigationBuilder {
-      //   return $builder
-      //     ->items([
-      //       ...Dashboard::getNavigationItems(),
-      //     ])
-      //     ->groups([
-      //       NavigationGroup::make()
-      //         ->label(NavigationGroupLabel::MASTER_DATA->getLabel())
-      //         ->items([
-      //           ...FleetResource::getNavigationItems(),
-      //           ...CustomerResource::getNavigationItems(),
-      //           ...DestinationResource::getNavigationItems(),
-      //           ...TourLeaderResource::getNavigationItems(),
-      //           ...EmployeeResource::getNavigationItems(),
-      //           ...TourTemplateResource::getNavigationItems(),
-      //         ]),
-      //       NavigationGroup::make()
-      //         ->label(NavigationGroupLabel::MARKETING->getLabel())
-      //         ->items([
-      //           ...LoyaltyPointResource::getNavigationItems(),
-      //           ...SalesVisitResource::getNavigationItems(),
-      //         ]),
-      //       NavigationGroup::make()
-      //         ->label(NavigationGroupLabel::OPERATIONAL->getLabel())
-      //         ->items([
-      //           ...OrderResource::getNavigationItems(),
-      //           ...OrderFleetResource::getNavigationItems(),
-      //           ...ShirtResource::getNavigationItems(),
-      //         ]),
-      //       NavigationGroup::make()
-      //         ->label(NavigationGroupLabel::FINANCE->getLabel())
-      //         ->items([
-      //           ...InvoiceResource::getNavigationItems(),
-      //           ...ProfitLossResource::getNavigationItems(),
-      //           ...TourReportResource::getNavigationItems(),
-      //         ]),
-      //       NavigationGroup::make()
-      //         ->label(NavigationGroupLabel::OTHER->getLabel())
-      //         ->items([
-      //           ...MeetingResource::getNavigationItems(),
-      //         ]),
-      //     ]);
-      // })
       ->plugins([
         FilamentShieldPlugin::make()
           ->gridColumns(2)

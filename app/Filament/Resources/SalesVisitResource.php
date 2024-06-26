@@ -9,22 +9,28 @@ use Filament\Forms\Set;
 use Filament\Forms\Form;
 use App\Models\SalesVisit;
 use Filament\Tables\Table;
-use App\Enums\CustomerStatus;
 use App\Enums\EmployeeRole;
+use App\Enums\CustomerStatus;
 use Filament\Resources\Resource;
+use App\Enums\NavigationGroupLabel;
 use Filament\Forms\Components\Radio;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Section;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use App\Filament\Resources\SalesVisitResource\Pages;
 use App\Filament\Resources\SalesVisitResource\RelationManagers;
-use Filament\Forms\Components\Section;
 
 class SalesVisitResource extends Resource
 {
   protected static ?string $model = SalesVisit::class;
 
   protected static ?string $navigationIcon = 'fas-handshake';
+
+  public static function getNavigationGroup(): ?string
+  {
+    return NavigationGroupLabel::MARKETING->getLabel();
+  }
 
   public static function form(Form $form): Form
   {

@@ -17,6 +17,7 @@ use Illuminate\Support\Str;
 use App\Enums\ShirtMaterial;
 use Filament\Resources\Resource;
 use Filament\Support\Colors\Color;
+use App\Enums\NavigationGroupLabel;
 use Filament\Forms\Components\Tabs;
 use Filament\Forms\Components\Group;
 use Filament\Forms\Components\Select;
@@ -44,6 +45,11 @@ class ShirtResource extends Resource
   protected static ?Invoice $invoice = null;
 
   protected static ?int $totalShirt = null;
+
+  public static function getNavigationGroup(): ?string
+  {
+    return NavigationGroupLabel::OPERATIONAL->getLabel();
+  }
 
   public static function form(Form $form): Form
   {

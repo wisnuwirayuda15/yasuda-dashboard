@@ -44,6 +44,11 @@ class ProfitLossResource extends Resource
 
   protected static ?Invoice $invoice;
 
+  public static function getNavigationGroup(): ?string
+  {
+    return NavigationGroupLabel::FINANCE->getLabel();
+  }
+
   public static function form(Form $form): Form
   {
     $record = $form->getRecord();

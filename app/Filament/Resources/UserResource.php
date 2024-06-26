@@ -11,6 +11,8 @@ use Filament\Forms\Form;
 use Filament\Tables\Table;
 use Illuminate\Support\Str;
 use Filament\Resources\Resource;
+use App\Enums\NavigationGroupLabel;
+use Filament\Forms\Components\Group;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Toggle;
 use Filament\Forms\Components\Section;
@@ -26,13 +28,22 @@ use App\Filament\Resources\UserResource\Pages;
 use App\Filament\Resources\Shield\RoleResource;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use App\Filament\Resources\UserResource\RelationManagers;
-use Filament\Forms\Components\Group;
 
 class UserResource extends Resource
 {
   protected static ?string $model = User::class;
 
   protected static ?string $navigationIcon = 'fas-user-circle';
+
+  public static function getNavigationGroup(): ?string
+  {
+    return NavigationGroupLabel::MASTER_DATA->getLabel();
+  }
+
+  public static function getNavigationBadge(): ?string
+  {
+    return static::getModel()::count();
+  }
 
   public static function form(Form $form): Form
   {

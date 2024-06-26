@@ -17,6 +17,7 @@ use Filament\Tables\Table;
 use App\Enums\OrderFleetStatus;
 use Filament\Resources\Resource;
 use App\Enums\FleetPaymentStatus;
+use App\Enums\NavigationGroupLabel;
 use Filament\Tables\Actions\Action;
 use Filament\Forms\Components\Group;
 use Filament\Forms\Components\Select;
@@ -45,6 +46,11 @@ class OrderFleetResource extends Resource
   protected static ?string $model = OrderFleet::class;
 
   protected static ?string $navigationIcon = 'mdi-bus-marker';
+
+  public static function getNavigationGroup(): ?string
+  {
+    return NavigationGroupLabel::OPERATIONAL->getLabel();
+  }
 
   public static function getNavigationBadge(): ?string
   {

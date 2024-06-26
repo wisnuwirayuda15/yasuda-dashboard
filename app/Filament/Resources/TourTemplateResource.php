@@ -31,6 +31,11 @@ class TourTemplateResource extends Resource
 
   protected static ?string $navigationIcon = 'fontisto-holiday-village';
 
+  public static function getNavigationGroup(): ?string
+  {
+    return NavigationGroupLabel::MASTER_DATA->getLabel();
+  }
+
   public static function getNavigationBadge(): ?string
   {
     return static::getModel()::count();

@@ -43,6 +43,11 @@ class TourReportResource extends Resource
 
   protected static ?Invoice $invoice = null;
 
+  public static function getNavigationGroup(): ?string
+  {
+    return NavigationGroupLabel::FINANCE->getLabel();
+  }
+
   public static function form(Form $form): Form
   {
     $record = $form->getRecord();

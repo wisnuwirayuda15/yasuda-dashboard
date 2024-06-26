@@ -2,7 +2,6 @@
 
 namespace App\Filament\Resources;
 
-use App\Enums\CustomerStatus;
 use Filament\Forms;
 use Filament\Tables;
 use App\Models\Order;
@@ -13,7 +12,9 @@ use App\Models\OrderFleet;
 use Filament\Tables\Table;
 use App\Models\Destination;
 use App\Models\TourTemplate;
+use App\Enums\CustomerStatus;
 use Filament\Resources\Resource;
+use App\Enums\NavigationGroupLabel;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Toggle;
 use Filament\Forms\Components\Section;
@@ -24,18 +25,23 @@ use Filament\Tables\Actions\ActionGroup;
 use Filament\Tables\Actions\DeleteAction;
 use Illuminate\Database\Eloquent\Builder;
 use Filament\Forms\Components\Placeholder;
+use Filament\Forms\Components\CheckboxList;
 use Filament\Tables\Actions\BulkActionGroup;
 use Filament\Tables\Actions\DeleteBulkAction;
 use App\Filament\Resources\OrderResource\Pages;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use App\Filament\Resources\OrderResource\RelationManagers;
-use Filament\Forms\Components\CheckboxList;
 
 class OrderResource extends Resource
 {
   protected static ?string $model = Order::class;
 
   protected static ?string $navigationIcon = 'heroicon-s-check-badge';
+
+  public static function getNavigationGroup(): ?string
+  {
+    return NavigationGroupLabel::OPERATIONAL->getLabel();
+  }
 
   public static function getNavigationBadge(): ?string
   {

@@ -13,6 +13,7 @@ use Filament\Tables\Table;
 use App\Enums\FleetCategory;
 use App\Models\LoyaltyPoint;
 use Filament\Resources\Resource;
+use App\Enums\NavigationGroupLabel;
 use Filament\Forms\Components\Select;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Forms\Components\TextInput;
@@ -28,6 +29,11 @@ class LoyaltyPointResource extends Resource
   protected static ?string $model = LoyaltyPoint::class;
 
   protected static ?string $navigationIcon = 'heroicon-s-star';
+
+  public static function getNavigationGroup(): ?string
+  {
+    return NavigationGroupLabel::MARKETING->getLabel();
+  }
 
   public static function form(Form $form): Form
   {

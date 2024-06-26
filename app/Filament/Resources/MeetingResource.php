@@ -8,12 +8,13 @@ use App\Models\Event;
 use Filament\Forms\Form;
 use Filament\Tables\Table;
 use Filament\Resources\Resource;
+use Illuminate\Support\HtmlString;
+use App\Enums\NavigationGroupLabel;
 use Filament\Tables\Columns\TextColumn;
 use Illuminate\Database\Eloquent\Builder;
 use App\Filament\Resources\MeetingResource\Pages;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use App\Filament\Resources\MeetingResource\RelationManagers;
-use Illuminate\Support\HtmlString;
 
 class MeetingResource extends Resource
 {
@@ -22,6 +23,13 @@ class MeetingResource extends Resource
   protected static ?string $modelLabel = 'Event';
 
   protected static ?string $navigationIcon = 'gmdi-event';
+
+  protected static ?int $navigationSort = 1;
+
+  public static function getNavigationGroup(): ?string
+  {
+    return NavigationGroupLabel::OTHER->getLabel();
+  }
 
   public static function form(Form $form): Form
   {

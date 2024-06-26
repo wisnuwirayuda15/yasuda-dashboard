@@ -8,6 +8,7 @@ use Filament\Tables\Table;
 use App\Models\Destination;
 use App\Enums\DestinationType;
 use Filament\Resources\Resource;
+use App\Enums\NavigationGroupLabel;
 use Filament\Forms\Components\Select;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Forms\Components\TextInput;
@@ -20,6 +21,11 @@ class DestinationResource extends Resource
   protected static ?string $model = Destination::class;
 
   protected static ?string $navigationIcon = 'fas-map-location-dot';
+
+  public static function getNavigationGroup(): ?string
+  {
+    return NavigationGroupLabel::MASTER_DATA->getLabel();
+  }
 
   public static function getNavigationBadge(): ?string
   {

@@ -13,6 +13,7 @@ use Filament\Tables\Table;
 use App\Enums\EmployeeRole;
 use App\Enums\EmployeeStatus;
 use Filament\Resources\Resource;
+use App\Enums\NavigationGroupLabel;
 use Filament\Forms\Components\Grid;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Section;
@@ -31,6 +32,11 @@ class EmployeeResource extends Resource
   protected static ?string $model = Employee::class;
 
   protected static ?string $navigationIcon = 'fluentui-people-team-toolbox-20';
+
+  public static function getNavigationGroup(): ?string
+  {
+    return NavigationGroupLabel::MASTER_DATA->getLabel();
+  }
 
   public static function getNavigationBadge(): ?string
   {
@@ -94,13 +100,13 @@ class EmployeeResource extends Resource
                   ->required()
                   ->live()
                   ->options(EmployeeRole::class)
-                  // ->afterStateUpdated(function (Set $set, ?string $state) {
-                  //   if ($state === EmployeeRole::TOUR_LEADER->value) {
-                  //     $set('code', emp_code(new Employee, '02/TLF/'));
-                  //   } else {
-                  //     $set('code', emp_code(new Employee, '01/YSD/'));
-                  //   }
-                  // })
+                // ->afterStateUpdated(function (Set $set, ?string $state) {
+                //   if ($state === EmployeeRole::TOUR_LEADER->value) {
+                //     $set('code', emp_code(new Employee, '02/TLF/'));
+                //   } else {
+                //     $set('code', emp_code(new Employee, '01/YSD/'));
+                //   }
+                // })
               ])
           ]),
       ]);

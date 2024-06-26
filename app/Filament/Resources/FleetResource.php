@@ -35,6 +35,11 @@ class FleetResource extends Resource
 
   protected static ?string $recordTitleAttribute = 'name';
 
+  public static function getNavigationGroup(): ?string
+  {
+    return NavigationGroupLabel::MASTER_DATA->getLabel();
+  }
+
   public static function getNavigationBadge(): ?string
   {
     return static::getModel()::count();

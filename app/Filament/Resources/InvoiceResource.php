@@ -53,6 +53,11 @@ class InvoiceResource extends Resource
 
   protected static ?Order $order = null;
 
+  public static function getNavigationGroup(): ?string
+  {
+    return NavigationGroupLabel::FINANCE->getLabel();
+  }
+
   public static function form(Form $form): Form
   {
     return $form
