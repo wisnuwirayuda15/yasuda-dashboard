@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Enums\CustomerStatus;
 use App\Enums\CustomerCategory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -47,14 +48,31 @@ class Customer extends Model
     'status' => CustomerStatus::class,
   ];
 
+  public function getBalance(bool $formatted = false): int|float|string
+  {
+    $points = LoyaltyPoint::whereHas('invoice.order.customer', function (Builder $query) {
+      $query->where('id', $this->id);
+    })->get()->sum('amount');
+
+    $rewards = $this->rewards()->get()->sum('amount');
+
+    $balance = (float) $points - (float) $rewards;
+
+    if ($formatted) {
+      return idr((float) $balance);
+    }
+
+    return (float) $balance;
+  }
+
   public function orders(): HasMany
   {
     return $this->hasMany(Order::class);
   }
 
-  public function loyaltyPoints(): HasMany
+  public function rewards(): HasMany
   {
-    return $this->hasMany(LoyaltyPoint::class);
+    return $this->hasMany(Reward::class);
   }
 
   public function regency(): BelongsTo

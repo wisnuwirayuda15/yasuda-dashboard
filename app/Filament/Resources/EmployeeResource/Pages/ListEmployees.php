@@ -22,18 +22,17 @@ class ListEmployees extends ListRecords
     ];
   }
 
-  public function getTabs(): array
-  {
-    $array = [
-      'all' => Tab::make()->icon('fluentui-grid-dots-28-o'),
-    ];
+  // public function getTabs(): array
+  // {
+  //   $array = [
+  //     'all' => Tab::make()->icon('fluentui-grid-dots-28-o'),
+  //   ];
 
-    foreach (static::$roles::cases() as $role) {
-      $array[$role->value] = Tab::make($role->getLabel())
-        // ->icon($role->getIcon())
-        ->modifyQueryUsing(fn(Builder $query) => $query->where('role', $role->value));
-    }
+  //   foreach (static::$roles::cases() as $role) {
+  //     $array[$role->value] = Tab::make($role->getLabel())
+  //       ->modifyQueryUsing(fn(Builder $query) => $query->where('role', $role->value));
+  //   }
 
-    return $array;
-  }
+  //   return $array;
+  // }
 }

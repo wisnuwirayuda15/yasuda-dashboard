@@ -67,6 +67,7 @@ class MeetingResource extends Resource
           ->sortable(),
         TextColumn::make('description')
           ->limit(40)
+          ->placeholder('No content')
           ->html(),
         TextColumn::make('created_at')
           ->dateTime()

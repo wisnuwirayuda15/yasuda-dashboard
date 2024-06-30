@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class SalesVisit extends Model
+class Reward extends Model
 {
     use HasFactory;
 
@@ -17,10 +17,10 @@ class SalesVisit extends Model
      */
     protected $fillable = [
         'customer_id',
-        'employee_id',
-        'image',
-        'priority',
-        'visit_status',
+        'cash_status',
+        'date',
+        'description',
+        'amount',
     ];
 
     /**
@@ -31,16 +31,12 @@ class SalesVisit extends Model
     protected $casts = [
         'id' => 'integer',
         'customer_id' => 'integer',
-        'employee_id' => 'integer',
+        'date' => 'datetime',
+        'amount' => 'integer',
     ];
 
     public function customer(): BelongsTo
     {
         return $this->belongsTo(Customer::class);
-    }
-
-    public function employee(): BelongsTo
-    {
-        return $this->belongsTo(Employee::class);
     }
 }

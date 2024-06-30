@@ -23,6 +23,8 @@ class CustomerSeeder extends Seeder
     for ($x = 1; $x <= 500; $x++) {
       $category = fake()->randomElement($categories);
 
+      $status = fake()->randomElement($statuses);
+
       $code = get_code(new Customer, $category);
 
       $city = Regency::inRandomOrder()->first();
@@ -44,7 +46,7 @@ class CustomerSeeder extends Seeder
         'email' => fake()->safeEmail(),
         'lat' => fake()->latitude(),
         'lng' => fake()->longitude(),
-        'status' => fake()->randomElement($statuses),
+        'status' => $status,
       ]);
     }
   }

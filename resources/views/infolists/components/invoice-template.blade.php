@@ -1,5 +1,4 @@
 @php
-  // Namespace Import
   use Carbon\Carbon;
   use App\Models\Destination;
   use App\Enums\FleetCategory;
@@ -12,7 +11,7 @@
   $date = $order->trip_date;
   $formattedDate = $date->translatedFormat('d F Y');
   $mainCosts = $inv->main_costs;
-  $getMainCostQty = fn(string $slug): int => collect($mainCosts)->firstWhere('slug', $slug)['qty'] ?? 0;
+  $getMainCostQty = fn(string $slug): float => collect($mainCosts)->firstWhere('slug', $slug)['qty'] ?? 0;
   $program = $getMainCostQty('program');
   $anak = $getMainCostQty('ibu-anak-pangku');
   $tambahan = $getMainCostQty('tambahan-orang');
@@ -88,7 +87,7 @@
             <section id="header">
               <div class="grid grid-cols-2">
                 <div>
-                  <img class="h-auto w-64" src="{{ asset('/img/logo-light.svg') }}" alt="logo">
+                  <img class="h-auto w-64" src="{{ asset('/img/logos/logo-light.svg') }}" alt="logo">
                 </div>
                 <div class="text-right">
                   <p class="font-semibold text-red-600">Transparancy and Intergrity</p>
@@ -478,7 +477,7 @@
               <footer class="grid grid-cols-2 items-center text-xs">
                 <div>
                   <p>Invoice ini sah dan diproses oleh komputer</p>
-                  <p>Silakan hubungi <a class="font-bold text-red-500" href="">Yasuda Jaya Tour</a> apabila anda membutuhkan bantuan.</p>
+                  <p>Silakan hubungi <a class="font-bold text-red-500" href="{{ env('COMPANY_WEBSITE', url('/')) }}" target="_blank">Yasuda Jaya Tour</a> apabila anda membutuhkan bantuan.</p>
                 </div>
                 <div class="text-end">
                   <p class="italic">Terakhir diupdate: {{ $inv->updated_at }}</p>

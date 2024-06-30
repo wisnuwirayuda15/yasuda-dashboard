@@ -22,6 +22,10 @@ use Filament\Tables\Columns\TextColumn;
 use Illuminate\Database\Eloquent\Model;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
+use Filament\Tables\Actions\ExportAction;
+use Filament\Tables\Filters\SelectFilter;
+use Illuminate\Database\Eloquent\Builder;
+use App\Filament\Exports\CustomerExporter;
 use Filament\Forms\Components\ToggleButtons;
 use Ysfkaya\FilamentPhoneInput\Forms\PhoneInput;
 use App\Filament\Resources\CustomerResource\Pages;
@@ -69,6 +73,10 @@ class CustomerResource extends Resource
     return $table
       ->columns([
         TextColumn::make('code')
+          ->badge()
+          ->searchable(),
+        TextColumn::make('name')
+          ->sortable()
           ->searchable(),
         TextColumn::make('category')
           ->badge()
@@ -77,8 +85,6 @@ class CustomerResource extends Resource
           ->badge()
           ->tooltip('Ubah status')
           ->action(static::getChangeStatusAction()),
-        TextColumn::make('name')
-          ->searchable(),
         TextColumn::make('address')
           ->searchable()
           ->toggleable(isToggledHiddenByDefault: true),
@@ -94,6 +100,10 @@ class CustomerResource extends Resource
           ->searchable(),
         TextColumn::make('email')
           ->searchable(),
+        TextColumn::make('balance')
+          ->label('Saldo')
+          ->state(fn(Customer $record) => $record->getBalance())
+          ->money('IDR'),
         TextColumn::make('lat')
           ->toggleable(isToggledHiddenByDefault: true),
         TextColumn::make('lng')
@@ -106,6 +116,18 @@ class CustomerResource extends Resource
           ->dateTime()
           ->sortable()
           ->toggleable(isToggledHiddenByDefault: true),
+      ])
+      ->filters([
+        SelectFilter::make('category')
+          ->multiple()
+          ->options(CustomerCategory::class),
+      ])
+      ->headerActions([
+        ExportAction::make()
+          ->hidden(fn(): bool => static::getModel()::count() === 0)
+          ->exporter(CustomerExporter::class)
+          ->label('Export')
+          ->color('success')
       ]);
   }
 
@@ -171,25 +193,23 @@ class CustomerResource extends Resource
           ->label('Kecamatan')
           ->required()
           ->live()
-          ->options(fn(Get $get) => District::where('regency_id', $get('regency_id'))->orderBy('name')->pluck('name', 'id')),
+          ->relationship('district', 'name', fn(Get $get, Builder $query) => $query->where('regency_id', $get('regency_id'))),
         TextInput::make('lat')
+          ->numeric()
           ->maxLength(255),
         TextInput::make('lng')
+          ->numeric()
           ->maxLength(255),
         Map::make('location')
           ->afterStateUpdated(function (Set $set, ?array $state) {
             $set('lat', $state['lat']);
             $set('lng', $state['lng']);
           })
+          ->hiddenOn('view')
+          ->columnSpanFull()
           ->extraAttributes(['class' => 'rounded-md'])
           ->liveLocation()
-          ->columnSpanFull()
-          ->showMyLocationButton()
-          ->showMarker()
-          ->draggable()
-          ->detectRetina()
-          ->showZoomControl()
-          ->showFullscreenControl(),
+          ->showMyLocationButton(),
       ]);
   }
 

@@ -42,6 +42,7 @@ class ProfitLoss extends Model
         'medium_subs_bonus',
         'big_subs_bonus',
         'legrest_subs_bonus',
+        'adjusted_income',
     ];
 
     /**
@@ -76,6 +77,7 @@ class ProfitLoss extends Model
         'medium_subs_bonus' => 'integer',
         'big_subs_bonus' => 'integer',
         'legrest_subs_bonus' => 'integer',
+        'adjusted_income' => 'integer',
     ];
 
     public function invoice(): BelongsTo

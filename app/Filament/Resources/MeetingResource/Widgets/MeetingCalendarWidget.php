@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 use App\Filament\Resources\MeetingResource;
 use Saade\FilamentFullCalendar\Data\EventData;
 use Saade\FilamentFullCalendar\Actions\EditAction;
+use Saade\FilamentFullCalendar\Actions\ViewAction;
 use Saade\FilamentFullCalendar\Actions\CreateAction;
 use Saade\FilamentFullCalendar\Actions\DeleteAction;
 use Saade\FilamentFullCalendar\Widgets\FullCalendarWidget;
@@ -38,21 +39,22 @@ class MeetingCalendarWidget extends FullCalendarWidget
   {
     return [
       CreateAction::make()
-        ->label('Tambah Event')
-        ->icon(MeetingResource::getNavigationIcon())
-        ->mountUsing(
-          function (Form $form, array $arguments) {
-            $form->fill([
-              'date' => $arguments['start'] ?? null
-            ]);
-          }
-        )
+        ->label('Event')
+        ->icon('heroicon-o-plus')
+        ->color('success')
+        ->tooltip('Tambah Event')
+        ->mountUsing(function (Form $form, array $arguments) {
+          $form->fill([
+            'date' => $arguments['start'] ?? null
+          ]);
+        })
     ];
   }
 
   protected function modalActions(): array
   {
     return [
+      ViewAction::make(),
       EditAction::make()
         ->mountUsing(function (Event $record, Form $form, array $arguments, EditAction $component) {
           if (filled($arguments)) {

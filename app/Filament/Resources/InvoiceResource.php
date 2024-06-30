@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources;
 
+use Carbon\Carbon;
 use Filament\Tables;
 use App\Models\Order;
 use App\Models\Invoice;
@@ -16,6 +17,7 @@ use Filament\Infolists\Infolist;
 use Filament\Resources\Resource;
 use Awcodes\TableRepeater\Header;
 use App\Enums\NavigationGroupLabel;
+use App\Filament\Exports\InvoiceExporter;
 use Filament\Forms\Components\Tabs;
 use Illuminate\Contracts\View\View;
 use Filament\Forms\Components\Group;
@@ -34,6 +36,7 @@ use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\RichEditor;
+use Filament\Tables\Actions\ExportAction;
 use Illuminate\Database\Eloquent\Builder;
 use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\ToggleButtons;
@@ -79,12 +82,14 @@ class InvoiceResource extends Resource
     return $table
       ->columns([
         TextColumn::make('code')
+          ->badge()
           ->searchable(),
         TextColumn::make('order.customer.name')
           ->numeric()
           ->sortable(),
         TextColumn::make('order.trip_date')
-          ->date()
+          ->label('Tanggal')
+          ->formatStateUsing(fn(Carbon $state): string => $state->translatedFormat('d/m/Y'))
           ->sortable(),
         TextColumn::make('created_at')
           ->dateTime()
@@ -95,7 +100,12 @@ class InvoiceResource extends Resource
           ->sortable()
           ->toggleable(isToggledHiddenByDefault: true),
       ])
-      ->filters([
+      ->headerActions([
+        ExportAction::make()
+          ->hidden(fn(): bool => static::getModel()::count() === 0)
+          ->exporter(InvoiceExporter::class)
+          ->label('Export')
+          ->color('success')
       ])
       ->actions([
         Tables\Actions\ActionGroup::make([

@@ -38,13 +38,13 @@ class ListCustomers extends ListRecords
       'all' => Tab::make()->icon('fluentui-grid-dots-28-o'),
     ];
 
-    foreach (static::$categories::cases() as $category) {
-      if (Customer::query()->where('category', $category->value)->exists()) {
-        $array[$category->value] = Tab::make($category->getLabel())
-          ->icon($category->getIcon())
-          ->modifyQueryUsing(fn(Builder $query) => $query->where('category', $category->value));
-      }
-    }
+    // foreach (static::$categories::cases() as $category) {
+    //   if (Customer::query()->where('category', $category->value)->exists()) {
+    //     $array[$category->value] = Tab::make($category->getLabel())
+    //       ->icon($category->getIcon())
+    //       ->modifyQueryUsing(fn(Builder $query) => $query->where('category', $category->value));
+    //   }
+    // }
 
     foreach (static::$status::cases() as $status) {
       if (Customer::query()->where('status', $status->value)->exists()) {

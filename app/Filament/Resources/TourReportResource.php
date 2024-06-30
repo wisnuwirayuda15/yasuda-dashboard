@@ -17,6 +17,7 @@ use App\Enums\DestinationType;
 use Filament\Resources\Resource;
 use Awcodes\TableRepeater\Header;
 use App\Enums\NavigationGroupLabel;
+use App\Filament\Exports\TourReportExporter;
 use Filament\Forms\Components\Tabs;
 use Filament\Support\Enums\MaxWidth;
 use Filament\Forms\Components\Hidden;
@@ -27,7 +28,9 @@ use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Checkbox;
 use Filament\Forms\Components\Fieldset;
 use Filament\Forms\Components\Tabs\Tab;
+use Filament\Tables\Columns\TextColumn;
 use Filament\Forms\Components\TextInput;
+use Filament\Tables\Actions\ExportAction;
 use Illuminate\Database\Eloquent\Builder;
 use Filament\Forms\Components\Placeholder;
 use Awcodes\TableRepeater\Components\TableRepeater;
@@ -79,26 +82,38 @@ class TourReportResource extends Resource
   {
     return $table
       ->columns([
-        Tables\Columns\TextColumn::make('invoice.code')
+        TextColumn::make('invoice.code')
+          ->badge()
           ->searchable()
           ->sortable(),
-        Tables\Columns\TextColumn::make('customer_repayment')
-          ->searchable()
+        TextColumn::make('invoice.order.code')
+          ->badge()
+          ->color('secondary')
+          ->searchable(),
+        TextColumn::make('invoice.order.customer.name')
+          ->searchable(),
+        TextColumn::make('customer_repayment')
+          ->label('Pembayaran Customer')
           ->money('IDR')
           ->sortable(),
-        Tables\Columns\TextColumn::make('difference')
-          ->searchable()
+        TextColumn::make('difference')
+          ->label('Selisih')
           ->money('IDR')
           ->sortable(),
-        Tables\Columns\TextColumn::make('created_at')
+        TextColumn::make('created_at')
           ->dateTime()
           ->sortable(),
-        Tables\Columns\TextColumn::make('updated_at')
+        TextColumn::make('updated_at')
           ->dateTime()
           ->sortable(),
       ])
-      ->filters([
-        //
+      ->headerActions([
+        ExportAction::make()
+          ->hidden(fn(): bool => static::getModel()::count() === 0)
+          ->visible(fn(): bool => Route::current()->getName() === static::getRouteBaseName() . '.index')
+          ->exporter(TourReportExporter::class)
+          ->label('Export')
+          ->color('success')
       ])
       ->actions([
         Tables\Actions\ActionGroup::make([

@@ -10,12 +10,16 @@ use Filament\Forms\Form;
 use App\Models\SalesVisit;
 use Filament\Tables\Table;
 use App\Enums\EmployeeRole;
+use Illuminate\Support\Str;
 use App\Enums\CustomerStatus;
 use Filament\Resources\Resource;
 use App\Enums\NavigationGroupLabel;
+use Filament\Forms\Components\Group;
 use Filament\Forms\Components\Radio;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Section;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\FileUpload;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use App\Filament\Resources\SalesVisitResource\Pages;
@@ -40,7 +44,6 @@ class SalesVisitResource extends Resource
           ->schema([
             Select::make('customer_id')
               ->relationship('customer', 'name')
-              // ->relationship('customer', 'name', fn(Builder $query) => $query->where('status', CustomerStatus::CANDIDATE->value), true)
               ->required(),
             Radio::make('priority')
               ->required()
@@ -64,12 +67,21 @@ class SalesVisitResource extends Resource
                 'not_yet' => 'Belum',
               ])
               ->afterStateUpdated(fn(Set $set) => $set('employee_id', null)),
-            Select::make('employee_id')
-              ->required()
-              ->label('Visited By')
-              ->relationship('employee', 'name')
-              // ->relationship('employee', 'name', fn(Builder $query) => $query->where('role', '!=', EmployeeRole::TOUR_LEADER->value), true)
-              ->visible(fn(Get $get) => $get('visit_status') === 'done'),
+            Group::make()
+              ->visible(fn(Get $get) => $get('visit_status') === 'done')
+              ->schema([
+                Select::make('employee_id')
+                  ->required()
+                  ->label('Visited By')
+                  ->relationship('employee', 'name'),
+                FileUpload::make('image')
+                  ->image()
+                  ->imageEditor()
+                  ->maxSize(10240)
+                  ->directory('sales-visit')
+                  ->imageResizeMode('cover')
+                  ->columnSpanFull(),
+              ])
           ])
       ]);
   }
@@ -79,18 +91,25 @@ class SalesVisitResource extends Resource
     return $table
       ->columns([
         Tables\Columns\TextColumn::make('customer.code')
+          ->badge()
           ->label('Customer Code')
           ->sortable(),
         Tables\Columns\TextColumn::make('customer.name')
           ->label('Customer Name')
-          ->sortable(),
+          ->sortable()
+          ->tooltip('Lihat Customer')
+          ->url(fn(SalesVisit $record) => CustomerResource::getUrl('view', ['record' => $record->customer_id])),
         Tables\Columns\TextColumn::make('employee.name')
-          ->numeric()
+          ->placeholder('Not visited')
           ->sortable(),
         Tables\Columns\TextColumn::make('priority')
-          ->searchable(),
+          ->badge()
+          ->color(fn(string $state): string => $state === 'yes' ? 'success' : 'danger')
+          ->formatStateUsing(fn(string $state): string => Str::headline($state)),
         Tables\Columns\TextColumn::make('visit_status')
-          ->searchable(),
+          ->badge()
+          ->color(fn(string $state): string => $state === 'done' ? 'success' : 'danger')
+          ->formatStateUsing(fn(string $state): string => Str::headline($state)),
         Tables\Columns\TextColumn::make('created_at')
           ->dateTime()
           ->sortable()

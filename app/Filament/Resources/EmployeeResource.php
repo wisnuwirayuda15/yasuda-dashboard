@@ -3,23 +3,29 @@
 namespace App\Filament\Resources;
 
 use Filament\Forms;
+use App\Models\User;
 use Filament\Tables;
 use App\Enums\Gender;
 use Filament\Forms\Get;
 use Filament\Forms\Set;
 use App\Models\Employee;
 use Filament\Forms\Form;
+use App\Models\TourLeader;
 use Filament\Tables\Table;
 use App\Enums\EmployeeRole;
 use App\Enums\EmployeeStatus;
 use Filament\Resources\Resource;
 use App\Enums\NavigationGroupLabel;
 use Filament\Forms\Components\Grid;
+use Filament\Tables\Actions\Action;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Section;
+use Illuminate\Database\Eloquent\Model;
 use Filament\Forms\Components\TextInput;
+use Filament\Notifications\Notification;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\FileUpload;
+use Filament\Tables\Filters\SelectFilter;
 use Illuminate\Database\Eloquent\Builder;
 use Filament\Forms\Components\ToggleButtons;
 use Ysfkaya\FilamentPhoneInput\Forms\PhoneInput;
@@ -35,7 +41,7 @@ class EmployeeResource extends Resource
 
   public static function getNavigationGroup(): ?string
   {
-    return NavigationGroupLabel::MASTER_DATA->getLabel();
+    return NavigationGroupLabel::HR->getLabel();
   }
 
   public static function getNavigationBadge(): ?string
@@ -54,7 +60,7 @@ class EmployeeResource extends Resource
             TextInput::make('code')
               ->live(true)
               ->code(emp_code(new Employee, '01/YSD/'), generateable: false),
-            FileUpload::make('image')
+            FileUpload::make('photo')
               ->image()
               ->imageEditor()
               ->maxSize(2048)
@@ -62,9 +68,6 @@ class EmployeeResource extends Resource
               ->imageCropAspectRatio('1:1')
               ->imageResizeMode('cover')
               ->columnSpanFull(),
-            // Select::make('user_id')
-            //   ->unique(ignoreRecord: true)
-            //   ->relationship('user', 'name', fn(Builder $query) => $query->doesntHave('tourLeader')->orDoesntHave('employee')),
             TextInput::make('name')
               ->required(),
             TextInput::make('alias')
@@ -74,7 +77,10 @@ class EmployeeResource extends Resource
               ->required()
               ->default(today())
               ->maxDate(today()),
-            DatePicker::make('exit_date'),
+            DatePicker::make('exit_date')
+              ->required()
+              ->live()
+              ->visible(fn(Get $get): bool => $get('status') === EmployeeStatus::RESIGN->value || $get('status') === EmployeeStatus::RETIRE->value),
             TextInput::make('ktp')
               ->numeric()
               ->unique(ignoreRecord: true)
@@ -91,6 +97,7 @@ class EmployeeResource extends Resource
                 ToggleButtons::make('status')
                   ->required()
                   ->inline()
+                  ->live()
                   ->options(EmployeeStatus::class),
                 ToggleButtons::make('gender')
                   ->required()
@@ -100,13 +107,6 @@ class EmployeeResource extends Resource
                   ->required()
                   ->live()
                   ->options(EmployeeRole::class)
-                // ->afterStateUpdated(function (Set $set, ?string $state) {
-                //   if ($state === EmployeeRole::TOUR_LEADER->value) {
-                //     $set('code', emp_code(new Employee, '02/TLF/'));
-                //   } else {
-                //     $set('code', emp_code(new Employee, '01/YSD/'));
-                //   }
-                // })
               ])
           ]),
       ]);
@@ -118,14 +118,19 @@ class EmployeeResource extends Resource
       ->columns([
         Tables\Columns\ImageColumn::make('photo')
           ->circular(),
+        Tables\Columns\IconColumn::make('is_user_assigned')
+          ->label('Is User Assigned')
+          ->state(fn(Employee $record) => $record->employable()->exists())
+          ->tooltip(fn(Employee $record) => $record->employable?->name ?? 'Assign User')
+          ->boolean()
+          ->alignCenter()
+          ->action(static::getAssignUserAction()),
         Tables\Columns\TextColumn::make('code')
           ->badge()
           ->searchable(),
         Tables\Columns\TextColumn::make('name')
           ->sortable()
-          ->searchable(),
-        Tables\Columns\TextColumn::make('alias')
-          ->sortable()
+          ->description(fn(Employee $record): string => $record->alias ?? null)
           ->searchable(),
         Tables\Columns\TextColumn::make('join_date')
           ->label('Tanggal Masuk')
@@ -159,6 +164,22 @@ class EmployeeResource extends Resource
           ->dateTime()
           ->sortable()
           ->toggleable(isToggledHiddenByDefault: true),
+      ])
+      ->filters([
+        SelectFilter::make('role')
+          ->multiple()
+          ->options(EmployeeRole::class),
+        SelectFilter::make('status')
+          ->multiple()
+          ->options(EmployeeStatus::class),
+      ])
+      ->actions([
+        Tables\Actions\ActionGroup::make([
+          Tables\Actions\ViewAction::make(),
+          Tables\Actions\EditAction::make(),
+          Tables\Actions\DeleteAction::make(),
+          static::getAssignUserAction()
+        ])
       ]);
   }
 
@@ -177,5 +198,35 @@ class EmployeeResource extends Resource
       'view' => Pages\ViewEmployee::route('/{record}'),
       'edit' => Pages\EditEmployee::route('/{record}/edit'),
     ];
+  }
+
+  public static function getAssignUserAction(): Action
+  {
+    return Action::make('assign_user')
+      ->icon(UserResource::getNavigationIcon())
+      ->label('Assign User')
+      ->color('info')
+      ->form([
+        Select::make('user_id')
+          ->required()
+          ->hiddenLabel()
+          ->default(fn(Employee|TourLeader $record) => $record->employable?->id)
+          ->options(User::pluck('name', 'id')),
+      ])
+      ->action(function (array $data, Employee|TourLeader $record): void {
+        if ($record->employable()->exists()) {
+          $record->employable()->update([
+            'employable_id' => null,
+            'employable_type' => null
+          ]);
+        }
+        $user = User::findOrFail($data['user_id']);
+        $record->employable()->save($user);
+        Notification::make()
+          ->success()
+          ->title('Success')
+          ->body("User assigned for <strong>{$record->name}</strong>")
+          ->send();
+      });
   }
 }

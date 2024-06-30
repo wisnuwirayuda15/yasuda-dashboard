@@ -12,10 +12,13 @@ use Filament\Tables\Table;
 use Illuminate\Support\Str;
 use Filament\Resources\Resource;
 use App\Enums\NavigationGroupLabel;
+use Filament\Tables\Filters\Filter;
 use Filament\Forms\Components\Group;
+use Illuminate\Support\Facades\Hash;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Toggle;
 use Filament\Forms\Components\Section;
+use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
@@ -26,6 +29,7 @@ use Rawilk\FilamentPasswordInput\Password;
 use Filament\Forms\Components\Actions\Action;
 use App\Filament\Resources\UserResource\Pages;
 use App\Filament\Resources\Shield\RoleResource;
+use Filament\Tables\Actions\Action as TableAction;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use App\Filament\Resources\UserResource\RelationManagers;
 
@@ -35,9 +39,11 @@ class UserResource extends Resource
 
   protected static ?string $navigationIcon = 'fas-user-circle';
 
+  protected static ?int $navigationSort = 1;
+
   public static function getNavigationGroup(): ?string
   {
-    return NavigationGroupLabel::MASTER_DATA->getLabel();
+    return NavigationGroupLabel::SETTING->getLabel();
   }
 
   public static function getNavigationBadge(): ?string
@@ -126,11 +132,14 @@ class UserResource extends Resource
   {
     return $table
       ->columns([
-        ImageColumn::make('avatar_url')
-          ->label('Photo')
-          ->circular(),
         TextColumn::make('name')
           ->searchable(),
+        IconColumn::make('has_employee')
+          ->label('Has Employee')
+          ->state(fn(User $record) => (bool) $record->employable)
+          ->tooltip(fn(User $record) => $record->employable?->name)
+          ->boolean()
+          ->alignCenter(),
         TextColumn::make('roles.name')
           ->badge()
           ->label('Role')
@@ -138,8 +147,13 @@ class UserResource extends Resource
           ->formatStateUsing(fn(?string $state): string => Str::headline($state))
           ->searchable(),
         TextColumn::make('email')
+          ->icon('gmdi-mail')
           ->searchable(),
         TextColumn::make('email_verified_at')
+          ->icon('heroicon-s-check-circle')
+          ->iconColor('success')
+          ->label('Verified At')
+          ->placeholder('Not verified')
           ->dateTime()
           ->sortable(),
         TextColumn::make('created_at')
@@ -152,7 +166,10 @@ class UserResource extends Resource
           ->toggleable(isToggledHiddenByDefault: true),
       ])
       ->filters([
-        //
+        Filter::make('verified')
+          ->query(fn(Builder $query): Builder => $query->whereNotNull('email_verified_at')),
+        Filter::make('has_employee')
+          ->query(fn(Builder $query): Builder => $query->whereHas('employable')),
       ])
       ->actions([
         Tables\Actions\ActionGroup::make([
@@ -169,7 +186,8 @@ class UserResource extends Resource
                   ->send();
                 $action->cancel();
               }
-            }),
+            })->requiresPasswordConfirmation(),
+          static::getRemoveEmployeeAction()
         ])
       ]);
   }
@@ -189,5 +207,28 @@ class UserResource extends Resource
       'view' => Pages\ViewUser::route('/{record}'),
       'edit' => Pages\EditUser::route('/{record}/edit'),
     ];
+  }
+
+  public static function getRemoveEmployeeAction(): TableAction
+  {
+    return TableAction::make('remove_employee')
+      ->requiresConfirmation()
+      ->slideOver(false)
+      ->visible(fn(User $record): bool => (bool) $record->employable)
+      ->icon('fas-user-xmark')
+      ->label('Remove Employee')
+      ->color('warning')
+      ->action(function (User $record): void {
+        $record->employable()->dissociate();
+        $record->update([
+          'employable_id' => null,
+          'employable_type' => null
+        ]);
+        Notification::make()
+          ->success()
+          ->title('Success')
+          ->body("Employee removed from user <strong>{$record->name}</strong>")
+          ->send();
+      });
   }
 }

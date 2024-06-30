@@ -17,6 +17,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('customer_id')->constrained()->cascadeOnDelete()->unique();
             $table->foreignId('employee_id')->nullable()->constrained()->cascadeOnDelete();
+            $table->string('image')->nullable();
             $table->string('priority', 50);
             $table->string('visit_status', 50);
             $table->timestamps();

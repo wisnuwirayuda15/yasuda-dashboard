@@ -9,6 +9,7 @@ use Filament\Tables\Table;
 use Illuminate\Support\Str;
 use Filament\Resources\Resource;
 use Illuminate\Support\HtmlString;
+use Spatie\Permission\Models\Role;
 use Illuminate\Database\Eloquent\Model;
 use Filament\Forms\Components\Component;
 use Filament\Notifications\Notification;
@@ -19,7 +20,6 @@ use BezhanSalleh\FilamentShield\FilamentShieldPlugin;
 use BezhanSalleh\FilamentShield\Facades\FilamentShield;
 use BezhanSalleh\FilamentShield\Forms\ShieldSelectAllToggle;
 use BezhanSalleh\FilamentShield\Contracts\HasShieldPermissions;
-use Spatie\Permission\Models\Role;
 
 class RoleResource extends Resource implements HasShieldPermissions
 {
@@ -53,10 +53,10 @@ class RoleResource extends Resource implements HasShieldPermissions
               Forms\Components\TextInput::make('guard_name')
                 ->label(__('filament-shield::filament-shield.field.guard_name'))
                 ->default(Utils::getFilamentAuthGuard() ?? 'web')
-                ->nullable()
+                // ->nullable()
                 ->disabled()
                 ->dehydrated()
-                ->maxLength(255),
+                ->maxLength(3),
               ShieldSelectAllToggle::make('select_all')
                 ->onIcon('heroicon-s-shield-check')
                 ->offIcon('heroicon-s-shield-exclamation')
@@ -87,6 +87,11 @@ class RoleResource extends Resource implements HasShieldPermissions
         Tables\Columns\TextColumn::make('guard_name')
           ->badge()
           ->label(__('filament-shield::filament-shield.column.guard_name')),
+        Tables\Columns\TextColumn::make('users_count')
+          ->badge()
+          ->label('Users')
+          ->counts('users')
+          ->colors(['warning']),
         Tables\Columns\TextColumn::make('permissions_count')
           ->badge()
           ->label(__('filament-shield::filament-shield.column.permissions'))

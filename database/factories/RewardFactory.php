@@ -5,17 +5,16 @@ namespace Database\Factories;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
 use App\Models\Customer;
-use App\Models\Employee;
-use App\Models\SalesVisit;
+use App\Models\Reward;
 
-class SalesVisitFactory extends Factory
+class RewardFactory extends Factory
 {
     /**
      * The name of the factory's corresponding model.
      *
      * @var string
      */
-    protected $model = SalesVisit::class;
+    protected $model = Reward::class;
 
     /**
      * Define the model's default state.
@@ -24,10 +23,10 @@ class SalesVisitFactory extends Factory
     {
         return [
             'customer_id' => Customer::factory(),
-            'employee_id' => Employee::factory(),
-            'image' => $this->faker->word(),
-            'priority' => $this->faker->regexify('[A-Za-z0-9]{50}'),
-            'visit_status' => $this->faker->regexify('[A-Za-z0-9]{50}'),
+            'cash_status' => $this->faker->regexify('[A-Za-z0-9]{50}'),
+            'date' => $this->faker->dateTime(),
+            'description' => $this->faker->text(),
+            'amount' => $this->faker->numberBetween(-100000, 100000),
         ];
     }
 }

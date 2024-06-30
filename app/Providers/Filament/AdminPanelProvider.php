@@ -8,6 +8,7 @@ use Filament\Widgets;
 use Filament\Pages\Page;
 use Filament\Tables\Table;
 use Filament\PanelProvider;
+use App\Enums\CustomPlatform;
 use App\Filament\Pages\Dashboard;
 use App\Filament\Pages\Auth\Login;
 use Filament\Support\Colors\Color;
@@ -16,27 +17,22 @@ use App\Enums\NavigationGroupLabel;
 use Filament\View\PanelsRenderHook;
 use Filament\Livewire\Notifications;
 use Filament\Support\Enums\MaxWidth;
-use Filament\Support\Enums\Platform;
+use Filament\Actions\MountableAction;
 use Filament\Forms\Components\Select;
 use Filament\Support\Enums\Alignment;
 use Filament\Forms\Components\Repeater;
-use Filament\Tables\Actions\EditAction;
-use Filament\Tables\Actions\ViewAction;
-use Filament\Navigation\NavigationGroup;
 use Filament\Notifications\Notification;
-use Filament\Tables\Actions\ActionGroup;
+use Filament\Tables\Enums\FiltersLayout;
 use App\Filament\Resources\ShirtResource;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\FileUpload;
-use Filament\Tables\Actions\DeleteAction;
+use Filament\Tables\Actions\ExportAction;
 use Filament\Http\Middleware\Authenticate;
-use Filament\Navigation\NavigationBuilder;
 use Filament\Support\Facades\FilamentView;
 use Filament\Tables\Enums\ActionsPosition;
 use Jeffgreco13\FilamentBreezy\BreezyCore;
 use Awcodes\FilamentVersions\VersionsPlugin;
 use Awcodes\FilamentVersions\VersionsWidget;
-use Filament\Forms\Components\Actions\Action;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Support\Enums\VerticalAlignment;
 use App\Filament\Resources\ProfitLossResource;
@@ -45,6 +41,7 @@ use Illuminate\Validation\ValidationException;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Awcodes\FilamentQuickCreate\QuickCreatePlugin;
+use Filament\Tables\Actions\Action as TableAction;
 use BezhanSalleh\FilamentShield\FilamentShieldPlugin;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\AuthenticateSession;
@@ -52,11 +49,16 @@ use Illuminate\View\Middleware\ShareErrorsFromSession;
 use BezhanSalleh\FilamentLanguageSwitch\LanguageSwitch;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
+use Filament\Tables\Actions\EditAction as TableEditAction;
+use Filament\Tables\Actions\ViewAction as TableViewAction;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Njxqlus\FilamentProgressbar\FilamentProgressbarPlugin;
 use Saade\FilamentFullCalendar\FilamentFullCalendarPlugin;
+use Filament\Forms\Components\Actions\Action as FormAction;
+use Filament\Tables\Actions\ActionGroup as TableActionGroup;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
-use SolutionForest\FilamentSimpleLightBox\SimpleLightBoxPlugin;
+use Filament\Tables\Actions\DeleteAction as TableDeleteAction;
+use Filament\Tables\Columns\TextColumn;
 
 class AdminPanelProvider extends PanelProvider
 {
@@ -84,15 +86,30 @@ class AdminPanelProvider extends PanelProvider
     Table::configureUsing(function (Table $table): void {
       $table
         ->extremePaginationLinks()
-        ->paginationPageOptions([5, 10, 15, 20, 25, 30])
+        ->paginationPageOptions([5, 10, 15, 20])
+        // ->filters([], FiltersLayout::AboveContentCollapsible)
+        ->persistFiltersInSession()
+        ->deferFilters()
+        ->filtersTriggerAction(
+          fn(TableAction $action) => $action
+            ->label('Filter')
+            ->button()
+        )
+        ->filtersApplyAction(
+          fn(TableAction $action) => $action
+            ->label('Apply')
+            ->color('success')
+            ->icon('fas-check')
+        )
         ->actions([
-          ActionGroup::make([
-            ViewAction::make(),
-            EditAction::make(),
-            DeleteAction::make(),
-          ]),
+          TableActionGroup::make([
+            TableViewAction::make(),
+            TableEditAction::make(),
+            TableDeleteAction::make(),
+          ])->tooltip('Actions'),
         ], ActionsPosition::BeforeColumns);
     });
+
     Select::configureUsing(function (Select $select): void {
       $select
         ->preload()
@@ -100,17 +117,19 @@ class AdminPanelProvider extends PanelProvider
         // ->optionsLimit(5)
       ;
     });
+
     Repeater::configureUsing(function (Repeater $repeater): void {
       $repeater
-        ->expandAllAction(fn(Action $action) => $action
+        ->expandAllAction(fn(FormAction $action) => $action
           ->label('Expand')
           ->icon('heroicon-s-chevron-down')
           ->color('primary'))
-        ->collapseAllAction(fn(Action $action) => $action
+        ->collapseAllAction(fn(FormAction $action) => $action
           ->label('Collapse')
           ->icon('heroicon-s-chevron-up')
           ->color('secondary'));
     });
+
     DatePicker::configureUsing(function (DatePicker $datePicker): void {
       $datePicker
         ->native(false)
@@ -118,6 +137,7 @@ class AdminPanelProvider extends PanelProvider
         ->prefixIcon('heroicon-s-calendar-days')
         ->displayFormat('d mm Y');
     });
+
     DateTimePicker::configureUsing(function (DateTimePicker $dateTimePicker): void {
       $dateTimePicker
         ->native(false)
@@ -125,7 +145,25 @@ class AdminPanelProvider extends PanelProvider
         // ->displayFormat('d mm Y • H:i')
       ;
     });
+
+    ExportAction::configureUsing(function (ExportAction $action): void {
+      $action
+        
+        ->icon('fileicon-microsoft-excel')
+        ->tooltip('Export data to Excel');
+    });
+
+    MountableAction::configureUsing(fn(MountableAction $action) => $action->slideOver());
+
+    TableDeleteAction::configureUsing(fn(TableDeleteAction $action) => $action->slideOver(false));
+
     LanguageSwitch::configureUsing(function (LanguageSwitch $switch): void {
+      $hook = match (CustomPlatform::detect()) {
+        CustomPlatform::Windows, CustomPlatform::Mac, CustomPlatform::Linux => PanelsRenderHook::GLOBAL_SEARCH_AFTER,
+        CustomPlatform::Mobile => PanelsRenderHook::SIDEBAR_NAV_END,
+        default => PanelsRenderHook::GLOBAL_SEARCH_AFTER,
+      };
+
       $switch
         ->locales(['en', 'id'])
         ->visible(outsidePanels: true)
@@ -134,7 +172,7 @@ class AdminPanelProvider extends PanelProvider
           'en' => asset('img/flags/en-circular.svg'),
           'id' => asset('img/flags/id-circular.svg'),
         ])
-      ;
+        ->renderHook($hook);
     });
 
     // Notification alignment
@@ -157,13 +195,14 @@ class AdminPanelProvider extends PanelProvider
       ->brandLogo(asset('/img/logos/logo-light.svg'))
       ->darkModeBrandLogo(asset('/img/logos/logo-dark.svg'))
       ->brandLogoHeight('35px')
-      ->sidebarCollapsibleOnDesktop(true)
+      ->sidebarCollapsibleOnDesktop()
       ->maxContentWidth(MaxWidth::Full)
       ->databaseNotifications()
       ->globalSearchKeyBindings(['command+k', 'ctrl+k'])
-      ->globalSearchFieldSuffix(fn(): ?string => match (Platform::detect()) {
-        Platform::Windows, Platform::Linux => 'CTRL+K',
-        Platform::Mac => '⌘K',
+      ->globalSearchFieldSuffix(fn(): ?string => match (CustomPlatform::detect()) {
+        CustomPlatform::Windows, CustomPlatform::Linux => 'CTRL+K',
+        CustomPlatform::Mac => '⌘K',
+        CustomPlatform::Mobile => null,
         default => null,
       })
       ->readOnlyRelationManagersOnResourceViewPagesByDefault(false)
@@ -210,21 +249,35 @@ class AdminPanelProvider extends PanelProvider
           ->hasNavigationView(false)
           ->widgetColumnSpan('full'),
         BreezyCore::make()
-          ->avatarUploadComponent(
-            fn() => FileUpload::make('avatar_url')
-              ->hiddenLabel()
-              ->avatar()
-              ->disk('profile')
-              ->visible()
-          )
           ->enableTwoFactorAuthentication()
+          ->avatarUploadComponent(fn() =>
+            FileUpload::make('avatar_url')
+              ->avatar()
+              ->hiddenLabel()
+              ->disk('profile')
+              ->visible(fn(): bool => (bool) auth()->user()->employable))
           ->myProfile(
-            hasAvatars: true,
+            // hasAvatars: true,
             shouldRegisterUserMenu: true,
             navigationGroup: NavigationGroupLabel::SETTING->getLabel(),
           ),
         QuickCreatePlugin::make()
-          ->rounded(false)
+          ->sortBy('navigation')
+          ->rounded(fn(): bool => match (CustomPlatform::detect()) {
+            CustomPlatform::Windows, CustomPlatform::Mac, CustomPlatform::Linux => true,
+            CustomPlatform::Mobile => false,
+            default => false,
+          })
+          ->label(fn(): ?string => match (CustomPlatform::detect()) {
+            CustomPlatform::Windows, CustomPlatform::Mac, CustomPlatform::Linux => null,
+            CustomPlatform::Mobile => 'Create',
+            default => 'Create',
+          })
+          ->renderUsingHook(fn(): ?string => match (CustomPlatform::detect()) {
+            CustomPlatform::Windows, CustomPlatform::Mac, CustomPlatform::Linux => PanelsRenderHook::GLOBAL_SEARCH_AFTER,
+            CustomPlatform::Mobile => PanelsRenderHook::SIDEBAR_NAV_START,
+            default => PanelsRenderHook::GLOBAL_SEARCH_AFTER,
+          })
           ->excludes([
             ProfitLossResource::class,
             TourReportResource::class,

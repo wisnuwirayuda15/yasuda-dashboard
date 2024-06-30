@@ -23,12 +23,11 @@ class User extends Authenticatable implements HasAvatar, HasName, FilamentUser
   public function getFilamentAvatarUrl(): ?string
   {
     // return $this->avatar_url ? Storage::url($this->avatar_url) : null;
-    
-    if ($this->employee?->photo) {
-      return ($this->employee->photo);
-    } else if ($this->tourLeader?->photo) {
-      return ($this->tourLeader->photo);
-    }
+
+    if ($this->employable?->photo) {
+      $photo = $this->employable?->photo;
+      return str_starts_with($photo, 'http') ? $photo : Storage::url($photo);
+    } 
 
     return null;
   }
@@ -40,7 +39,7 @@ class User extends Authenticatable implements HasAvatar, HasName, FilamentUser
 
   public function getFilamentName(): string
   {
-    return $this->employee?->name ?? $this->tourLeader?->name ?? $this->name;
+    return $this->employable?->name ?? $this->name;
   }
 
   /**
@@ -75,13 +74,8 @@ class User extends Authenticatable implements HasAvatar, HasName, FilamentUser
     'password' => 'hashed',
   ];
 
-  public function employee(): HasOne
+  public function employable()
   {
-    return $this->hasOne(Employee::class);
-  }
-
-  public function tourLeader(): HasOne
-  {
-    return $this->hasOne(TourLeader::class);
+    return $this->morphTo();
   }
 }

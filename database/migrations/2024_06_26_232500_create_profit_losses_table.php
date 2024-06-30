@@ -41,6 +41,7 @@ return new class extends Migration
             $table->bigInteger('medium_subs_bonus')->default(0);
             $table->bigInteger('big_subs_bonus')->default(0);
             $table->bigInteger('legrest_subs_bonus')->default(0);
+            $table->bigInteger('adjusted_income');
             $table->timestamps();
         });
 

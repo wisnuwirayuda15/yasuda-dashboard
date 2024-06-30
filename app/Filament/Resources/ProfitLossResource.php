@@ -3,6 +3,7 @@
 namespace App\Filament\Resources;
 
 use Closure;
+use Carbon\Carbon;
 use Filament\Tables;
 use App\Models\Invoice;
 use Filament\Forms\Get;
@@ -16,6 +17,7 @@ use App\Enums\DestinationType;
 use App\Enums\ProfitLossStatus;
 use Filament\Resources\Resource;
 use App\Enums\NavigationGroupLabel;
+use App\Filament\Exports\ProfitLossExporter;
 use Filament\Forms\Components\Tabs;
 use Filament\Forms\Components\Group;
 use Filament\Support\Enums\MaxWidth;
@@ -30,6 +32,7 @@ use Filament\Forms\Components\Tabs\Tab;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
+use Filament\Tables\Actions\ExportAction;
 use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\ToggleButtons;
 use Filament\Forms\Components\Actions\Action;
@@ -82,16 +85,49 @@ class ProfitLossResource extends Resource
       ->columns([
         TextColumn::make('invoice.code')
           ->searchable()
+          ->badge()
           ->numeric(),
+        TextColumn::make('invoice.order.code')
+          ->badge()
+          ->color('secondary')
+          ->searchable(),
+        TextColumn::make('invoice.order.customer.name')
+          ->searchable(),
+        TextColumn::make('adjusted_income')
+          ->label('Income (Plan)')
+          ->sortable()
+          ->money('IDR'),
+        TextColumn::make('actual_income')
+          ->label('Income (Actual)')
+          ->money('IDR')
+          ->placeholder('No tour report')
+          ->state(function (ProfitLoss $record): ?float {
+            return $record->invoice->tourReport
+              ? $record->adjusted_income + $record->invoice->tourReport->difference
+              : null;
+          }),
+        TextColumn::make('invoice.order.trip_date')
+          ->label('Tanggal')
+          ->formatStateUsing(fn(Carbon $state): string => $state->translatedFormat('d/m/Y')),
         TextColumn::make('created_at')
           ->dateTime()
-          ->sortable(),
+          ->sortable()
+          ->toggleable(isToggledHiddenByDefault: true),
         TextColumn::make('updated_at')
           ->dateTime()
-          ->sortable(),
+          ->sortable()
+          ->toggleable(isToggledHiddenByDefault: true),
       ])
       ->filters([
         // 
+      ])
+      ->headerActions([
+        ExportAction::make()
+          ->hidden(fn(): bool => static::getModel()::count() === 0)
+          ->visible(fn(): bool => Route::current()->getName() === static::getRouteBaseName() . '.index')
+          ->exporter(ProfitLossExporter::class)
+          ->label('Export')
+          ->color('success')
       ])
       ->actions([
         Tables\Actions\ActionGroup::make([
@@ -551,14 +587,15 @@ class ProfitLossResource extends Resource
           }),
         Placeholder::make('adjusted_income')
           ->inlineLabel()
+          ->dehydrated()
           ->label('Adjusted Income (Plan)')
           ->content(function (Get $get, Set $set, Placeholder $component) {
             $adjustedIncome = $get('net_income') + $get('others_income_total');
             $status = $adjustedIncome / $get('net_sales');
             $rate = round($status * 100, 2) . '%';
-            $statusClass = $status > 0.15 ? ProfitLossStatus::GOOD : ProfitLossStatus::BAD;
+            $statusClass = $status > 0.15 ? ProfitLossStatus::GOOD->value : ProfitLossStatus::BAD->value;
             $color = $status > 0.15 ? 'success' : 'danger';
-            $set('adjusted_income_status', $statusClass->value);
+            $set('adjusted_income_status', $statusClass);
             $set($component, $adjustedIncome);
             return view('filament.components.badges.default', ['text' => idr($adjustedIncome) . " ($rate)", 'color' => $color, 'big' => true]);
           }),
@@ -579,9 +616,9 @@ class ProfitLossResource extends Resource
               $actualIncome = $get('adjusted_income') + $inv->tourReport->difference;
               $status = $actualIncome / $get('net_sales');
               $rate = round($status * 100, 2) . '%';
-              $statusClass = $status > 0.15 ? ProfitLossStatus::GOOD : ProfitLossStatus::BAD;
+              $statusClass = $status > 0.15 ? ProfitLossStatus::GOOD->value : ProfitLossStatus::BAD->value;
               $color = $status > 0.15 ? 'success' : 'danger';
-              $set('actual_income_status', $statusClass->value);
+              $set('actual_income_status', $statusClass);
               $set($component, $actualIncome);
               return view('filament.components.badges.default', ['text' => idr($actualIncome) . " ($rate)", 'color' => $color, 'big' => true]);
             }),

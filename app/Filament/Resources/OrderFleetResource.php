@@ -10,28 +10,34 @@ use App\Models\Fleet;
 use App\Models\Order;
 use Filament\Forms\Get;
 use Filament\Forms\Set;
+use App\Enums\FleetSeat;
 use Filament\Forms\Form;
 use App\Models\OrderFleet;
 use App\Models\TourLeader;
 use Filament\Tables\Table;
+use App\Enums\FleetCategory;
 use App\Enums\OrderFleetStatus;
 use Filament\Resources\Resource;
 use App\Enums\FleetPaymentStatus;
 use App\Enums\NavigationGroupLabel;
 use Filament\Tables\Actions\Action;
+use Filament\Tables\Filters\Filter;
 use Filament\Forms\Components\Group;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Section;
 use Filament\Tables\Actions\BulkAction;
 use Filament\Tables\Actions\EditAction;
 use Filament\Tables\Actions\ViewAction;
+use Filament\Tables\Columns\TextColumn;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
 use Filament\Tables\Actions\ActionGroup;
 use App\Filament\Resources\OrderResource;
 use Filament\Forms\Components\DatePicker;
 use Filament\Tables\Actions\DeleteAction;
+use Filament\Tables\Actions\ExportAction;
 use Illuminate\Database\Eloquent\Builder;
+use App\Filament\Exports\OrderFleetExporter;
 use Filament\Forms\Components\ToggleButtons;
 use Filament\Tables\Actions\BulkActionGroup;
 use Filament\Tables\Actions\ReplicateAction;
@@ -93,8 +99,7 @@ class OrderFleetResource extends Resource
             ->columnSpan(2)
             ->schema([
               DatePicker::make('payment_date')
-                ->required()
-                ->minDate(today()),
+                ->required(),
               TextInput::make('payment_amount')
                 ->required()
                 ->currency(minValue: 1)
@@ -109,24 +114,24 @@ class OrderFleetResource extends Resource
       ->defaultSort('remaining_day')
       ->persistSortInSession()
       ->columns([
-        Tables\Columns\TextColumn::make('code')
+        TextColumn::make('code')
           ->badge()
           ->sortable()
           ->searchable(),
-        Tables\Columns\TextColumn::make('order.customer.name')
+        TextColumn::make('order.customer.name')
           ->sortable()
           ->placeholder('No customer')
           ->tooltip(fn(OrderFleet $record) => ($record->order_id ? 'Change' : 'Select') . ' order')
           ->action(static::getSelectOrderAction()),
-        Tables\Columns\TextColumn::make('tourLeader.name')
+        TextColumn::make('tourLeader.name')
           ->sortable()
           ->placeholder('No tour leader')
           ->tooltip(fn(OrderFleet $record) => ($record->tour_leader_id ? 'Change' : 'Select') . ' tour leader')
           ->action(static::getSelectTourLeaderAction()),
-        Tables\Columns\TextColumn::make('trip_date')
+        TextColumn::make('trip_date')
           ->date()
           ->formatStateUsing(fn($state): string => $state->translatedFormat('d/m/Y')),
-        Tables\Columns\TextColumn::make('remaining_day')
+        TextColumn::make('remaining_day')
           ->badge()
           ->alignCenter()
           ->sortable(query: function (Builder $query, string $direction): Builder {
@@ -150,7 +155,7 @@ class OrderFleetResource extends Resource
                 default => 'success',
               },
           }),
-        Tables\Columns\TextColumn::make('status')
+        TextColumn::make('status')
           ->badge()
           ->color(fn(string $state) => match ($state) {
             OrderFleetStatus::BOOKED->getLabel() => OrderFleetStatus::BOOKED->getColor(),
@@ -170,33 +175,34 @@ class OrderFleetResource extends Resource
               };
             }
           ),
-        Tables\Columns\TextColumn::make('fleet.name')
+        TextColumn::make('fleet.name')
           ->label('Mitra Armada'),
-        Tables\Columns\TextColumn::make('fleet.category')
+        TextColumn::make('fleet.category')
           ->label('Jenis')
-          ->badge()
-          ->formatStateUsing(fn($state): string => $state->getLabel()),
-        Tables\Columns\TextColumn::make('fleet.seat_set')
-          ->label('Seat Set')
-          ->formatStateUsing(fn($state): string => $state->getLabel()),
-        Tables\Columns\TextColumn::make('trip_day')
+          ->badge(),
+        TextColumn::make('fleet.seat_set')
+          ->label('Seat Set'),
+        TextColumn::make('trip_day')
           ->state(fn(OrderFleet $record): string => $record->trip_date->translatedFormat('l')),
-        Tables\Columns\TextColumn::make('trip_month')
+        TextColumn::make('trip_month')
           ->state(fn(OrderFleet $record): string => $record->trip_date->translatedFormat('F')),
-        Tables\Columns\TextColumn::make('payment_status')
+        TextColumn::make('payment_status')
           ->badge()
           ->searchable(),
-        Tables\Columns\TextColumn::make('payment_date')
+        TextColumn::make('payment_date')
           ->date()
+          ->formatStateUsing(fn(Carbon $state): string => $state->translatedFormat('d/m/Y'))
+          ->placeholder('Unpaid')
           ->sortable(),
-        Tables\Columns\TextColumn::make('payment_amount')
-          ->numeric()
+        TextColumn::make('payment_amount')
+          ->money('IDR')
+          ->placeholder(idr(0))
           ->sortable(),
-        Tables\Columns\TextColumn::make('created_at')
+        TextColumn::make('created_at')
           ->dateTime()
           ->sortable()
           ->toggleable(isToggledHiddenByDefault: true),
-        Tables\Columns\TextColumn::make('updated_at')
+        TextColumn::make('updated_at')
           ->dateTime()
           ->sortable()
           ->toggleable(isToggledHiddenByDefault: true),
@@ -204,6 +210,19 @@ class OrderFleetResource extends Resource
       ->filters([
         DateRangeFilter::make('trip_date')
           ->label('Trip Date'),
+        Filter::make('has_order')
+          ->label('Sudah terdapat order')
+          ->query(fn(Builder $query): Builder => $query->whereHas('order')),
+        Filter::make('has_tour_leader')
+          ->label('Sudah terdapat tour leader')
+          ->query(fn(Builder $query): Builder => $query->whereHas('tourLeader')),
+      ])
+      ->headerActions([
+        ExportAction::make()
+          ->hidden(fn(): bool => static::getModel()::count() === 0)
+          ->exporter(OrderFleetExporter::class)
+          ->label('Export')
+          ->color('success')
       ])
       ->actions([
         ActionGroup::make([
@@ -389,7 +408,6 @@ class OrderFleetResource extends Resource
         Select::make('tour_leader_id')
           ->required()
           ->hiddenLabel()
-          ->allowHtml()
           ->default(fn(OrderFleet $record) => $record->tour_leader_id)
           ->prefixIcon(TourLeaderResource::getNavigationIcon())
           ->relationship(

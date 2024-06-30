@@ -70,7 +70,7 @@ models:
     lng: string nullable
     status: string:50
     relationships:
-      hasMany: Order, LoyaltyPoint #,Feedback
+      hasMany: Order, #LoyaltyPoint, Feedback
 
   Destination:
     name: string unique index
@@ -202,6 +202,8 @@ models:
     big_subs_bonus: bigInteger default:0
     legrest_subs_bonus: bigInteger default:0
 
+    adjusted_income: bigInteger
+
   TourReport:
     invoice_id: unique foreign constrained onDelete:cascade
     main_costs: json
@@ -213,8 +215,15 @@ models:
     defisit_surplus: bigInteger default:0
     refundable: bigInteger default:0
 
+  Reward:
+    customer_id: foreign constrained onDelete:cascade
+    cash_status: string:50 default:outflow # inflow, outflow
+    date: datetime
+    description: longText nullable
+    amount: bigInteger
+
   LoyaltyPoint:
-    invoice_id: unique foreign constrained onDelete:cascade
+    invoice_id: unique foreign constrained onDelete:cascade nullable
     cash_status: string:50 default:inflow # inflow, outflow
     description: longText nullable
     amount: bigInteger
@@ -222,6 +231,7 @@ models:
   SalesVisit:
     customer_id: unique foreign constrained onDelete:cascade
     employee_id: foreign constrained onDelete:cascade nullable
+    image: string nullable
     priority: string:50
     visit_status: string:50
 

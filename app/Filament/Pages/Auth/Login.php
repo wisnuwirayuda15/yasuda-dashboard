@@ -6,16 +6,16 @@ use Filament\Pages\Auth\Login as BasePage;
 
 class Login extends BasePage
 {
-    public function mount(): void
-    {
-        parent::mount();
+  public function mount(): void
+  {
+    parent::mount();
 
-        if (app()->environment('local')) {
-            $this->form->fill([
-                'email' => 'superadmin@yasuda.com',
-                'password' => '12345678',
-                'remember' => true,
-            ]);
-        }
+    if (app()->environment('local')) {
+      $this->form->fill([
+        'email' => 'superadmin@yasuda.com',
+        'password' => '12345678',
+        'remember' => true,
+      ]);
     }
+  }
 }

@@ -48,6 +48,7 @@ class ProfitLossFactory extends Factory
             'medium_subs_bonus' => $this->faker->numberBetween(-100000, 100000),
             'big_subs_bonus' => $this->faker->numberBetween(-100000, 100000),
             'legrest_subs_bonus' => $this->faker->numberBetween(-100000, 100000),
+            'adjusted_income' => $this->faker->numberBetween(-100000, 100000),
         ];
     }
 }

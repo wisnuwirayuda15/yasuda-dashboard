@@ -42,13 +42,15 @@ class LoyaltyPointResource extends Resource
         ToggleButtons::make('cash_status')
           ->required()
           ->inline()
+          ->disabled()
+          ->dehydrated()
           ->options(CashFlow::class)
           ->default(CashFlow::IN->value),
-        RichEditor::make('description')
-          ->columnSpanFull(),
         TextInput::make('amount')
           ->required()
-          ->numeric(),
+          ->currency(minValue: 1),
+        RichEditor::make('description')
+          ->columnSpanFull(),
       ]);
   }
 
@@ -57,9 +59,12 @@ class LoyaltyPointResource extends Resource
     return $table
       ->columns([
         TextColumn::make('invoice.order.customer.code')
+          ->badge()
           ->searchable(),
         TextColumn::make('invoice.order.customer.name')
           ->searchable(),
+        TextColumn::make('description')
+          ->html(),
         TextColumn::make('cash_status')
           ->badge(),
         TextColumn::make('invoice.code')
@@ -99,6 +104,12 @@ class LoyaltyPointResource extends Resource
           ->sortable()
           ->toggleable(isToggledHiddenByDefault: true),
       ])
+      ->actions([
+        Tables\Actions\ActionGroup::make([
+          Tables\Actions\ViewAction::make(),
+          Tables\Actions\DeleteAction::make(),
+        ])
+      ])
       ->bulkActions([
         Tables\Actions\BulkActionGroup::make([
           Tables\Actions\DeleteBulkAction::make(),
@@ -118,8 +129,8 @@ class LoyaltyPointResource extends Resource
     return [
       'index' => Pages\ListLoyaltyPoints::route('/'),
       // 'create' => Pages\CreateLoyaltyPoint::route('/create'),
-      'view' => Pages\ViewLoyaltyPoint::route('/{record}'),
-      'edit' => Pages\EditLoyaltyPoint::route('/{record}/edit'),
+      // 'view' => Pages\ViewLoyaltyPoint::route('/{record}'),
+      // 'edit' => Pages\EditLoyaltyPoint::route('/{record}/edit'),
     ];
   }
 }

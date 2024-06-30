@@ -24,18 +24,17 @@ class AppServiceProvider extends ServiceProvider
   public function boot(): void
   {
     // Use secure connection for production
-    // if (env('APP_ENV') !== 'local') {
-    //   URL::forceScheme('https');
-    // }
+    if (!app()->environment('local')) {
+      URL::forceScheme('https');
+    }
 
     // Indonesian locale and timezone
     Carbon::setlocale('id');
+    Number::useLocale('id');
 
     // Unguard model
     if ((bool) env('UNGUARD_MODEL', false)) {
       Model::unguard();
     }
-
-    Number::useLocale('id');
   }
 }

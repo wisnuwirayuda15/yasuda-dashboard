@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources;
 
+use Carbon\Carbon;
 use Filament\Forms;
 use Filament\Tables;
 use App\Models\Order;
@@ -15,18 +16,25 @@ use App\Models\TourTemplate;
 use App\Enums\CustomerStatus;
 use Filament\Resources\Resource;
 use App\Enums\NavigationGroupLabel;
+use Filament\Forms\Components\Group;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Toggle;
 use Filament\Forms\Components\Section;
+use App\Filament\Exports\OrderExporter;
 use Filament\Tables\Actions\EditAction;
 use Filament\Tables\Actions\ViewAction;
+use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
 use Filament\Tables\Actions\ActionGroup;
+use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\RichEditor;
 use Filament\Tables\Actions\DeleteAction;
+use Filament\Tables\Actions\ExportAction;
 use Illuminate\Database\Eloquent\Builder;
 use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\CheckboxList;
 use Filament\Tables\Actions\BulkActionGroup;
+use Filament\Forms\Components\Actions\Action;
 use Filament\Tables\Actions\DeleteBulkAction;
 use App\Filament\Resources\OrderResource\Pages;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
@@ -52,24 +60,25 @@ class OrderResource extends Resource
   {
     return $form
       ->schema([
-        Forms\Components\TextInput::make('code')
+        TextInput::make('code')
           ->code(get_code(new Order, 'OR')),
-        Forms\Components\Select::make('customer_id')
+        Select::make('customer_id')
           ->required()
           ->relationship('customer', 'name', fn(Builder $query) => $query->whereNot('status', CustomerStatus::CANDIDATE->value)->orderBy('created_at', 'desc'))
           ->prefixIcon(fn() => CustomerResource::getNavigationIcon()),
-        Forms\Components\Select::make('regency_id')
+        Select::make('regency_id')
           ->required()
           ->relationship('regency', 'name'),
-        Forms\Components\Select::make('destinations')
+        Select::make('destinations')
           ->required()
           ->multiple()
+          ->columnSpanFull()
           ->options(Destination::pluck('name', 'id'))
-          ->hintAction(Forms\Components\Actions\Action::make('select_tour_template')
+          ->hintAction(Action::make('select_tour_template')
             ->label('Template')
             ->icon('tabler-playlist-add')
             ->form([
-              Forms\Components\Select::make('tour_template')
+              Select::make('tour_template')
                 ->required()
                 ->options(TourTemplate::pluck('name', 'id')),
             ])
@@ -78,18 +87,22 @@ class OrderResource extends Resource
               $set('regency_id', $tourTemplate['regency_id']);
               $set('destinations', $tourTemplate['destinations']);
             })),
-        Toggle::make('change_date')
-          ->live()
-          ->hiddenOn(['create', 'createOption', 'createOption.createOption', 'editOption.createOption']),
-        Forms\Components\DatePicker::make('trip_date')
-          ->required()
-          ->live(true)
-          ->default(today())
-          ->minDate(today())
-          ->disabled(fn(Get $get, $operation) => in_array($operation, ['create', 'createOption', 'createOption.createOption', 'editOption.createOption']) ? false : !$get('change_date'))
-          ->helperText(fn($operation) => in_array($operation, ['edit', 'editOption', 'editOption.editOption', 'createOption.editOption']) ? 'Jika diubah, semua jadwal armada yang sudah diatur untuk order ini akan dihapus.' : false)
-          ->hint(fn($state) => today()->diffInDays($state) . ' hari sebelum keberangkatan')
-          ->afterStateUpdated(fn(Set $set) => $set('order_fleet_ids', [])),
+        Group::make([
+          Toggle::make('change_date')
+            ->live()
+            ->label('Ubah Tanggal Keberangkatan')
+            ->visible(fn(Order $record) => $record->trip_date)
+            ->hiddenOn(['create', 'view']),
+          DatePicker::make('trip_date')
+            ->required()
+            ->live(true)
+            ->default(today())
+            ->minDate(today())
+            ->disabled(fn(Get $get, $operation) => in_array($operation, ['create', 'createOption', 'createOption.createOption', 'editOption.createOption']) ? false : !$get('change_date'))
+            ->helperText(fn($operation) => in_array($operation, ['edit', 'editOption', 'editOption.editOption', 'createOption.editOption']) ? 'Jika diubah, semua jadwal armada yang sudah diatur untuk order ini akan dihapus.' : false)
+            ->hint(fn($state) => today()->diffInDays($state) . ' hari sebelum keberangkatan')
+            ->afterStateUpdated(fn(Set $set) => $set('order_fleet_ids', [])),
+        ]),
         Section::make('Jadwal Armada yang Tersedia')
           ->hiddenOn(['edit', 'editOption', 'editOption.editOption', 'createOption.editOption'])
           ->schema([
@@ -108,7 +121,7 @@ class OrderResource extends Resource
                 return $orderFleets;
               }),
           ]),
-        Forms\Components\RichEditor::make('description')
+        RichEditor::make('description')
           ->columnSpanFull(),
       ]);
   }
@@ -129,7 +142,7 @@ class OrderResource extends Resource
         Tables\Columns\TextColumn::make('trip_date')
           ->date()
           ->sortable()
-          ->formatStateUsing(fn($state): string => $state->format('d/m/Y')),
+          ->formatStateUsing(fn(Carbon $state): string => $state->translatedFormat('d/m/Y')),
         Tables\Columns\TextColumn::make('regency.name')
           ->label('Kota')
           ->searchable(),
@@ -145,7 +158,12 @@ class OrderResource extends Resource
           ->sortable()
           ->toggleable(isToggledHiddenByDefault: true),
       ])
-      ->filters([
+      ->headerActions([
+        ExportAction::make()
+          ->hidden(fn(): bool => static::getModel()::count() === 0)
+          ->exporter(OrderExporter::class)
+          ->label('Export')
+          ->color('success')
       ])
       ->actions([
         ActionGroup::make([

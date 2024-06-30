@@ -5,7 +5,6 @@ namespace Database\Factories;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
 use App\Models\TourLeader;
-use App\Models\User;
 
 class TourLeaderFactory extends Factory
 {
@@ -22,7 +21,6 @@ class TourLeaderFactory extends Factory
     public function definition(): array
     {
         return [
-            'user_id' => User::factory(),
             'code' => $this->faker->word(),
             'name' => $this->faker->name(),
             'alias' => $this->faker->word(),

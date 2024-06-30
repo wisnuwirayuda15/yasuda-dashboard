@@ -4,12 +4,18 @@ namespace App\Providers;
 
 use Closure;
 use Filament\Forms\Set;
+use Illuminate\Support\Facades\Hash;
+use Filament\Actions\MountableAction;
+use Filament\Forms\Components\Checkbox;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\ServiceProvider;
 use Filament\Forms\Components\TextInput;
+use Filament\Notifications\Notification;
+use Rawilk\FilamentPasswordInput\Password;
 use Filament\Forms\Components\Actions\Action;
-use Filament\Forms\Components\Checkbox;
 use Ysfkaya\FilamentPhoneInput\Forms\PhoneInput;
 use Ysfkaya\FilamentPhoneInput\PhoneInputNumberType;
+use Filament\Tables\Actions\DeleteAction as TableDeleteAction;
 
 class MacroServiceProvider extends ServiceProvider
 {
@@ -26,6 +32,30 @@ class MacroServiceProvider extends ServiceProvider
    */
   public function boot(): void
   {
+    MountableAction::macro('requiresPasswordConfirmation', function (): static {
+      $this
+        ->form([
+          Password::make('password')
+            ->required()
+            ->minLength(8)
+            ->hidePasswordManagerIcons()
+            ->label('Confirm Password')
+        ])
+        ->modalDescription('Confirm your password to perform this action.')
+        ->action(function (array $data, Model $record, MountableAction $action) {
+          if (!Hash::check($data['password'], auth()->user()->password)) {
+            Notification::make()
+              ->danger()
+              ->title('Woops...')
+              ->body('Wrong password!')
+              ->send();
+            $action->halt();
+          }
+          $record->delete();
+        });
+      return $this;
+    });
+
     TextInput::macro('qty', function (int|Closure $minValue = 0): static {
       $this
         ->live(true)

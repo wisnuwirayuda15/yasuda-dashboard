@@ -14,12 +14,14 @@ use App\Enums\MediumFleetSeat;
 use App\Enums\LegrestFleetSeat;
 use Filament\Resources\Resource;
 use App\Enums\NavigationGroupLabel;
+use App\Filament\Exports\FleetExporter;
 use Filament\Tables\Columns\TextColumn;
 use Illuminate\Database\Eloquent\Model;
 use Filament\Forms\Components\TextInput;
 use Filament\Tables\Columns\ImageColumn;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\RichEditor;
+use Filament\Tables\Actions\ExportAction;
 use Filament\Forms\Components\ToggleButtons;
 use App\Filament\Resources\FleetResource\Pages;
 use Ysfkaya\FilamentPhoneInput\Forms\PhoneInput;
@@ -111,9 +113,10 @@ class FleetResource extends Resource
           ->badge()
           ->searchable(),
         TextColumn::make('pic_name')
+          ->label('PIC')
           ->searchable(),
         PhoneColumn::make('pic_phone')
-          ->displayFormat(PhoneInputNumberType::NATIONAL)
+          ->label('Phone')
           ->searchable(),
         TextColumn::make('created_at')
           ->dateTime()
@@ -125,6 +128,13 @@ class FleetResource extends Resource
           ->toggleable(isToggledHiddenByDefault: true),
       ])
       ->filters([
+      ])
+      ->headerActions([
+        ExportAction::make()
+          ->hidden(fn(): bool => static::getModel()::count() === 0)
+          ->exporter(FleetExporter::class)
+          ->label('Export')
+          ->color('success')
       ])
       ->actions([
         Tables\Actions\ActionGroup::make([
