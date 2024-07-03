@@ -72,16 +72,16 @@ class OrderFleetResource extends Resource
       DatePicker::make('trip_date')
         ->required()
         ->live(true)
-        ->disabled(fn(?OrderFleet $record) => $record?->order()->exists())
-        ->helperText(fn(?OrderFleet $record) => $record?->order()->exists() ? 'Order already added' : null)
         ->default(today())
         ->minDate(today())
-        ->afterStateUpdated(fn(Set $set) => $set('order_id', null)),
+        ->disabled(fn(?OrderFleet $record) => $record?->order()->exists())
+        ->helperText(fn(?OrderFleet $record) => $record?->order()->exists() ? 'Order already added' : null)
+        ->columnSpan(fn(string $operation) => in_array($operation, ['create', 'view']) ? 'full' : null),
       Section::make('Pembayaran Armada')
         ->schema([
           ToggleButtons::make('payment_status')
             ->required()
-            ->live()
+            ->label('Status')
             ->inline()
             ->options(FleetPaymentStatus::class)
             ->default(FleetPaymentStatus::NON_DP->value)
@@ -90,15 +90,18 @@ class OrderFleetResource extends Resource
                 $set('payment_date', null);
                 $set('payment_amount', null);
               }
-            }),
+            })
+            ->loadingIndicator(),
           Group::make()
-            ->visible(fn(Get $get) => $get('payment_status') !== FleetPaymentStatus::NON_DP->value)
+            ->hidden(fn(Get $get) => $get('payment_status') === FleetPaymentStatus::NON_DP->value)
             ->columnSpan(2)
             ->schema([
               DatePicker::make('payment_date')
-                ->required(),
+                ->required()
+                ->label('Tgl. Bayar'),
               TextInput::make('payment_amount')
                 ->required()
+                ->label('Jumlah Bayar')
                 ->currency(minValue: 1)
             ])
         ]),

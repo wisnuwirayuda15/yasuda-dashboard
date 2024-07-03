@@ -75,7 +75,7 @@ class SalesVisitResource extends Resource
                 Select::make('employee_id')
                   ->required()
                   ->label('Visited By')
-                  ->relationship('employee', 'name'),
+                  ->relationship('employee', 'name', fn(Builder $query) => $query->whereNot('role', EmployeeRole::TOUR_LEADER->value)),
                 FileUpload::make('image')
                   ->label('Bukti Kunjungan')
                   ->image()
