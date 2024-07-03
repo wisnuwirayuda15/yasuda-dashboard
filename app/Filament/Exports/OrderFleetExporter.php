@@ -23,7 +23,7 @@ class OrderFleetExporter extends Exporter
         ->label('ID'),
       ExportColumn::make('code'),
       ExportColumn::make('order.customer.name'),
-      ExportColumn::make('tourLeader.name'),
+      ExportColumn::make('employee.name'),
       ExportColumn::make('trip_date')
         ->formatStateUsing(fn($state): string => $state->translatedFormat('d/m/Y')),
       ExportColumn::make('remaining_day')

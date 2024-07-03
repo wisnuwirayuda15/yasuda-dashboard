@@ -109,7 +109,8 @@ class InvoiceResource extends Resource
       ])
       ->actions([
         Tables\Actions\ActionGroup::make([
-          Tables\Actions\ViewAction::make()->modalWidth(MaxWidth::MaxContent),
+          Tables\Actions\ViewAction::make()
+            ->modalWidth(MaxWidth::MaxContent),
           Tables\Actions\EditAction::make(),
           Tables\Actions\DeleteAction::make(),
           Tables\Actions\Action::make('export_pdf')
@@ -117,6 +118,23 @@ class InvoiceResource extends Resource
             ->color('danger')
             ->icon('tabler-pdf')
             ->url(fn(Invoice $record) => route('generate.invoice', $record->code), true),
+          Tables\Actions\Action::make('tour_report')
+            ->icon(TourReportResource::getNavigationIcon())
+            ->color('warning')
+            ->label(function (Invoice $record): string {
+              return ($record->tourReport()->exists() ? 'Lihat' : 'Buat') . ' Tour Report';
+            })
+            ->visible(function (Invoice $record): bool {
+              return (bool) $record->profitLoss()->exists();
+            })
+            ->hidden(function (Invoice $record): bool {
+              return $record->order()->whereHas('orderFleets', function (Builder $query) {
+                $query->whereNull('employee_id');
+              })->exists();
+            })
+            ->url(function (Invoice $record): string {
+              return $record->tourReport()->exists() ? TourReportResource::getUrl('view', ['record' => $record->tourReport->id]) : TourReportResource::getUrl('create', ['invoice' => $record->code]);
+            })
         ])
       ]);
   }

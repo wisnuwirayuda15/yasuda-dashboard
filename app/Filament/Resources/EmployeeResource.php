@@ -10,7 +10,6 @@ use Filament\Forms\Get;
 use Filament\Forms\Set;
 use App\Models\Employee;
 use Filament\Forms\Form;
-use App\Models\TourLeader;
 use Filament\Tables\Table;
 use App\Enums\EmployeeRole;
 use App\Enums\EmployeeStatus;
@@ -20,9 +19,12 @@ use Filament\Forms\Components\Grid;
 use Filament\Tables\Actions\Action;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Section;
+use Filament\Tables\Columns\IconColumn;
+use Filament\Tables\Columns\TextColumn;
 use Illuminate\Database\Eloquent\Model;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
+use Filament\Tables\Columns\ImageColumn;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\FileUpload;
 use Filament\Tables\Filters\SelectFilter;
@@ -31,6 +33,7 @@ use Filament\Forms\Components\ToggleButtons;
 use Ysfkaya\FilamentPhoneInput\Forms\PhoneInput;
 use App\Filament\Resources\EmployeeResource\Pages;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Filament\Forms\Components\Actions\Action as FormAction;
 use App\Filament\Resources\EmployeeResource\RelationManagers;
 
 class EmployeeResource extends Resource
@@ -42,11 +45,6 @@ class EmployeeResource extends Resource
   public static function getNavigationGroup(): ?string
   {
     return NavigationGroupLabel::HR->getLabel();
-  }
-
-  public static function getNavigationBadge(): ?string
-  {
-    return static::getModel()::count();
   }
 
   public static function form(Form $form): Form
@@ -75,14 +73,13 @@ class EmployeeResource extends Resource
               ->unique(ignoreRecord: true),
             DatePicker::make('join_date')
               ->required()
+              ->label('Tanggal Masuk')
               ->default(today())
-              ->maxDate(today()),
-            DatePicker::make('exit_date')
-              ->required()
-              ->live()
-              ->visible(fn(Get $get): bool => $get('status') === EmployeeStatus::RESIGN->value || $get('status') === EmployeeStatus::RETIRE->value),
+              ->maxDate(today())
+              ->loadingIndicator(),
             TextInput::make('ktp')
               ->numeric()
+              ->label('No. KTP')
               ->unique(ignoreRecord: true)
               ->maxLength(255),
             PhoneInput::make('phone')
@@ -97,16 +94,31 @@ class EmployeeResource extends Resource
                 ToggleButtons::make('status')
                   ->required()
                   ->inline()
-                  ->live()
-                  ->options(EmployeeStatus::class),
+                  ->options(EmployeeStatus::class)
+                  ->loadingIndicator(),
                 ToggleButtons::make('gender')
                   ->required()
                   ->inline()
                   ->options(Gender::class),
+                DatePicker::make('exit_date')
+                  ->required()
+                  ->label('Tanggal Keluar')
+                  ->minDate(fn(Get $get) => $get('join_date'))
+                  ->visible(fn(Get $get): bool => $get('status') === EmployeeStatus::RESIGN->value || $get('status') === EmployeeStatus::RETIRE->value)
+                  ->loadingIndicator(),
                 Select::make('role')
                   ->required()
-                  ->live()
                   ->options(EmployeeRole::class)
+                  ->afterStateUpdated(function (Set $set, ?string $state): void {
+                    if (blank($state)) {
+                      return;
+                    } else if ($state === EmployeeRole::TOUR_LEADER->value) {
+                      $set('code', emp_code(new Employee, '02/TLF/'));
+                    } else {
+                      $set('code', emp_code(new Employee, '01/YSD/'));
+                    }
+                  })
+                  ->loadingIndicator(),
               ])
           ]),
       ]);
@@ -116,38 +128,38 @@ class EmployeeResource extends Resource
   {
     return $table
       ->columns([
-        Tables\Columns\ImageColumn::make('photo')
+        ImageColumn::make('photo')
           ->circular(),
-        Tables\Columns\IconColumn::make('is_user_assigned')
+        IconColumn::make('is_user_assigned')
           ->label('Is User Assigned')
           ->state(fn(Employee $record) => $record->employable()->exists())
           ->tooltip(fn(Employee $record) => $record->employable?->name ?? 'Assign User')
           ->boolean()
           ->alignCenter()
           ->action(static::getAssignUserAction()),
-        Tables\Columns\TextColumn::make('code')
+        TextColumn::make('code')
           ->badge()
           ->searchable(),
-        Tables\Columns\TextColumn::make('name')
+        TextColumn::make('name')
           ->sortable()
           ->description(fn(Employee $record): string => $record->alias ?? null)
           ->searchable(),
-        Tables\Columns\TextColumn::make('join_date')
+        TextColumn::make('join_date')
           ->label('Tanggal Masuk')
           ->date()
           ->sortable(),
-        Tables\Columns\TextColumn::make('ktp')
+        TextColumn::make('ktp')
           ->label('No KTP')
           ->limit(7, '***')
           ->searchable()
           ->placeholder('No data'),
-        Tables\Columns\TextColumn::make('gender')
+        TextColumn::make('gender')
           ->badge(),
-        Tables\Columns\TextColumn::make('role')
+        TextColumn::make('role')
           ->badge(),
-        Tables\Columns\TextColumn::make('status')
+        TextColumn::make('status')
           ->badge(),
-        Tables\Columns\TextColumn::make('working_day')
+        TextColumn::make('working_day')
           ->label('Masa Kerja (Hari)')
           ->numeric()
           ->state(function (Employee $record): string {
@@ -156,11 +168,11 @@ class EmployeeResource extends Resource
           ->sortable(query: function (Builder $query, string $direction): Builder {
             return $query->orderBy('join_date', $direction);
           }),
-        Tables\Columns\TextColumn::make('created_at')
+        TextColumn::make('created_at')
           ->dateTime()
           ->sortable()
           ->toggleable(isToggledHiddenByDefault: true),
-        Tables\Columns\TextColumn::make('updated_at')
+        TextColumn::make('updated_at')
           ->dateTime()
           ->sortable()
           ->toggleable(isToggledHiddenByDefault: true),
@@ -209,11 +221,18 @@ class EmployeeResource extends Resource
       ->form([
         Select::make('user_id')
           ->required()
-          ->hiddenLabel()
-          ->default(fn(Employee|TourLeader $record) => $record->employable?->id)
-          ->options(User::pluck('name', 'id')),
+          ->label('Select User')
+          ->default(fn(Employee $record) => $record->employable?->id)
+          ->options(fn(Employee $record) => User::whereNotMorphedTo('employable', Employee::class)->orWhere('id', $record->employable?->id)->pluck('name', 'id'))
+          ->hintAction(
+            fn(Employee $record) =>
+            FormAction::make('create_user')
+              ->label('Buat User')
+              ->icon(UserResource::getNavigationIcon())
+              ->url(UserResource::getUrl('create', ['employee' => $record->id]))
+          ),
       ])
-      ->action(function (array $data, Employee|TourLeader $record): void {
+      ->action(function (array $data, Employee $record): void {
         if ($record->employable()->exists()) {
           $record->employable()->update([
             'employable_id' => null,

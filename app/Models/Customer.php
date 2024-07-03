@@ -59,10 +59,10 @@ class Customer extends Model
     $balance = (float) $points - (float) $rewards;
 
     if ($formatted) {
-      return idr((float) $balance);
+      return idr($balance);
     }
 
-    return (float) $balance;
+    return $balance;
   }
 
   public function orders(): HasMany

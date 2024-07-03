@@ -59,18 +59,11 @@ class RewardResource extends Resource
           $balance = $get('balance') - $get('amount');
           $set($component, $balance);
           $color = $balance === 0 ? 'warning' : ($balance < 0 ? 'danger' : 'success');
-          if ($balance < 0) {
-            Notification::make()
-              ->danger()
-              ->title('Success')
-              ->body('Saldo customer tidak mencukupi')
-              ->send();
-          }
           return view('filament.components.badges.default', ['text' => idr($balance), 'color' => $color, 'big' => true]);
         }),
       Select::make('customer_id')
         ->required()
-        ->live(true)
+        ->live()
         ->allowHtml()
         ->relationship('customer', 'name'),
       TextInput::make('amount')

@@ -2,11 +2,12 @@
 
 namespace App\Models;
 
+use App\Enums\Gender;
 use App\Enums\EmployeeRole;
 use App\Enums\EmployeeStatus;
-use App\Enums\Gender;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Employee extends Model
 {
@@ -44,6 +45,11 @@ class Employee extends Model
     'role' => EmployeeRole::class,
     'status' => EmployeeStatus::class,
   ];
+
+  public function orderFleets(): HasMany
+  {
+    return $this->hasMany(OrderFleet::class);
+  }
 
   public function employable()
   {

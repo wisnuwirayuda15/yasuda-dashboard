@@ -11,10 +11,12 @@ use App\Models\Order;
 use Filament\Forms\Get;
 use Filament\Forms\Set;
 use App\Enums\FleetSeat;
+use App\Models\Employee;
 use Filament\Forms\Form;
 use App\Models\OrderFleet;
 use App\Models\TourLeader;
 use Filament\Tables\Table;
+use App\Enums\EmployeeRole;
 use App\Enums\FleetCategory;
 use App\Enums\OrderFleetStatus;
 use Filament\Resources\Resource;
@@ -56,11 +58,6 @@ class OrderFleetResource extends Resource
   public static function getNavigationGroup(): ?string
   {
     return NavigationGroupLabel::OPERATIONAL->getLabel();
-  }
-
-  public static function getNavigationBadge(): ?string
-  {
-    return static::getModel()::count();
   }
 
   public static function form(Form $form): Form
@@ -123,14 +120,14 @@ class OrderFleetResource extends Resource
           ->placeholder('No customer')
           ->tooltip(fn(OrderFleet $record) => ($record->order_id ? 'Change' : 'Select') . ' order')
           ->action(static::getSelectOrderAction()),
-        TextColumn::make('tourLeader.name')
+        TextColumn::make('employee.name')
           ->sortable()
           ->placeholder('No tour leader')
-          ->tooltip(fn(OrderFleet $record) => ($record->tour_leader_id ? 'Change' : 'Select') . ' tour leader')
+          ->tooltip(fn(OrderFleet $record) => ($record->employee_id ? 'Change' : 'Select') . ' tour leader')
           ->action(static::getSelectTourLeaderAction()),
         TextColumn::make('trip_date')
           ->date()
-          ->formatStateUsing(fn($state): string => $state->translatedFormat('d/m/Y')),
+          ->formatStateUsing(fn(Carbon $state): string => $state->translatedFormat('d/m/Y')),
         TextColumn::make('remaining_day')
           ->badge()
           ->alignCenter()
@@ -215,7 +212,7 @@ class OrderFleetResource extends Resource
           ->query(fn(Builder $query): Builder => $query->whereHas('order')),
         Filter::make('has_tour_leader')
           ->label('Sudah terdapat tour leader')
-          ->query(fn(Builder $query): Builder => $query->whereHas('tourLeader')),
+          ->query(fn(Builder $query): Builder => $query->whereHas('employee')),
       ])
       ->headerActions([
         ExportAction::make()
@@ -232,7 +229,7 @@ class OrderFleetResource extends Resource
           ReplicateAction::make()
             ->color('warning')
             ->modal(false)
-            ->excludeAttributes(['order_id', 'tour_leader_id'])
+            ->excludeAttributes(['order_id', 'employee_id'])
             ->before(function (OrderFleet $record) {
               $record->code = get_code(new OrderFleet, 'OF');
             }),
@@ -400,28 +397,28 @@ class OrderFleetResource extends Resource
 
   public static function getSelectTourLeaderAction(): Action
   {
-    return Action::make('select_tour_leader_id')
-      ->icon(TourLeaderResource::getNavigationIcon())
+    return Action::make('select_employee_id')
+      ->icon('gmdi-tour')
       ->label('Select Tour Leader')
       ->color('success')
       ->form([
-        Select::make('tour_leader_id')
+        Select::make('employee_id')
           ->required()
           ->hiddenLabel()
-          ->default(fn(OrderFleet $record) => $record->tour_leader_id)
-          ->prefixIcon(TourLeaderResource::getNavigationIcon())
+          ->default(fn(OrderFleet $record) => $record->employee_id)
+          ->prefixIcon('gmdi-tour')
           ->relationship(
-            'tourLeader',
+            'employee',
             'name',
             function (Builder $query, OrderFleet $record): Builder {
-              return $query->whereDoesntHave('orderFleets', function (Builder $query) use ($record) {
+              return $query->where('role', EmployeeRole::TOUR_LEADER->value)->whereDoesntHave('orderFleets', function (Builder $query) use ($record) {
                 $query->whereDate('trip_date', $record->trip_date);
-              })->orWhere('id', $record->tour_leader_id);
+              })->orWhere('id', $record->employee_id);
             }
           )
       ])
       ->action(function (array $data, OrderFleet $record): void {
-        $record->update(['tour_leader_id' => $data['tour_leader_id']]);
+        $record->update(['employee_id' => $data['employee_id']]);
         Notification::make()
           ->success()
           ->title('Success')
@@ -432,15 +429,15 @@ class OrderFleetResource extends Resource
 
   public static function getDeleteTourLeaderAction(): Action
   {
-    return Action::make('delete_tour_leader_id')
+    return Action::make('delete_employee_id')
       ->requiresConfirmation()
       ->icon('heroicon-s-trash')
       ->label('Remove Tour Leader')
       ->color('danger')
-      ->hidden(fn(OrderFleet $record): bool => blank($record->tour_leader_id))
+      ->hidden(fn(OrderFleet $record): bool => blank($record->employee_id))
       ->action(
         function (OrderFleet $record) {
-          $record->update(['tour_leader_id' => null]);
+          $record->update(['employee_id' => null]);
           Notification::make()
             ->success()
             ->title('Success')
@@ -452,7 +449,7 @@ class OrderFleetResource extends Resource
 
   public static function getDeleteTourLeaderBulkAction(): BulkAction
   {
-    return BulkAction::make('bulk_delete_tour_leader_id')
+    return BulkAction::make('bulk_delete_employee_id')
       ->requiresConfirmation()
       ->icon('heroicon-s-trash')
       ->label('Remove Tour Leaders')
@@ -461,7 +458,7 @@ class OrderFleetResource extends Resource
         function (Collection $records) {
           $codes = $records->pluck('code')->implode(', ');
 
-          $records->each->update(['tour_leader_id' => null]);
+          $records->each->update(['employee_id' => null]);
 
           Notification::make()
             ->success()

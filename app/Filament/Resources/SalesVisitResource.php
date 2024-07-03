@@ -62,11 +62,13 @@ class SalesVisitResource extends Resource
               ->inline()
               ->label('Sudah dikunjungi?')
               ->inlineLabel(false)
+              ->default('not_yet')
               ->options([
                 'done' => 'Sudah',
                 'not_yet' => 'Belum',
               ])
-              ->afterStateUpdated(fn(Set $set) => $set('employee_id', null)),
+              ->afterStateUpdated(fn(Set $set) => $set('employee_id', null))
+              ->loadingIndicator(),
             Group::make()
               ->visible(fn(Get $get) => $get('visit_status') === 'done')
               ->schema([
@@ -75,6 +77,7 @@ class SalesVisitResource extends Resource
                   ->label('Visited By')
                   ->relationship('employee', 'name'),
                 FileUpload::make('image')
+                  ->label('Bukti Kunjungan')
                   ->image()
                   ->imageEditor()
                   ->maxSize(10240)

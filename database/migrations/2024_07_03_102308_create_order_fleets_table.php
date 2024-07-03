@@ -17,12 +17,12 @@ return new class extends Migration
             $table->id();
             $table->string('code')->index()->unique();
             $table->foreignId('order_id')->nullable()->constrained()->cascadeOnDelete();
+            $table->foreignId('employee_id')->nullable()->constrained()->cascadeOnDelete();
             $table->foreignId('fleet_id')->constrained()->cascadeOnDelete();
             $table->dateTime('trip_date');
             $table->string('payment_status', 50);
             $table->dateTime('payment_date')->nullable();
             $table->bigInteger('payment_amount')->nullable();
-            $table->foreignId('tour_leader_id')->nullable()->constrained()->cascadeOnDelete();
             $table->timestamps();
         });
 

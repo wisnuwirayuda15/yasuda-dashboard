@@ -5,6 +5,7 @@ namespace App\Providers\Filament;
 use Filament\Pages;
 use Filament\Panel;
 use Filament\Widgets;
+use Filament\Forms\Set;
 use Filament\Pages\Page;
 use Filament\Tables\Table;
 use Filament\PanelProvider;
@@ -21,6 +22,7 @@ use Filament\Actions\MountableAction;
 use Filament\Forms\Components\Select;
 use Filament\Support\Enums\Alignment;
 use Filament\Forms\Components\Repeater;
+use Filament\Tables\Columns\TextColumn;
 use Filament\Notifications\Notification;
 use Filament\Tables\Enums\FiltersLayout;
 use App\Filament\Resources\ShirtResource;
@@ -48,6 +50,7 @@ use Illuminate\Session\Middleware\AuthenticateSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 use BezhanSalleh\FilamentLanguageSwitch\LanguageSwitch;
 use Filament\Http\Middleware\DisableBladeIconComponents;
+use Joaopaulolndev\FilamentEditEnv\FilamentEditEnvPlugin;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
 use Filament\Tables\Actions\EditAction as TableEditAction;
 use Filament\Tables\Actions\ViewAction as TableViewAction;
@@ -58,7 +61,8 @@ use Filament\Forms\Components\Actions\Action as FormAction;
 use Filament\Tables\Actions\ActionGroup as TableActionGroup;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Filament\Tables\Actions\DeleteAction as TableDeleteAction;
-use Filament\Tables\Columns\TextColumn;
+use Filament\Pages\Auth\EmailVerification\EmailVerificationPrompt;
+use Joaopaulolndev\FilamentCheckSslWidget\FilamentCheckSslWidgetPlugin;
 
 class AdminPanelProvider extends PanelProvider
 {
@@ -67,7 +71,10 @@ class AdminPanelProvider extends PanelProvider
     // Register scroll to top event
     FilamentView::registerRenderHook(
       PanelsRenderHook::SCRIPTS_AFTER,
-      fn(): string => new HtmlString('<script>document.addEventListener("scroll-to-top", () => window.scrollTo(0, 0))</script>'),
+      fn(): string => new HtmlString(<<<HTML
+        <script>document.addEventListener('scroll-to-top', () => window.scrollTo(0, 0))</script>
+      HTML
+      ),
     );
 
     // Sending validation notifications
@@ -120,6 +127,19 @@ class AdminPanelProvider extends PanelProvider
 
     Repeater::configureUsing(function (Repeater $repeater): void {
       $repeater
+        ->hintAction(
+          FormAction::make('reset')
+            ->button()
+            ->color('danger')
+            ->slideOver(false)
+            ->icon('gmdi-restart-alt-tt')
+            ->requiresConfirmation()
+            ->modalHeading('Are you sure?')
+            ->modalDescription('All existing items will be removed.')
+            ->tooltip('Remove all items')
+            ->visible(fn(?array $state) => count($state) > 1)
+            ->action(fn(Set $set) => $set($repeater, [])),
+        )
         ->expandAllAction(fn(FormAction $action) => $action
           ->label('Expand')
           ->icon('heroicon-s-chevron-down')
@@ -148,7 +168,6 @@ class AdminPanelProvider extends PanelProvider
 
     ExportAction::configureUsing(function (ExportAction $action): void {
       $action
-        
         ->icon('fileicon-microsoft-excel')
         ->tooltip('Export data to Excel');
     });
@@ -189,6 +208,8 @@ class AdminPanelProvider extends PanelProvider
       ->path('dashboard')
       ->login(Login::class)
       ->passwordReset()
+      ->emailVerification()
+      ->requiresEmailVerification()
       ->font('Poppins')
       ->viteTheme('resources/css/filament/admin/theme.css')
       ->favicon(asset('favicon.svg'))
@@ -262,6 +283,7 @@ class AdminPanelProvider extends PanelProvider
             navigationGroup: NavigationGroupLabel::SETTING->getLabel(),
           ),
         QuickCreatePlugin::make()
+          ->slideOver()
           ->sortBy('navigation')
           ->rounded(fn(): bool => match (CustomPlatform::detect()) {
             CustomPlatform::Windows, CustomPlatform::Mac, CustomPlatform::Linux => true,

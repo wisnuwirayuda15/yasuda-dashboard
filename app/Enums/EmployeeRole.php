@@ -22,6 +22,8 @@ enum EmployeeRole: string implements HasLabel, HasColor
 
   case MANAGER = 'super_admin';
 
+  case TOUR_LEADER = 'tour_leader';
+
   public function getLabel(): ?string
   {
     return match ($this) {
@@ -32,6 +34,7 @@ enum EmployeeRole: string implements HasLabel, HasColor
       self::MARKETING_STAFF => 'Sales & Marketing Staff',
       self::MARKETING_MANAGER => 'Sales & Marketing Manager',
       self::MANAGER => 'Company Manager',
+      self::TOUR_LEADER => 'Tour Leader',
     };
   }
 
@@ -45,6 +48,8 @@ enum EmployeeRole: string implements HasLabel, HasColor
       self::MARKETING_STAFF => Color::Pink,
       self::MARKETING_MANAGER => Color::Orange,
       self::MANAGER => Color::Green,
+      self::TOUR_LEADER => Color::Violet,
     };
   }
 }
+

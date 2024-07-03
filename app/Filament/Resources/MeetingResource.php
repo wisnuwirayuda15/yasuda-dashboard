@@ -11,7 +11,10 @@ use Filament\Resources\Resource;
 use Illuminate\Support\HtmlString;
 use App\Enums\NavigationGroupLabel;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\RichEditor;
 use Illuminate\Database\Eloquent\Builder;
+use Filament\Forms\Components\DateTimePicker;
 use App\Filament\Resources\MeetingResource\Pages;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use App\Filament\Resources\MeetingResource\RelationManagers;
@@ -39,16 +42,17 @@ class MeetingResource extends Resource
   public static function getFormSchema(): array
   {
     return [
-      Forms\Components\TextInput::make('title')
+      TextInput::make('title')
         ->required()
         ->maxLength(100)
         ->columnSpanFull()
         ->label('Judul'),
-      Forms\Components\DateTimePicker::make('date')
+      DateTimePicker::make('date')
         ->required()
+        ->label('Tanggal')
         ->columnSpanFull()
-        ->label('Tanggal'),
-      Forms\Components\RichEditor::make('description')
+        ->default(today()),
+      RichEditor::make('description')
         ->columnSpanFull()
         ->label('Deskripsi'),
     ];
@@ -56,8 +60,6 @@ class MeetingResource extends Resource
 
   public static function table(Table $table): Table
   {
-    //TODO: hide the table
-
     return $table
       ->columns([
         TextColumn::make('title')

@@ -14,10 +14,10 @@ use Filament\Tables\Table;
 use App\Models\Destination;
 use App\Enums\FleetCategory;
 use App\Enums\DestinationType;
+use Illuminate\Support\Number;
 use App\Enums\ProfitLossStatus;
 use Filament\Resources\Resource;
 use App\Enums\NavigationGroupLabel;
-use App\Filament\Exports\ProfitLossExporter;
 use Filament\Forms\Components\Tabs;
 use Filament\Forms\Components\Group;
 use Filament\Support\Enums\MaxWidth;
@@ -34,6 +34,7 @@ use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
 use Filament\Tables\Actions\ExportAction;
 use Filament\Forms\Components\Placeholder;
+use App\Filament\Exports\ProfitLossExporter;
 use Filament\Forms\Components\ToggleButtons;
 use Filament\Forms\Components\Actions\Action;
 use App\Filament\Resources\ProfitLossResource\Pages;
@@ -591,8 +592,9 @@ class ProfitLossResource extends Resource
           ->label('Adjusted Income (Plan)')
           ->content(function (Get $get, Set $set, Placeholder $component) {
             $adjustedIncome = $get('net_income') + $get('others_income_total');
-            $status = $adjustedIncome / $get('net_sales');
-            $rate = round($status * 100, 2) . '%';
+            $netSales = $get('net_sales');
+            $status = $netSales ? $adjustedIncome / $netSales : 0;
+            $rate = Number::percentage($status * 100, 2);
             $statusClass = $status > 0.15 ? ProfitLossStatus::GOOD->value : ProfitLossStatus::BAD->value;
             $color = $status > 0.15 ? 'success' : 'danger';
             $set('adjusted_income_status', $statusClass);
@@ -613,9 +615,10 @@ class ProfitLossResource extends Resource
             ->label('Actual Income')
             ->content(function (Get $get, Set $set, Placeholder $component) {
               $inv = static::$invoice;
-              $actualIncome = $get('adjusted_income') + $inv->tourReport->difference;
-              $status = $actualIncome / $get('net_sales');
-              $rate = round($status * 100, 2) . '%';
+              $actualIncome = $get('adjusted_income') + $inv->tourReport?->difference;
+              $netSales = $get('net_sales');
+              $status = $netSales ? $actualIncome / $netSales : 0;
+              $rate = Number::percentage($status * 100, 2);
               $statusClass = $status > 0.15 ? ProfitLossStatus::GOOD->value : ProfitLossStatus::BAD->value;
               $color = $status > 0.15 ? 'success' : 'danger';
               $set('actual_income_status', $statusClass);

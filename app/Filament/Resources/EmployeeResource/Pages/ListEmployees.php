@@ -22,17 +22,23 @@ class ListEmployees extends ListRecords
     ];
   }
 
-  // public function getTabs(): array
-  // {
-  //   $array = [
-  //     'all' => Tab::make()->icon('fluentui-grid-dots-28-o'),
-  //   ];
+  public function getTabs(): array
+  {
+    $array = [
+      'all' => Tab::make()->icon('fluentui-grid-dots-28-o'),
+      'tour_leader' => Tab::make('Tour Leader')
+        ->icon('gmdi-tour')
+        ->modifyQueryUsing(fn(Builder $query) => $query->where('role', EmployeeRole::TOUR_LEADER->value)),
+      'other' => Tab::make()
+        ->icon(EmployeeResource::getNavigationIcon())
+        ->modifyQueryUsing(fn(Builder $query) => $query->whereNot('role', EmployeeRole::TOUR_LEADER->value))
+    ];
 
-  //   foreach (static::$roles::cases() as $role) {
-  //     $array[$role->value] = Tab::make($role->getLabel())
-  //       ->modifyQueryUsing(fn(Builder $query) => $query->where('role', $role->value));
-  //   }
+    // foreach (static::$roles::cases() as $role) {
+    //   $array[$role->value] = Tab::make($role->getLabel())
+    //     ->modifyQueryUsing(fn(Builder $query) => $query->where('role', $role->value));
+    // }
 
-  //   return $array;
-  // }
+    return $array;
+  }
 }

@@ -63,7 +63,7 @@ class TourReportResource extends Resource
         $invoice = $parameters['invoice'];
       }
 
-      static::$invoice = Invoice::where('code', $invoice)->with(['order', 'order.orderFleets.fleet', 'order.orderFleets.tourLeader', 'order.customer'])->firstOrFail();
+      static::$invoice = Invoice::where('code', $invoice)->with(['order', 'order.orderFleets.fleet', 'order.orderFleets.employee', 'order.customer'])->firstOrFail();
     } else {
       static::$invoice = $record->invoice;
     }
@@ -179,7 +179,7 @@ class TourReportResource extends Resource
             $orderFleets = static::$invoice->order->orderFleets;
             $tourLeaderNames = [];
             foreach ($orderFleets as $orderFleet) {
-              $tourLeader = $orderFleet->tourLeader->name;
+              $tourLeader = $orderFleet->employee->name;
               if (!in_array($tourLeader, $tourLeaderNames)) {
                 $tourLeaderNames[] = $tourLeader;
               }

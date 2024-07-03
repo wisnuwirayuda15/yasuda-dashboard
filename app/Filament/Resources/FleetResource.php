@@ -42,11 +42,6 @@ class FleetResource extends Resource
     return NavigationGroupLabel::MASTER_DATA->getLabel();
   }
 
-  public static function getNavigationBadge(): ?string
-  {
-    return static::getModel()::count();
-  }
-
   public static function getGlobalSearchResultDetails(Model $record): array
   {
     return [
@@ -74,11 +69,11 @@ class FleetResource extends Resource
           ->columnSpanFull(),
         ToggleButtons::make('category')
           ->required()
-          ->live()
           ->inline()
           ->options(FleetCategory::class)
           ->default(FleetCategory::MEDIUM->value)
-          ->afterStateUpdated(fn(Set $set) => $set('seat_set', null)),
+          ->afterStateUpdated(fn(Set $set) => $set('seat_set', null))
+          ->loadingIndicator(),
         ToggleButtons::make('seat_set')
           ->required()
           ->live()

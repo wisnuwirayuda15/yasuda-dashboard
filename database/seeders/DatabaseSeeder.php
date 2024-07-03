@@ -2,13 +2,13 @@
 
 namespace Database\Seeders;
 
-// use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use App\Models\User;
 use App\Models\Company;
 use Illuminate\Database\Seeder;
 use Database\Seeders\FleetSeeder;
-use Database\Seeders\CostDetailSeeder;
+use Illuminate\Support\Facades\Hash;
 use Database\Seeders\DestinationSeeder;
+// use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 
 class DatabaseSeeder extends Seeder
 {
@@ -20,7 +20,7 @@ class DatabaseSeeder extends Seeder
     User::factory()->create([
       'name' => 'Super Admin',
       'email' => 'superadmin@yasuda.com',
-      'password' => bcrypt('12345678'),
+      'password' => Hash::make('12345678'),
     ]);
 
     Company::create();
@@ -29,7 +29,6 @@ class DatabaseSeeder extends Seeder
       RegionSeeder::class,
       FleetSeeder::class,
       CustomerSeeder::class,
-      TourLeaderSeeder::class,
       DestinationSeeder::class,
       OrderSeeder::class,
       OrderFleetSeeder::class,

@@ -16,7 +16,7 @@ return [
   |
   */
 
-  'name' => env('APP_NAME', 'Yasuda Dasboard'),
+  'name' => env('APP_NAME', 'Yasuda Jaya Tour'),
 
   /*
   |--------------------------------------------------------------------------

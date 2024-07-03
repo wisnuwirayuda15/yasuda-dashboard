@@ -108,21 +108,23 @@ models:
     gender: string:50
     role: string:50
     status: string:50
-
-  TourLeader:
-    # user_id: foreign constrained onDelete:cascade unique nullable
-    code: string unique index
-    name: string index
-    alias: string unique
-    join_date: datetime
-    exit_date: datetime nullable
-    ktp: string unique nullable
-    photo: string nullable
-    phone: string nullable
-    gender: string:50
-    status: string:50
     relationships:
       hasMany: OrderFleet
+
+  # TourLeader:
+  #   # user_id: foreign constrained onDelete:cascade unique nullable
+  #   code: string unique index
+  #   name: string index
+  #   alias: string unique
+  #   join_date: datetime
+  #   exit_date: datetime nullable
+  #   ktp: string unique nullable
+  #   photo: string nullable
+  #   phone: string nullable
+  #   gender: string:50
+  #   status: string:50
+  #   relationships:
+  #     hasMany: OrderFleet
 
   #=============================================================#
 
@@ -140,6 +142,7 @@ models:
   OrderFleet:
     code: string index unique #OF-00001
     order_id: foreign constrained onDelete:cascade nullable
+    employee_id: foreign constrained onDelete:cascade nullable
     fleet_id: foreign constrained onDelete:cascade
     trip_date: datetime
     # duration: integer default:1
@@ -147,7 +150,6 @@ models:
     payment_status: string:50
     payment_date: datetime nullable
     payment_amount: bigInteger nullable
-    tour_leader_id: foreign constrained onDelete:cascade nullable
 
   Invoice:
     code: string index unique #INV-00001

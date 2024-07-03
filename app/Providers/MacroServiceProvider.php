@@ -4,8 +4,11 @@ namespace App\Providers;
 
 use Closure;
 use Filament\Forms\Set;
+use Illuminate\Support\HtmlString;
+use Filament\Forms\Components\Field;
 use Illuminate\Support\Facades\Hash;
 use Filament\Actions\MountableAction;
+use Illuminate\Support\Facades\Blade;
 use Filament\Forms\Components\Checkbox;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\ServiceProvider;
@@ -53,6 +56,25 @@ class MacroServiceProvider extends ServiceProvider
           }
           $record->delete();
         });
+      return $this;
+    });
+
+    Field::macro('loadingIndicator', function (?string $label = 'Loading...', ?string $target = null, bool $onBlur = false): static {
+      $target = $target ?? $this->name;
+
+      $html = new HtmlString(
+        Blade::render(<<<HTML
+          <span class="flex">
+            <x-filament::loading-indicator class="h-5 w-5 mr-1" wire:loading wire:target="data.{$target}"/>
+            <strong wire:loading wire:target="data.{$target}">{$label}</strong>
+          </span>
+        HTML)
+      );
+
+      $this
+        ->live($onBlur)
+        ->hint($html);
+
       return $this;
     });
 

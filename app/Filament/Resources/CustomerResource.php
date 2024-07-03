@@ -45,11 +45,6 @@ class CustomerResource extends Resource
     return NavigationGroupLabel::MASTER_DATA->getLabel();
   }
 
-  public static function getNavigationBadge(): ?string
-  {
-    return static::getModel()::count();
-  }
-
   public static function getGlobalSearchResultDetails(Model $record): array
   {
     return [
@@ -62,9 +57,9 @@ class CustomerResource extends Resource
   {
     return $form
       ->schema([
-        self::getBasicInformationSection(),
-        self::getLocationInformationSection(),
-        self::getContactInformationSection(),
+        static::getBasicInformationSection(),
+        static::getLocationInformationSection(),
+        static::getContactInformationSection(),
       ]);
   }
 
@@ -164,13 +159,13 @@ class CustomerResource extends Resource
           ->maxLength(255),
         ToggleButtons::make('category')
           ->required()
-          ->live()
           ->inline()
-          ->disabledOn(['edit', 'editOption', 'editOption.editOption', 'createOption.editOption'])
+          ->disabledOn('edit')
           ->helperText("Category can't be edited.")
           ->options(CustomerCategory::class)
           ->default(CustomerCategory::TK->value)
-          ->afterStateUpdated(fn(Set $set, string $state) => $set('code', get_code(new Customer, $state))),
+          ->afterStateUpdated(fn(Set $set, string $state) => $set('code', get_code(new Customer, $state)))
+          ->loadingIndicator(),
         ToggleButtons::make('status')
           ->required()
           ->inline()

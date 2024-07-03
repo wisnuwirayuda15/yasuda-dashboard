@@ -8,7 +8,6 @@ created:
     - database/factories/TourTemplateFactory.php
     - database/factories/CompanyFactory.php
     - database/factories/EmployeeFactory.php
-    - database/factories/TourLeaderFactory.php
     - database/factories/OrderFactory.php
     - database/factories/OrderFleetFactory.php
     - database/factories/InvoiceFactory.php
@@ -19,26 +18,25 @@ created:
     - database/factories/SalesVisitFactory.php
     - database/factories/ShirtFactory.php
     - database/factories/EventFactory.php
-    - database/migrations/2024_06_26_232447_create_provinces_table.php
-    - database/migrations/2024_06_26_232448_create_regencies_table.php
-    - database/migrations/2024_06_26_232449_create_districts_table.php
-    - database/migrations/2024_06_26_232450_create_fleets_table.php
-    - database/migrations/2024_06_26_232451_create_customers_table.php
-    - database/migrations/2024_06_26_232452_create_destinations_table.php
-    - database/migrations/2024_06_26_232453_create_tour_templates_table.php
-    - database/migrations/2024_06_26_232454_create_companies_table.php
-    - database/migrations/2024_06_26_232455_create_employees_table.php
-    - database/migrations/2024_06_26_232456_create_tour_leaders_table.php
-    - database/migrations/2024_06_26_232457_create_orders_table.php
-    - database/migrations/2024_06_26_232458_create_order_fleets_table.php
-    - database/migrations/2024_06_26_232459_create_invoices_table.php
-    - database/migrations/2024_06_26_232500_create_profit_losses_table.php
-    - database/migrations/2024_06_26_232501_create_tour_reports_table.php
-    - database/migrations/2024_06_26_232502_create_rewards_table.php
-    - database/migrations/2024_06_26_232503_create_loyalty_points_table.php
-    - database/migrations/2024_06_26_232504_create_sales_visits_table.php
-    - database/migrations/2024_06_26_232505_create_shirts_table.php
-    - database/migrations/2024_06_26_232506_create_events_table.php
+    - database/migrations/2024_07_03_102258_create_provinces_table.php
+    - database/migrations/2024_07_03_102259_create_regencies_table.php
+    - database/migrations/2024_07_03_102300_create_districts_table.php
+    - database/migrations/2024_07_03_102301_create_fleets_table.php
+    - database/migrations/2024_07_03_102302_create_customers_table.php
+    - database/migrations/2024_07_03_102303_create_destinations_table.php
+    - database/migrations/2024_07_03_102304_create_tour_templates_table.php
+    - database/migrations/2024_07_03_102305_create_companies_table.php
+    - database/migrations/2024_07_03_102306_create_employees_table.php
+    - database/migrations/2024_07_03_102307_create_orders_table.php
+    - database/migrations/2024_07_03_102308_create_order_fleets_table.php
+    - database/migrations/2024_07_03_102309_create_invoices_table.php
+    - database/migrations/2024_07_03_102310_create_profit_losses_table.php
+    - database/migrations/2024_07_03_102311_create_tour_reports_table.php
+    - database/migrations/2024_07_03_102312_create_rewards_table.php
+    - database/migrations/2024_07_03_102313_create_loyalty_points_table.php
+    - database/migrations/2024_07_03_102314_create_sales_visits_table.php
+    - database/migrations/2024_07_03_102315_create_shirts_table.php
+    - database/migrations/2024_07_03_102316_create_events_table.php
     - app/Models/Province.php
     - app/Models/Regency.php
     - app/Models/District.php
@@ -48,7 +46,6 @@ created:
     - app/Models/TourTemplate.php
     - app/Models/Company.php
     - app/Models/Employee.php
-    - app/Models/TourLeader.php
     - app/Models/Order.php
     - app/Models/OrderFleet.php
     - app/Models/Invoice.php
@@ -60,19 +57,18 @@ created:
     - app/Models/Shirt.php
     - app/Models/Event.php
 models:
-    User: { name: string, avatar_url: 'string nullable', email: string, email_verified_at: 'timestamp nullable', password: string, remember_token: 'string:100 nullable' }
+    User: { employable_type: 'string nullable', employable_id: 'biginteger unsigned nullable', name: string, avatar_url: 'string nullable', email: string, email_verified_at: 'timestamp nullable', password: string, remember_token: 'string:100 nullable' }
     Province: { code: 'string unique index', name: 'string index', lat: string, lng: string, google_place_id: string, relationships: { hasMany: Regency } }
     Regency: { code: 'string unique index', province_id: 'foreign constrained onDelete:cascade', name: 'string index', lat: string, lng: string, google_place_id: string, relationships: { hasMany: District, belongsTo: Province } }
     District: { code: 'string unique index', regency_id: 'foreign constrained onDelete:cascade', name: 'string index', lat: string, lng: string, google_place_id: string, relationships: { belongsTo: Regency } }
     Fleet: { image: 'string nullable', name: 'string index', description: longText, category: 'string:50', seat_set: tinyInteger, pic_name: string, pic_phone: string, relationships: { hasMany: OrderFleet } }
-    Customer: { code: 'string unique index', name: 'string unique index', address: string, category: 'string:50 default:tk', regency_id: 'foreign constrained onDelete:cascade', district_id: 'foreign:districts.id constrained onDelete:cascade', headmaster: string, operator: string, phone: string, email: 'string nullable', lat: 'string nullable', lng: 'string nullable', status: 'string:50', relationships: { hasMany: 'Order, LoyaltyPoint' } }
+    Customer: { code: 'string unique index', name: 'string unique index', address: string, category: 'string:50 default:tk', regency_id: 'foreign constrained onDelete:cascade', district_id: 'foreign:districts.id constrained onDelete:cascade', headmaster: string, operator: string, phone: string, email: 'string nullable', lat: 'string nullable', lng: 'string nullable', status: 'string:50', relationships: { hasMany: 'Order,' } }
     Destination: { name: 'string unique index', type: 'string:50', marketing_name: string, marketing_phone: string, weekday_price: bigInteger, weekend_price: 'bigInteger nullable', high_season_price: 'bigInteger nullable' }
     TourTemplate: { image: 'string nullable', name: string, regency_id: 'foreign constrained onDelete:cascade', destinations: json, description: 'longText nullable' }
     Company: { name: 'string default:"Yasuda Jaya Tour & Travel"', logo: 'string default:logo.png', email: 'string default:yasudajaya@gmail.com', phone: 'string default:+628123456789', balance: 'bigInteger default:0' }
-    Employee: { code: 'string unique index', name: 'string index', alias: 'string unique', join_date: datetime, exit_date: 'datetime nullable', ktp: 'string unique nullable', photo: 'string nullable', phone: 'string nullable', gender: 'string:50', role: 'string:50', status: 'string:50' }
-    TourLeader: { code: 'string unique index', name: 'string index', alias: 'string unique', join_date: datetime, exit_date: 'datetime nullable', ktp: 'string unique nullable', photo: 'string nullable', phone: 'string nullable', gender: 'string:50', status: 'string:50', relationships: { hasMany: OrderFleet } }
+    Employee: { code: 'string unique index', name: 'string index', alias: 'string unique', join_date: datetime, exit_date: 'datetime nullable', ktp: 'string unique nullable', photo: 'string nullable', phone: 'string nullable', gender: 'string:50', role: 'string:50', status: 'string:50', relationships: { hasMany: OrderFleet } }
     Order: { code: 'string index unique', customer_id: 'foreign constrained onDelete:cascade', regency_id: 'foreign constrained onDelete:cascade', destinations: json, trip_date: datetime, description: 'longText nullable', relationships: { hasMany: OrderFleet, hasOne: Invoice } }
-    OrderFleet: { code: 'string index unique', order_id: 'foreign constrained onDelete:cascade nullable', fleet_id: 'foreign constrained onDelete:cascade', trip_date: datetime, payment_status: 'string:50', payment_date: 'datetime nullable', payment_amount: 'bigInteger nullable', tour_leader_id: 'foreign constrained onDelete:cascade nullable' }
+    OrderFleet: { code: 'string index unique', order_id: 'foreign constrained onDelete:cascade nullable', employee_id: 'foreign constrained onDelete:cascade nullable', fleet_id: 'foreign constrained onDelete:cascade', trip_date: datetime, payment_status: 'string:50', payment_date: 'datetime nullable', payment_amount: 'bigInteger nullable' }
     Invoice: { code: 'string index unique', order_id: 'foreign constrained onDelete:cascade', main_costs: json, submitted_shirt: integer, teacher_shirt_qty: 'integer nullable', adult_shirt_qty: 'integer nullable', child_shirt_price: 'bigInteger nullable', teacher_shirt_price: 'bigInteger nullable', adult_shirt_price: 'bigInteger nullable', adjusted_seat: 'integer nullable', down_payments: 'json nullable', other_cost: 'bigInteger nullable', notes: 'longText nullable', relationships: { hasOne: 'ProfitLoss, TourReport, Shirt, LoyaltyPoint' } }
     ProfitLoss: { invoice_id: 'unique foreign constrained onDelete:cascade', medium_rent_price: 'bigInteger default:0', big_rent_price: 'bigInteger default:0', legrest_rent_price: 'bigInteger default:0', toll_price: 'bigInteger default:0', banner_price: 'bigInteger default:0', crew_price: 'bigInteger default:0', tour_leader_price: 'bigInteger default:0', documentation_qty: 'integer default:0', documentation_price: 'bigInteger default:0', teacher_shirt_qty: 'bigInteger default:0', teacher_shirt_price: 'bigInteger default:0', souvenir_price: 'bigInteger default:0', child_shirt_price: 'bigInteger default:0', adult_shirt_price: 'bigInteger default:0', photo_price: 'bigInteger default:0', snack_price: 'bigInteger default:0', eat_price: 'bigInteger default:0', eat_child_price: 'bigInteger default:0', eat_prasmanan_price: 'bigInteger default:0', backup_price: 'bigInteger default:0', emergency_cost_price: 'bigInteger default:0', others_income: 'bigInteger default:0', medium_subs_bonus: 'bigInteger default:0', big_subs_bonus: 'bigInteger default:0', legrest_subs_bonus: 'bigInteger default:0', adjusted_income: bigInteger }
     TourReport: { invoice_id: 'unique foreign constrained onDelete:cascade', main_costs: json, other_costs: 'json nullable', customer_repayment: 'bigInteger default:0', difference: 'bigInteger default:0', income_total: 'bigInteger default:0', expense_total: 'bigInteger default:0', defisit_surplus: 'bigInteger default:0', refundable: 'bigInteger default:0' }

@@ -74,10 +74,10 @@ class MeetingCalendarWidget extends FullCalendarWidget
   public function eventDidMount(): string
   {
     return <<<JS
-        function({ event, timeText, isStart, isEnd, isMirror, isPast, isFuture, isToday, el, view }){
-            el.setAttribute("x-tooltip", "tooltip");
-            el.setAttribute("x-data", "{ tooltip: '" + event.title + "' }");
-        }
+      function({ event, timeText, isStart, isEnd, isMirror, isPast, isFuture, isToday, el, view }){
+        el.setAttribute("x-tooltip", "tooltip");
+        el.setAttribute("x-data", "{ tooltip: '" + event.title + "' }");
+      }
     JS;
   }
 }

@@ -32,9 +32,20 @@ class AppServiceProvider extends ServiceProvider
     Carbon::setlocale('id');
     Number::useLocale('id');
 
-    // Unguard model
-    if ((bool) env('UNGUARD_MODEL', false)) {
-      Model::unguard();
-    }
+
+    // Model::unguard();
+
+    // Model::preventLazyLoading();
+
+    // // But in production, log the violation instead of throwing an exception.
+    // if ($this->app->isProduction()) {
+    //   Model::handleLazyLoadingViolationUsing(function ($model, $relation) {
+    //     $class = get_class($model);
+
+    //     info("Attempted to lazy load [{$relation}] on model [{$class}].");
+    //   });
+    // }
+
+    // Model::preventAccessingMissingAttributes();
   }
 }

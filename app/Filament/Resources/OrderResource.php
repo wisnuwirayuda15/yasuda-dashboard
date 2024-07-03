@@ -46,14 +46,11 @@ class OrderResource extends Resource
 
   protected static ?string $navigationIcon = 'heroicon-s-check-badge';
 
+  protected static ?int $navigationSort = 0;
+
   public static function getNavigationGroup(): ?string
   {
-    return NavigationGroupLabel::OPERATIONAL->getLabel();
-  }
-
-  public static function getNavigationBadge(): ?string
-  {
-    return static::getModel()::count();
+    return NavigationGroupLabel::MARKETING->getLabel();
   }
 
   public static function form(Form $form): Form
@@ -68,7 +65,8 @@ class OrderResource extends Resource
           ->prefixIcon(fn() => CustomerResource::getNavigationIcon()),
         Select::make('regency_id')
           ->required()
-          ->relationship('regency', 'name'),
+          ->relationship('regency', 'name')
+          ->columnSpan(fn(string $operation) => in_array($operation, ['create', 'view']) ? 'full' : null),
         Select::make('destinations')
           ->required()
           ->multiple()
@@ -92,33 +90,41 @@ class OrderResource extends Resource
             ->live()
             ->label('Ubah Tanggal Keberangkatan')
             ->visible(fn(Order $record) => $record->trip_date)
-            ->hiddenOn(['create', 'view']),
+            ->hiddenOn(['create', 'view'])
+            ->afterStateUpdated(fn(Order $record, Set $set) => $set('trip_date', $record->trip_date))
+            ->helperText(fn(string $operation) => $operation === 'edit' ? 'Jika diubah, semua jadwal armada yang sudah diatur untuk order ini akan dihapus.' : null)
+            ->loadingIndicator(),
           DatePicker::make('trip_date')
             ->required()
-            ->live(true)
             ->default(today())
             ->minDate(today())
-            ->disabled(fn(Get $get, $operation) => in_array($operation, ['create', 'createOption', 'createOption.createOption', 'editOption.createOption']) ? false : !$get('change_date'))
-            ->helperText(fn($operation) => in_array($operation, ['edit', 'editOption', 'editOption.editOption', 'createOption.editOption']) ? 'Jika diubah, semua jadwal armada yang sudah diatur untuk order ini akan dihapus.' : false)
-            ->hint(fn($state) => today()->diffInDays($state) . ' hari sebelum keberangkatan')
-            ->afterStateUpdated(fn(Set $set) => $set('order_fleet_ids', [])),
-        ]),
+            ->disabled(fn(Get $get, string $operation) => $operation === 'create' ? false : !$get('change_date'))
+            ->columnSpan(fn(string $operation) => in_array($operation, ['create', 'view']) ? 'full' : null)
+            ->helperText(function (?string $state) {
+              $diff = today()->diffInDays($state);
+              return $diff === 0
+                ? 'Berangkat hari ini'
+                : "{$diff} hari sebelum keberangkatan";
+            })
+            ->afterStateUpdated(fn(Set $set) => $set('order_fleet_ids', []))
+            ->loadingIndicator(),
+        ])->columns(2)
+          ->columnSpanFull(),
         Section::make('Jadwal Armada yang Tersedia')
-          ->hiddenOn(['edit', 'editOption', 'editOption.editOption', 'createOption.editOption'])
+          ->hiddenOn(['edit', 'view'])
           ->schema([
             CheckboxList::make('order_fleet_ids')
               ->hiddenLabel()
               ->columns(2)
               ->options(function (Get $get) {
-                $orderFleets = OrderFleet::whereDate('trip_date', $get('trip_date'))
+                return OrderFleet::whereDate('trip_date', $get('trip_date'))
                   ->doesntHave('order')
                   ->with('fleet')
                   ->get()
-                  ->mapWithKeys(function ($orderFleet) {
+                  ->mapWithKeys(function (OrderFleet $orderFleet) {
                     return [$orderFleet->id => "{$orderFleet->code} • {$orderFleet->fleet->name} • {$orderFleet->fleet->seat_set->getLabel()}"];
                   })
                   ->toArray();
-                return $orderFleets;
               }),
           ]),
         RichEditor::make('description')

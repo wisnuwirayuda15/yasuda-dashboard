@@ -11,12 +11,12 @@ use Illuminate\Support\Facades\Storage;
 use Filament\Models\Contracts\HasAvatar;
 use Illuminate\Notifications\Notifiable;
 use Filament\Models\Contracts\FilamentUser;
-use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Jeffgreco13\FilamentBreezy\Traits\TwoFactorAuthenticatable;
 
-class User extends Authenticatable implements HasAvatar, HasName, FilamentUser
+class User extends Authenticatable implements HasAvatar, HasName, FilamentUser, MustVerifyEmail
 {
   use HasRoles, HasApiTokens, HasFactory, Notifiable, TwoFactorAuthenticatable;
 
@@ -27,7 +27,7 @@ class User extends Authenticatable implements HasAvatar, HasName, FilamentUser
     if ($this->employable?->photo) {
       $photo = $this->employable?->photo;
       return str_starts_with($photo, 'http') ? $photo : Storage::url($photo);
-    } 
+    }
 
     return null;
   }
@@ -41,6 +41,14 @@ class User extends Authenticatable implements HasAvatar, HasName, FilamentUser
   {
     return $this->employable?->name ?? $this->name;
   }
+
+  public function unverify()
+  {
+    $this->email_verified_at = null;
+
+    $this->save();
+  }
+
 
   /**
    * The attributes that are mass assignable.
