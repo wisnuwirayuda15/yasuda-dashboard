@@ -43,7 +43,7 @@ class DestinationResource extends Resource
           ->maxLength(255),
         PhoneInput::make('marketing_phone')
           ->required()
-          ->idDefaultFormat(),
+          ->indonesian(),
         TextInput::make('weekday_price')
           ->required()
           ->default(0)

@@ -170,7 +170,7 @@ class MacroServiceProvider extends ServiceProvider
       return $this;
     });
 
-    PhoneInput::macro('idDefaultFormat', function (): static {
+    PhoneInput::macro('indonesian', function (): static {
       $this
         ->defaultCountry('ID')
         ->initialCountry('id')

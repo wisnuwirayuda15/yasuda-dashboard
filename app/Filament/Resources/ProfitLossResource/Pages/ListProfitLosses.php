@@ -21,4 +21,10 @@ class ListProfitLosses extends ListRecords
         ->url(InvoiceResource::getUrl('index')),
     ];
   }
+
+  public function setPage($page, $pageName = 'page'): void
+  {
+    parent::setPage($page, $pageName);
+    $this->dispatch(\App\Enums\JavascriptEvent::SCROLL_TO_TOP->value);
+  }
 }

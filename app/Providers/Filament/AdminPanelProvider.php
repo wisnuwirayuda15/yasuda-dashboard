@@ -10,6 +10,7 @@ use Filament\Pages\Page;
 use Filament\Tables\Table;
 use Filament\PanelProvider;
 use App\Enums\CustomPlatform;
+use App\Enums\JavascriptEvent;
 use App\Filament\Pages\Dashboard;
 use App\Filament\Pages\Auth\Login;
 use Filament\Support\Colors\Color;
@@ -71,10 +72,15 @@ class AdminPanelProvider extends PanelProvider
     // Register scroll to top event
     FilamentView::registerRenderHook(
       PanelsRenderHook::SCRIPTS_AFTER,
-      fn(): string => new HtmlString(<<<HTML
-        <script>document.addEventListener('scroll-to-top', () => window.scrollTo(0, 0))</script>
-      HTML
-      ),
+      function (): string {
+        $event = JavascriptEvent::SCROLL_TO_TOP->value;
+
+        $js = new HtmlString(<<<HTML
+          <script>document.addEventListener('{$event}', () => window.scrollTo(0, 0))</script>
+        HTML);
+
+        return $js;
+      }
     );
 
     // Sending validation notifications

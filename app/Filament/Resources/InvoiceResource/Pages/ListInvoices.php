@@ -18,4 +18,10 @@ class ListInvoices extends ListRecords
         ->disabled(fn() => Order::doesntHave('invoice')->has('orderFleets')->count() === 0),
     ];
   }
+
+  public function setPage($page, $pageName = 'page'): void
+  {
+    parent::setPage($page, $pageName);
+    $this->dispatch(\App\Enums\JavascriptEvent::SCROLL_TO_TOP->value);
+  }
 }

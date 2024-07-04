@@ -22,6 +22,12 @@ class ListDestinations extends ListRecords
     ];
   }
 
+  public function setPage($page, $pageName = 'page'): void
+  {
+    parent::setPage($page, $pageName);
+    $this->dispatch(\App\Enums\JavascriptEvent::SCROLL_TO_TOP->value);
+  }
+
   public function getTabs(): array
   {
     $array = [

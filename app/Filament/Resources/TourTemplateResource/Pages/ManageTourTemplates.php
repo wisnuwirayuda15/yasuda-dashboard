@@ -8,12 +8,18 @@ use Filament\Resources\Pages\ManageRecords;
 
 class ManageTourTemplates extends ManageRecords
 {
-    protected static string $resource = TourTemplateResource::class;
+  protected static string $resource = TourTemplateResource::class;
 
-    protected function getHeaderActions(): array
-    {
-        return [
-            Actions\CreateAction::make(),
-        ];
-    }
+  protected function getHeaderActions(): array
+  {
+    return [
+      Actions\CreateAction::make(),
+    ];
+  }
+
+  public function setPage($page, $pageName = 'page'): void
+  {
+    parent::setPage($page, $pageName);
+    $this->dispatch(\App\Enums\JavascriptEvent::SCROLL_TO_TOP->value);
+  }
 }

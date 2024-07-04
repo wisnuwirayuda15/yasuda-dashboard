@@ -220,7 +220,7 @@ class CustomerResource extends Resource
           ->maxLength(255),
         PhoneInput::make('phone')
           ->required()
-          ->idDefaultFormat(),
+          ->indonesian(),
         TextInput::make('email')
           ->email()
           ->maxLength(255),

@@ -113,7 +113,7 @@ class ViewShirt extends ViewRecord
             ->required()
             ->label('Nomor Vendor')
             ->default(env('SHIRT_VENDOR_PHONE'))
-            ->idDefaultFormat(),
+            ->indonesian(),
         ])
         ->label('Kirim')
         ->tooltip('Kirim informasi baju kepada vendor via WhatsApp')

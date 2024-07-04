@@ -91,7 +91,7 @@ class FleetResource extends Resource
           ->maxLength(255),
         PhoneInput::make('pic_phone')
           ->required()
-          ->idDefaultFormat(),
+          ->indonesian(),
       ]);
   }
 

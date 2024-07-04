@@ -20,6 +20,6 @@ class ListOrderFleets extends ListRecords
   public function setPage($page, $pageName = 'page'): void
   {
     parent::setPage($page, $pageName);
-    $this->dispatch('scroll-to-top');
+    $this->dispatch(\App\Enums\JavascriptEvent::SCROLL_TO_TOP->value);
   }
 }

@@ -84,7 +84,7 @@ class EmployeeResource extends Resource
               ->maxLength(255),
             PhoneInput::make('phone')
               ->unique(ignoreRecord: true)
-              ->idDefaultFormat(),
+              ->indonesian(),
           ]),
         Grid::make()
           ->columnSpan(1)
