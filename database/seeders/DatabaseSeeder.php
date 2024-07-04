@@ -5,9 +5,7 @@ namespace Database\Seeders;
 use App\Models\User;
 use App\Models\Company;
 use Illuminate\Database\Seeder;
-use Database\Seeders\FleetSeeder;
 use Illuminate\Support\Facades\Hash;
-use Database\Seeders\DestinationSeeder;
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 
 class DatabaseSeeder extends Seeder
@@ -33,6 +31,7 @@ class DatabaseSeeder extends Seeder
       OrderSeeder::class,
       OrderFleetSeeder::class,
       EmployeeSeeder::class,
+      EventSeeder::class,
     ]);
   }
 }

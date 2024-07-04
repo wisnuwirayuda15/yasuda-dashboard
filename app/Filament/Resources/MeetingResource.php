@@ -80,6 +80,11 @@ class MeetingResource extends Resource
           ->sortable()
           ->toggleable(isToggledHiddenByDefault: true),
       ])
+      ->bulkActions([
+        Tables\Actions\BulkActionGroup::make([
+          Tables\Actions\DeleteBulkAction::make(),
+        ])
+      ])
     ;
   }
 
