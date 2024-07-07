@@ -8,6 +8,7 @@ use Filament\Tables;
 use App\Models\Invoice;
 use Filament\Forms\Get;
 use Filament\Forms\Set;
+use Livewire\Component;
 use Filament\Forms\Form;
 use App\Models\TourReport;
 use Filament\Tables\Table;
@@ -17,8 +18,8 @@ use App\Enums\DestinationType;
 use Filament\Resources\Resource;
 use Awcodes\TableRepeater\Header;
 use App\Enums\NavigationGroupLabel;
-use App\Filament\Exports\TourReportExporter;
 use Filament\Forms\Components\Tabs;
+use Filament\Tables\Filters\Filter;
 use Filament\Support\Enums\MaxWidth;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Select;
@@ -33,9 +34,12 @@ use Filament\Forms\Components\TextInput;
 use Filament\Tables\Actions\ExportAction;
 use Illuminate\Database\Eloquent\Builder;
 use Filament\Forms\Components\Placeholder;
+use App\Filament\Exports\TourReportExporter;
 use Awcodes\TableRepeater\Components\TableRepeater;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use App\Filament\Resources\TourReportResource\Pages;
+use EightyNine\Approvals\Tables\Actions\ApprovalActions;
+use EightyNine\Approvals\Tables\Columns\ApprovalStatusColumn;
 use App\Filament\Resources\TourReportResource\RelationManagers;
 
 class TourReportResource extends Resource
@@ -45,6 +49,11 @@ class TourReportResource extends Resource
   protected static ?string $navigationIcon = 'heroicon-s-document-check';
 
   protected static ?Invoice $invoice = null;
+
+  public static function getLabel(): string
+  {
+    return __('navigation.label.' . static::getSlug());
+  }
 
   public static function getNavigationGroup(): ?string
   {
@@ -106,6 +115,9 @@ class TourReportResource extends Resource
         TextColumn::make('updated_at')
           ->dateTime()
           ->sortable(),
+        ApprovalStatusColumn::make('approvalStatus.status')
+          ->label('Approval Status')
+          ->sortable(),
       ])
       ->headerActions([
         ExportAction::make()
@@ -115,19 +127,24 @@ class TourReportResource extends Resource
           ->label('Export')
           ->color('success')
       ])
-      ->actions([
-        Tables\Actions\ActionGroup::make([
-          Tables\Actions\ViewAction::make()
-            ->modalWidth(MaxWidth::MaxContent),
-          Tables\Actions\EditAction::make()
-            ->modalWidth(MaxWidth::MaxContent),
-          Tables\Actions\DeleteAction::make()
-            ->action(function (TourReport $record, $livewire) {
-              $record->delete();
-              $livewire->js('location.reload();');
-            }),
-        ]),
-      ]);
+      ->filters([
+        Filter::make('approved')->approval(),
+      ])
+      ->actions(
+        ApprovalActions::make([
+          Tables\Actions\ActionGroup::make([
+            Tables\Actions\ViewAction::make()
+              ->modalWidth(MaxWidth::MaxContent),
+            Tables\Actions\EditAction::make()
+              ->modalWidth(MaxWidth::MaxContent),
+            Tables\Actions\DeleteAction::make()
+              ->action(function (TourReport $record, Component $livewire) {
+                $record->delete();
+                $livewire->js('location.reload();');
+              }),
+          ]),
+        ])
+      );
   }
 
   public static function getRelations(): array

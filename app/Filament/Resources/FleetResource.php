@@ -14,20 +14,28 @@ use App\Enums\MediumFleetSeat;
 use App\Enums\LegrestFleetSeat;
 use Filament\Resources\Resource;
 use App\Enums\NavigationGroupLabel;
+use Filament\Tables\Filters\Filter;
 use App\Filament\Exports\FleetExporter;
+use Filament\Tables\Actions\EditAction;
+use Filament\Tables\Actions\ViewAction;
 use Filament\Tables\Columns\TextColumn;
 use Illuminate\Database\Eloquent\Model;
 use Filament\Forms\Components\TextInput;
+use Filament\Tables\Actions\ActionGroup;
 use Filament\Tables\Columns\ImageColumn;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\RichEditor;
+use Filament\Tables\Actions\DeleteAction;
 use Filament\Tables\Actions\ExportAction;
+use Illuminate\Database\Eloquent\Builder;
 use Filament\Forms\Components\ToggleButtons;
 use App\Filament\Resources\FleetResource\Pages;
 use Ysfkaya\FilamentPhoneInput\Forms\PhoneInput;
 use Ysfkaya\FilamentPhoneInput\Tables\PhoneColumn;
 use Ysfkaya\FilamentPhoneInput\PhoneInputNumberType;
+use EightyNine\Approvals\Tables\Actions\ApprovalActions;
 use App\Filament\Resources\FleetResource\RelationManagers;
+use EightyNine\Approvals\Tables\Columns\ApprovalStatusColumn;
 
 class FleetResource extends Resource
 {
@@ -36,6 +44,11 @@ class FleetResource extends Resource
   protected static ?string $navigationIcon = 'fas-bus';
 
   protected static ?string $recordTitleAttribute = 'name';
+
+  public static function getLabel(): string
+  {
+    return __('navigation.label.' . static::getSlug());
+  }
 
   public static function getNavigationGroup(): ?string
   {
@@ -63,7 +76,8 @@ class FleetResource extends Resource
           ->columnSpanFull(),
         TextInput::make('name')
           ->required()
-          ->maxLength(255),
+          ->maxLength(255)
+          ->columnSpanFull(),
         RichEditor::make('description')
           ->required()
           ->columnSpanFull(),
@@ -121,8 +135,12 @@ class FleetResource extends Resource
           ->dateTime()
           ->sortable()
           ->toggleable(isToggledHiddenByDefault: true),
+        ApprovalStatusColumn::make('approvalStatus.status')
+          ->label('Approval Status')
+          ->sortable(),
       ])
       ->filters([
+        Filter::make('approved')->approval(),
       ])
       ->headerActions([
         ExportAction::make()
@@ -131,16 +149,15 @@ class FleetResource extends Resource
           ->label('Export')
           ->color('success')
       ])
-      ->actions([
-        Tables\Actions\ActionGroup::make([
-          Tables\Actions\ViewAction::make(),
-          Tables\Actions\EditAction::make(),
-          Tables\Actions\DeleteAction::make(),
-          Tables\Actions\ReplicateAction::make()
-            ->color('warning')
-            ->modal(false)
-        ]),
-      ]);
+      ->actions(
+        ApprovalActions::make([
+          ActionGroup::make([
+            ViewAction::make(),
+            EditAction::make(),
+            DeleteAction::make(),
+          ]),
+        ])
+      );
   }
 
   public static function getRelations(): array

@@ -10,10 +10,16 @@ use App\Enums\DestinationType;
 use Filament\Resources\Resource;
 use App\Enums\NavigationGroupLabel;
 use Filament\Forms\Components\Select;
+use Filament\Tables\Actions\EditAction;
+use Filament\Tables\Actions\ViewAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Forms\Components\TextInput;
+use Filament\Tables\Actions\ActionGroup;
+use Filament\Tables\Actions\DeleteAction;
 use Ysfkaya\FilamentPhoneInput\Forms\PhoneInput;
 use App\Filament\Resources\DestinationResource\Pages;
+use EightyNine\Approvals\Tables\Actions\ApprovalActions;
+use EightyNine\Approvals\Tables\Columns\ApprovalStatusColumn;
 use App\Filament\Resources\DestinationResource\RelationManagers;
 
 class DestinationResource extends Resource
@@ -21,6 +27,11 @@ class DestinationResource extends Resource
   protected static ?string $model = Destination::class;
 
   protected static ?string $navigationIcon = 'fas-map-location-dot';
+
+  public static function getLabel(): string
+  {
+    return __('navigation.label.' . static::getSlug());
+  }
 
   public static function getNavigationGroup(): ?string
   {
@@ -91,9 +102,19 @@ class DestinationResource extends Resource
           ->dateTime()
           ->sortable()
           ->toggleable(isToggledHiddenByDefault: true),
+        ApprovalStatusColumn::make('approvalStatus.status')
+          ->label('Approval Status')
+          ->sortable(),
       ])
-      ->filters([
-      ]);
+      ->actions(
+        ApprovalActions::make([
+          ActionGroup::make([
+            ViewAction::make(),
+            EditAction::make(),
+            DeleteAction::make(),
+          ])
+        ]),
+      );
   }
 
   public static function getRelations(): array

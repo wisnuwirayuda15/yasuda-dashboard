@@ -40,6 +40,11 @@ class CustomerResource extends Resource
 
   protected static ?string $recordTitleAttribute = 'name';
 
+  public static function getLabel(): string
+  {
+    return __('navigation.label.' . static::getSlug());
+  }
+
   public static function getNavigationGroup(): ?string
   {
     return NavigationGroupLabel::MASTER_DATA->getLabel();

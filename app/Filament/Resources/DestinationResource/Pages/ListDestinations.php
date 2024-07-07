@@ -8,6 +8,7 @@ use Filament\Resources\Components\Tab;
 use Filament\Resources\Pages\ListRecords;
 use Illuminate\Database\Eloquent\Builder;
 use App\Filament\Resources\DestinationResource;
+use App\Models\Destination;
 
 class ListDestinations extends ListRecords
 {
@@ -35,9 +36,11 @@ class ListDestinations extends ListRecords
     ];
 
     foreach (static::$types::cases() as $type) {
-      $array[$type->value] = Tab::make($type->getLabel())
-        ->icon($type->getIcon())
-        ->modifyQueryUsing(fn(Builder $query) => $query->where('type', $type->value));
+      if (Destination::withoutGlobalScopes()->where('type', $type->value)->exists()) {
+        $array[$type->value] = Tab::make($type->getLabel())
+          ->icon($type->getIcon())
+          ->modifyQueryUsing(fn(Builder $query) => $query->where('type', $type->value));
+      }
     }
 
     return $array;

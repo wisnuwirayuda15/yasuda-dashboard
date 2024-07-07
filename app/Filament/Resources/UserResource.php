@@ -46,6 +46,11 @@ class UserResource extends Resource
 
   protected static ?int $navigationSort = 1;
 
+  public static function getLabel(): string
+  {
+    return __('navigation.label.' . static::getSlug());
+  }
+
   public static function getNavigationGroup(): ?string
   {
     return NavigationGroupLabel::SETTING->getLabel();

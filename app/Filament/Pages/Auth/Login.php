@@ -12,8 +12,8 @@ class Login extends BasePage
 
     if (app()->environment('local')) {
       $this->form->fill([
-        'email' => 'superadmin@yasuda.com',
-        'password' => '12345678',
+        'email' => env('ADMIN_EMAIL', 'admin@example.com'),
+        'password' => env('ADMIN_PASSWORD', '12345678'),
         'remember' => true,
       ]);
     }

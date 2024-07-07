@@ -30,6 +30,11 @@ class LoyaltyPointResource extends Resource
 
   protected static ?string $navigationIcon = 'heroicon-s-star';
 
+  public static function getLabel(): string
+  {
+    return __('navigation.label.' . static::getSlug());
+  }
+
   public static function getNavigationGroup(): ?string
   {
     return NavigationGroupLabel::MARKETING->getLabel();

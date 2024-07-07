@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\User;
 use App\Models\Destination;
 use App\Enums\DestinationType;
 use Illuminate\Database\Seeder;
@@ -16,8 +17,10 @@ class DestinationSeeder extends Seeder
   {
     $types = enum_map(DestinationType::cases());
 
+    $user = User::first();
+
     for ($x = 1; $x <= 100; $x++) {
-      Destination::create([
+      $model = Destination::create([
         'name' => ucwords(fake('en_US')->unique()->streetName()),
         'type' => fake()->randomElement($types),
         'marketing_name' => fake()->name(),
@@ -26,6 +29,8 @@ class DestinationSeeder extends Seeder
         'weekend_price' => (int) round(fake()->numberBetween(31000, 40000), -3),
         'high_season_price' => (int) round(fake()->numberBetween(41000, 50000), -3),
       ]);
+
+      $model->submit($user);
     }
   }
 }

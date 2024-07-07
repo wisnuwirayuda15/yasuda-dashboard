@@ -22,6 +22,6 @@ enum NavigationGroupLabel: string implements HasLabel
 
   public function getLabel(): ?string
   {
-    return __("navigation.{$this->value}");
+    return __("navigation.group.{$this->value}");
   }
 }

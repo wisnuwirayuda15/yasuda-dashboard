@@ -5,6 +5,8 @@ namespace App\Providers;
 use Closure;
 use Filament\Forms\Set;
 use Illuminate\Support\HtmlString;
+use Filament\Tables\Filters\Filter;
+use App\Models\Scopes\ApprovedScope;
 use Filament\Forms\Components\Field;
 use Illuminate\Support\Facades\Hash;
 use Filament\Actions\MountableAction;
@@ -14,6 +16,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\ServiceProvider;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
+use Illuminate\Database\Eloquent\Builder;
 use Rawilk\FilamentPasswordInput\Password;
 use Filament\Forms\Components\Actions\Action;
 use Ysfkaya\FilamentPhoneInput\Forms\PhoneInput;
@@ -167,6 +170,14 @@ class MacroServiceProvider extends ServiceProvider
         ->required()
         ->hiddenOn('view')
         ->label('Semua perhitungan sudah dicek dan tidak ada kesalahan');
+      return $this;
+    });
+
+    Filter::macro('approval', function (): static {
+      $this
+        ->label('Approved')
+        ->query(fn(Builder $query): Builder => ApprovedScope::getQuery($query));
+
       return $this;
     });
 

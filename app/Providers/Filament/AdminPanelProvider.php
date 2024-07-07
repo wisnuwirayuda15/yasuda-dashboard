@@ -16,6 +16,7 @@ use App\Filament\Pages\Auth\Login;
 use Filament\Support\Colors\Color;
 use Illuminate\Support\HtmlString;
 use App\Enums\NavigationGroupLabel;
+use Filament\Tables\Filters\Filter;
 use Filament\View\PanelsRenderHook;
 use Filament\Livewire\Notifications;
 use Filament\Support\Enums\MaxWidth;
@@ -24,12 +25,14 @@ use Filament\Forms\Components\Select;
 use Filament\Support\Enums\Alignment;
 use Filament\Forms\Components\Repeater;
 use Filament\Tables\Columns\TextColumn;
+use EightyNine\Approvals\ApprovalPlugin;
 use Filament\Notifications\Notification;
 use Filament\Tables\Enums\FiltersLayout;
 use App\Filament\Resources\ShirtResource;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\FileUpload;
 use Filament\Tables\Actions\ExportAction;
+use Illuminate\Database\Eloquent\Builder;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Support\Facades\FilamentView;
 use Filament\Tables\Enums\ActionsPosition;
@@ -87,8 +90,9 @@ class AdminPanelProvider extends PanelProvider
     if ((bool) env('VALIDATION_NOTIFICATION', true)) {
       Page::$reportValidationErrorUsing = function (ValidationException $exception) {
         Notification::make()
-          ->title($exception->getMessage())
           ->danger()
+          ->title('Validation Error')
+          ->body($exception->getMessage())
           ->send()
           // ->sendToDatabase(auth()->user())
         ;
@@ -98,9 +102,15 @@ class AdminPanelProvider extends PanelProvider
     // Components global settings
     Table::configureUsing(function (Table $table): void {
       $table
+        ->modifyQueryUsing(fn(Builder $query) => $query->withoutGlobalScopes())
         ->extremePaginationLinks()
         ->paginationPageOptions([5, 10, 15, 20])
-        // ->filters([], FiltersLayout::AboveContentCollapsible)
+        // ->filters(
+        //   [
+        //     Filter::make('approved')->approval(),
+        //   ],
+        //   FiltersLayout::AboveContentCollapsible
+        // )
         ->persistFiltersInSession()
         ->deferFilters()
         ->filtersTriggerAction(
@@ -120,7 +130,7 @@ class AdminPanelProvider extends PanelProvider
             TableEditAction::make(),
             TableDeleteAction::make(),
           ])->tooltip('Actions'),
-        ], ActionsPosition::BeforeColumns);
+        ], ActionsPosition::AfterColumns);
     });
 
     Select::configureUsing(function (Select $select): void {
@@ -266,15 +276,19 @@ class AdminPanelProvider extends PanelProvider
         Authenticate::class,
       ])
       ->plugins([
+        ApprovalPlugin::make(),
+        FilamentProgressbarPlugin::make(),
+        FilamentFullCalendarPlugin::make()
+          ->selectable(true)
+          ->editable(true),
+        VersionsPlugin::make()
+          ->hasNavigationView(false)
+          ->widgetColumnSpan('full'),
         FilamentShieldPlugin::make()
           ->gridColumns(2)
           ->sectionColumnSpan(1)
           ->checkboxListColumns(2)
           ->resourceCheckboxListColumns(2),
-        FilamentProgressbarPlugin::make(),
-        VersionsPlugin::make()
-          ->hasNavigationView(false)
-          ->widgetColumnSpan('full'),
         BreezyCore::make()
           ->enableTwoFactorAuthentication()
           ->avatarUploadComponent(fn() =>
@@ -311,9 +325,6 @@ class AdminPanelProvider extends PanelProvider
             TourReportResource::class,
             ShirtResource::class,
           ]),
-        FilamentFullCalendarPlugin::make()
-          ->selectable(true)
-          ->editable(true),
       ]);
   }
 }

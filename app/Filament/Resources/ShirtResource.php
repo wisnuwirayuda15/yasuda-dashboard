@@ -46,6 +46,11 @@ class ShirtResource extends Resource
 
   protected static ?int $totalShirt = null;
 
+  public static function getLabel(): string
+  {
+    return __('navigation.label.' . static::getSlug());
+  }
+
   public static function getNavigationGroup(): ?string
   {
     return NavigationGroupLabel::OPERATIONAL->getLabel();

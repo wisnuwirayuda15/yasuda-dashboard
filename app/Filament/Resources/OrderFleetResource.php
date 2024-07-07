@@ -27,6 +27,7 @@ use Filament\Tables\Filters\Filter;
 use Filament\Forms\Components\Group;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Section;
+use Filament\Support\Enums\ActionSize;
 use Filament\Tables\Actions\BulkAction;
 use Filament\Tables\Actions\EditAction;
 use Filament\Tables\Actions\ViewAction;
@@ -46,6 +47,12 @@ use Filament\Tables\Actions\ReplicateAction;
 use Illuminate\Database\Eloquent\Collection;
 use Filament\Tables\Actions\DeleteBulkAction;
 use App\Filament\Resources\OrderFleetResource\Pages;
+use EightyNine\Approvals\Tables\Actions\RejectAction;
+use EightyNine\Approvals\Tables\Actions\SubmitAction;
+use EightyNine\Approvals\Tables\Actions\ApproveAction;
+use EightyNine\Approvals\Tables\Actions\DiscardAction;
+use EightyNine\Approvals\Tables\Actions\ApprovalActions;
+use EightyNine\Approvals\Tables\Columns\ApprovalStatusColumn;
 use App\Filament\Resources\OrderFleetResource\RelationManagers;
 use Malzariey\FilamentDaterangepickerFilter\Filters\DateRangeFilter;
 
@@ -54,6 +61,11 @@ class OrderFleetResource extends Resource
   protected static ?string $model = OrderFleet::class;
 
   protected static ?string $navigationIcon = 'mdi-bus-marker';
+
+  public static function getLabel(): string
+  {
+    return __('navigation.label.' . static::getSlug());
+  }
 
   public static function getNavigationGroup(): ?string
   {
@@ -121,13 +133,15 @@ class OrderFleetResource extends Resource
         TextColumn::make('order.customer.name')
           ->sortable()
           ->placeholder('No customer')
-          ->tooltip(fn(OrderFleet $record) => ($record->order_id ? 'Change' : 'Select') . ' order')
-          ->action(static::getSelectOrderAction()),
+        // ->tooltip(fn(OrderFleet $record) => ($record->order_id ? 'Change' : 'Select') . ' order')
+        // ->action(static::getSelectOrderAction())
+        ,
         TextColumn::make('employee.name')
           ->sortable()
           ->placeholder('No tour leader')
-          ->tooltip(fn(OrderFleet $record) => ($record->employee_id ? 'Change' : 'Select') . ' tour leader')
-          ->action(static::getSelectTourLeaderAction()),
+        // ->tooltip(fn(OrderFleet $record) => ($record->employee_id ? 'Change' : 'Select') . ' tour leader')
+        // ->action(static::getSelectTourLeaderAction())
+        ,
         TextColumn::make('trip_date')
           ->date()
           ->formatStateUsing(fn(Carbon $state): string => $state->translatedFormat('d/m/Y')),
@@ -206,6 +220,9 @@ class OrderFleetResource extends Resource
           ->dateTime()
           ->sortable()
           ->toggleable(isToggledHiddenByDefault: true),
+        ApprovalStatusColumn::make('approvalStatus.status')
+          ->label('Approval Status')
+          ->sortable(),
       ])
       ->filters([
         DateRangeFilter::make('trip_date')
@@ -216,6 +233,7 @@ class OrderFleetResource extends Resource
         Filter::make('has_tour_leader')
           ->label('Sudah terdapat tour leader')
           ->query(fn(Builder $query): Builder => $query->whereHas('employee')),
+        Filter::make('approved')->approval(),
       ])
       ->headerActions([
         ExportAction::make()
@@ -225,6 +243,16 @@ class OrderFleetResource extends Resource
           ->color('success')
       ])
       ->actions([
+        ActionGroup::make([
+          SubmitAction::make(),
+          ApproveAction::make(),
+          DiscardAction::make(),
+          RejectAction::make(),
+        ])->label(__('filament-approvals::approvals.actions.approvals'))
+          ->icon('heroicon-m-ellipsis-vertical')
+          ->size(ActionSize::Small)
+          ->color('primary')
+          ->button(),
         ActionGroup::make([
           ViewAction::make(),
           EditAction::make(),
@@ -243,8 +271,15 @@ class OrderFleetResource extends Resource
           ActionGroup::make([
             static::getDeleteOrderAction(),
             static::getDeleteTourLeaderAction(),
-          ])->dropdown(false)
+          ])->dropdown(false),
         ])
+          ->visible(function (?OrderFleet $record): ?bool {
+            $approved = $record?->isApprovalCompleted();
+            if (blank($approved)) {
+              return true;
+            }
+            return (bool) $approved;
+          })
       ])
       ->bulkActions([
         BulkActionGroup::make([

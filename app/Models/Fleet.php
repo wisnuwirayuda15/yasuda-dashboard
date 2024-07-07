@@ -4,11 +4,16 @@ namespace App\Models;
 
 use App\Enums\FleetSeat;
 use App\Enums\FleetCategory;
+use App\Models\Scopes\ApprovedScope;
 use Illuminate\Database\Eloquent\Model;
+use EightyNine\Approvals\Models\ApprovableModel;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Attributes\ScopedBy;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
-class Fleet extends Model
+#[ScopedBy([ApprovedScope::class])]
+
+class Fleet extends ApprovableModel
 {
   use HasFactory;
 

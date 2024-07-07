@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\User;
 use App\Models\Fleet;
 use App\Enums\BigFleetSeat;
 use App\Enums\FleetCategory;
@@ -40,6 +41,8 @@ class FleetSeeder extends Seeder
 
     $categories = enum_map(FleetCategory::cases());
 
+    $user = User::first();
+
     foreach ($busses as $bus) {
       $code = fake()->numerify('########');
 
@@ -54,7 +57,7 @@ class FleetSeeder extends Seeder
         default => fake()->randomElement($mediumSeats),
       };
 
-      Fleet::create([
+      $model = Fleet::create([
         'image' => $image,
         'name' => strtoupper($bus),
         'description' => fake()->text(),
@@ -63,6 +66,8 @@ class FleetSeeder extends Seeder
         'pic_name' => fake()->name(),
         'pic_phone' => fake()->numerify('+6281#########'),
       ]);
+
+      $model->submit(user: $user);
     }
   }
 }

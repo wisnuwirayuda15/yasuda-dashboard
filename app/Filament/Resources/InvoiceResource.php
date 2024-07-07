@@ -17,8 +17,8 @@ use Filament\Infolists\Infolist;
 use Filament\Resources\Resource;
 use Awcodes\TableRepeater\Header;
 use App\Enums\NavigationGroupLabel;
-use App\Filament\Exports\InvoiceExporter;
 use Filament\Forms\Components\Tabs;
+use Filament\Tables\Filters\Filter;
 use Illuminate\Contracts\View\View;
 use Filament\Forms\Components\Group;
 use Filament\Support\Enums\MaxWidth;
@@ -34,6 +34,7 @@ use Filament\Tables\Columns\TextColumn;
 use Illuminate\Database\Eloquent\Model;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
+use App\Filament\Exports\InvoiceExporter;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\RichEditor;
 use Filament\Tables\Actions\ExportAction;
@@ -45,6 +46,8 @@ use Filament\Forms\Components\Actions\Action;
 use App\Filament\Resources\InvoiceResource\Pages;
 use Awcodes\TableRepeater\Components\TableRepeater;
 use Filament\Resources\RelationManagers\RelationGroup;
+use EightyNine\Approvals\Tables\Actions\ApprovalActions;
+use EightyNine\Approvals\Tables\Columns\ApprovalStatusColumn;
 use App\Filament\Resources\InvoiceResource\RelationManagers\ProfitLossRelationManager;
 use App\Filament\Resources\InvoiceResource\RelationManagers\TourReportRelationManager;
 
@@ -55,6 +58,11 @@ class InvoiceResource extends Resource
   protected static ?string $navigationIcon = 'fas-file-invoice';
 
   protected static ?Order $order = null;
+
+  public static function getLabel(): string
+  {
+    return __('navigation.label.' . static::getSlug());
+  }
 
   public static function getNavigationGroup(): ?string
   {
@@ -99,6 +107,9 @@ class InvoiceResource extends Resource
           ->dateTime()
           ->sortable()
           ->toggleable(isToggledHiddenByDefault: true),
+        ApprovalStatusColumn::make('approvalStatus.status')
+          ->label('Approval Status')
+          ->sortable(),
       ])
       ->headerActions([
         ExportAction::make()
@@ -107,36 +118,41 @@ class InvoiceResource extends Resource
           ->label('Export')
           ->color('success')
       ])
-      ->actions([
-        Tables\Actions\ActionGroup::make([
-          Tables\Actions\ViewAction::make()
-            ->modalWidth(MaxWidth::MaxContent),
-          Tables\Actions\EditAction::make(),
-          Tables\Actions\DeleteAction::make(),
-          Tables\Actions\Action::make('export_pdf')
-            ->label('Export to PDF')
-            ->color('danger')
-            ->icon('tabler-pdf')
-            ->url(fn(Invoice $record) => route('generate.invoice', $record->code), true),
-          Tables\Actions\Action::make('tour_report')
-            ->icon(TourReportResource::getNavigationIcon())
-            ->color('warning')
-            ->label(function (Invoice $record): string {
-              return ($record->tourReport()->exists() ? 'Lihat' : 'Buat') . ' Tour Report';
-            })
-            ->visible(function (Invoice $record): bool {
-              return (bool) $record->profitLoss()->exists();
-            })
-            ->hidden(function (Invoice $record): bool {
-              return $record->order()->whereHas('orderFleets', function (Builder $query) {
-                $query->whereNull('employee_id');
-              })->exists();
-            })
-            ->url(function (Invoice $record): string {
-              return $record->tourReport()->exists() ? TourReportResource::getUrl('view', ['record' => $record->tourReport->id]) : TourReportResource::getUrl('create', ['invoice' => $record->code]);
-            })
+      ->filters([
+        Filter::make('approved')->approval(),
+      ])
+      ->actions(
+        ApprovalActions::make([
+          Tables\Actions\ActionGroup::make([
+            Tables\Actions\ViewAction::make()
+              ->modalWidth(MaxWidth::MaxContent),
+            Tables\Actions\EditAction::make(),
+            Tables\Actions\DeleteAction::make(),
+            Tables\Actions\Action::make('export_pdf')
+              ->label('Export to PDF')
+              ->color('danger')
+              ->icon('tabler-pdf')
+              ->url(fn(Invoice $record) => route('generate.invoice', $record->code), true),
+            Tables\Actions\Action::make('tour_report')
+              ->icon(TourReportResource::getNavigationIcon())
+              ->color('warning')
+              ->label(function (Invoice $record): string {
+                return ($record->tourReport()->exists() ? 'Lihat' : 'Buat') . ' Tour Report';
+              })
+              ->visible(function (Invoice $record): bool {
+                return (bool) $record->profitLoss()->exists();
+              })
+              ->hidden(function (Invoice $record): bool {
+                return $record->order()->whereHas('orderFleets', function (Builder $query) {
+                  $query->whereNull('employee_id');
+                })->exists();
+              })
+              ->url(function (Invoice $record): string {
+                return $record->tourReport()->exists() ? TourReportResource::getUrl('view', ['record' => $record->tourReport->id]) : TourReportResource::getUrl('create', ['invoice' => $record->code]);
+              })
+          ])
         ])
-      ]);
+      );
   }
 
   public static function infolist(Infolist $infolist): Infolist

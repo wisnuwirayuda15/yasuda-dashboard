@@ -3,11 +3,16 @@
 namespace App\Models;
 
 use App\Enums\FleetPaymentStatus;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Models\Scopes\ApprovedScope;
 use Illuminate\Database\Eloquent\Model;
+use EightyNine\Approvals\Models\ApprovableModel;
+use Illuminate\Database\Eloquent\Attributes\ScopedBy;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
-class OrderFleet extends Model
+#[ScopedBy([ApprovedScope::class])]
+
+class OrderFleet extends ApprovableModel
 {
   use HasFactory;
 

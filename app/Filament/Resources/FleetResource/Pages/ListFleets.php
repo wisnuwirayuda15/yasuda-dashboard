@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\FleetResource\Pages;
 
+use App\Models\Fleet;
 use Filament\Actions;
 use App\Enums\FleetCategory;
 use Filament\Resources\Components\Tab;
@@ -35,9 +36,11 @@ class ListFleets extends ListRecords
     ];
 
     foreach (static::$categories::cases() as $category) {
-      $array[$category->value] = Tab::make($category->getLabel())
-        ->icon($category->getIcon())
-        ->modifyQueryUsing(fn(Builder $query) => $query->where('category', $category->value));
+      if (Fleet::withoutGlobalScopes()->where('category', $category->value)->exists()) {
+        $array[$category->value] = Tab::make($category->getLabel())
+          ->icon($category->getIcon())
+          ->modifyQueryUsing(fn(Builder $query) => $query->where('category', $category->value));
+      }
     }
 
     return $array;

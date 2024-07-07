@@ -16,6 +16,7 @@ use App\Models\TourTemplate;
 use App\Enums\CustomerStatus;
 use Filament\Resources\Resource;
 use App\Enums\NavigationGroupLabel;
+use Filament\Tables\Filters\Filter;
 use Filament\Forms\Components\Group;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Toggle;
@@ -23,6 +24,7 @@ use Filament\Forms\Components\Section;
 use App\Filament\Exports\OrderExporter;
 use Filament\Tables\Actions\EditAction;
 use Filament\Tables\Actions\ViewAction;
+use Filament\Tables\Columns\TextColumn;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
 use Filament\Tables\Actions\ActionGroup;
@@ -38,7 +40,9 @@ use Filament\Forms\Components\Actions\Action;
 use Filament\Tables\Actions\DeleteBulkAction;
 use App\Filament\Resources\OrderResource\Pages;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use EightyNine\Approvals\Tables\Actions\ApprovalActions;
 use App\Filament\Resources\OrderResource\RelationManagers;
+use EightyNine\Approvals\Tables\Columns\ApprovalStatusColumn;
 
 class OrderResource extends Resource
 {
@@ -47,6 +51,11 @@ class OrderResource extends Resource
   protected static ?string $navigationIcon = 'heroicon-s-check-badge';
 
   protected static ?int $navigationSort = 0;
+
+  public static function getLabel(): string
+  {
+    return __('navigation.label.' . static::getSlug());
+  }
 
   public static function getNavigationGroup(): ?string
   {
@@ -138,31 +147,34 @@ class OrderResource extends Resource
 
     return $table
       ->columns([
-        Tables\Columns\TextColumn::make('code')
+        TextColumn::make('code')
           ->badge()
           ->sortable()
           ->searchable(),
-        Tables\Columns\TextColumn::make('customer.name')
+        TextColumn::make('customer.name')
           ->numeric()
           ->sortable(),
-        Tables\Columns\TextColumn::make('trip_date')
+        TextColumn::make('trip_date')
           ->date()
           ->sortable()
           ->formatStateUsing(fn(Carbon $state): string => $state->translatedFormat('d/m/Y')),
-        Tables\Columns\TextColumn::make('regency.name')
+        TextColumn::make('regency.name')
           ->label('Kota')
           ->searchable(),
-        Tables\Columns\TextColumn::make('destinations')
+        TextColumn::make('destinations')
           ->badge()
-          ->formatStateUsing(fn(string $state): string => $destination->find($state)->name),
-        Tables\Columns\TextColumn::make('created_at')
+          ->formatStateUsing(fn(?string $state): ?string => $destination->find($state)?->name),
+        TextColumn::make('created_at')
           ->dateTime()
           ->sortable()
           ->toggleable(isToggledHiddenByDefault: true),
-        Tables\Columns\TextColumn::make('updated_at')
+        TextColumn::make('updated_at')
           ->dateTime()
           ->sortable()
           ->toggleable(isToggledHiddenByDefault: true),
+        ApprovalStatusColumn::make('approvalStatus.status')
+          ->label('Approval Status')
+          ->sortable(),
       ])
       ->headerActions([
         ExportAction::make()
@@ -171,26 +183,31 @@ class OrderResource extends Resource
           ->label('Export')
           ->color('success')
       ])
-      ->actions([
-        ActionGroup::make([
-          ViewAction::make(),
-          EditAction::make(),
-          DeleteAction::make()
-            ->before(function (DeleteAction $action, Order $record) {
-              $inv = $record->invoice()->exists();
-              $of = $record->orderFleets()->exists();
-              if ($inv || $of) {
-                Notification::make()
-                  ->danger()
-                  ->title('Failed to delete!')
-                  ->body($inv ? 'Invoice untuk order ini sudah dibuat.' : 'Order sudah dijadwalkan.')
-                  ->persistent()
-                  ->send();
-                $action->cancel();
-              }
-            }),
-        ])
-      ]);
+      ->filters([
+        Filter::make('approved')->approval(),
+      ])
+      ->actions(
+        ApprovalActions::make([
+          ActionGroup::make([
+            ViewAction::make(),
+            EditAction::make(),
+            DeleteAction::make()
+              ->before(function (DeleteAction $action, Order $record) {
+                $inv = $record->invoice()->exists();
+                $of = $record->orderFleets()->exists();
+                if ($inv || $of) {
+                  Notification::make()
+                    ->danger()
+                    ->title('Failed to delete!')
+                    ->body($inv ? 'Invoice untuk order ini sudah dibuat.' : 'Order sudah dijadwalkan.')
+                    ->persistent()
+                    ->send();
+                  $action->cancel();
+                }
+              }),
+          ])
+        ]),
+      );
   }
 
   public static function getRelations(): array

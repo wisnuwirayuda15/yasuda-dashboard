@@ -8,6 +8,7 @@ use Filament\Tables;
 use App\Models\Invoice;
 use Filament\Forms\Get;
 use Filament\Forms\Set;
+use Livewire\Component;
 use Filament\Forms\Form;
 use App\Models\ProfitLoss;
 use Filament\Tables\Table;
@@ -19,6 +20,7 @@ use App\Enums\ProfitLossStatus;
 use Filament\Resources\Resource;
 use App\Enums\NavigationGroupLabel;
 use Filament\Forms\Components\Tabs;
+use Filament\Tables\Filters\Filter;
 use Filament\Forms\Components\Group;
 use Filament\Support\Enums\MaxWidth;
 use Filament\Forms\Components\Hidden;
@@ -38,6 +40,8 @@ use App\Filament\Exports\ProfitLossExporter;
 use Filament\Forms\Components\ToggleButtons;
 use Filament\Forms\Components\Actions\Action;
 use App\Filament\Resources\ProfitLossResource\Pages;
+use EightyNine\Approvals\Tables\Actions\ApprovalActions;
+use EightyNine\Approvals\Tables\Columns\ApprovalStatusColumn;
 use App\Filament\Resources\ProfitLossResource\RelationManagers;
 
 class ProfitLossResource extends Resource
@@ -46,7 +50,12 @@ class ProfitLossResource extends Resource
 
   protected static ?string $navigationIcon = 'gmdi-attach-money-o';
 
-  protected static ?Invoice $invoice;
+  protected static ?Invoice $invoice = null;
+
+  public static function getLabel(): string
+  {
+    return __('navigation.label.' . static::getSlug());
+  }
 
   public static function getNavigationGroup(): ?string
   {
@@ -118,9 +127,12 @@ class ProfitLossResource extends Resource
           ->dateTime()
           ->sortable()
           ->toggleable(isToggledHiddenByDefault: true),
+        ApprovalStatusColumn::make('approvalStatus.status')
+          ->label('Approval Status')
+          ->sortable(),
       ])
       ->filters([
-        // 
+        Filter::make('approved')->approval(),
       ])
       ->headerActions([
         ExportAction::make()
@@ -130,31 +142,33 @@ class ProfitLossResource extends Resource
           ->label('Export')
           ->color('success')
       ])
-      ->actions([
-        Tables\Actions\ActionGroup::make([
-          Tables\Actions\ViewAction::make()
-            ->modalWidth(MaxWidth::MaxContent),
-          Tables\Actions\EditAction::make()
-            ->modalWidth(MaxWidth::MaxContent),
-          Tables\Actions\DeleteAction::make()
-            ->modalHeading('Delete Profit & Loss Analysis')
-            // ->modalDescription(fn(ProfitLoss $record): string => $record->invoice->tourReport ? $record->invoice->code . ' sudah memiliki tour report. Jika anda menghapusnya, tour reportnya akan di hapus juga.' : 'Are you sure you would like to do this?')
-            ->action(function (ProfitLoss $record, $livewire, Tables\Actions\DeleteAction $action) {
-              $tourReport = $record->invoice->tourReport;
-              // $tourReport ? $tourReport->delete() : null;
-              if ($tourReport) {
-                Notification::make()
-                  ->danger()
-                  ->title('Delete failed')
-                  ->body("{$record->invoice->code} has Tour Report.")
-                  ->send();
-                $action->cancel();
-              }
-              $record->delete();
-              $livewire->js('location.reload();');
-            }),
-        ]),
-      ]);
+      ->actions(
+        ApprovalActions::make([
+          Tables\Actions\ActionGroup::make([
+            Tables\Actions\ViewAction::make()
+              ->modalWidth(MaxWidth::MaxContent),
+            Tables\Actions\EditAction::make()
+              ->modalWidth(MaxWidth::MaxContent),
+            Tables\Actions\DeleteAction::make()
+              ->modalHeading('Delete Profit & Loss Analysis')
+              // ->modalDescription(fn(ProfitLoss $record): string => $record->invoice->tourReport ? $record->invoice->code . ' sudah memiliki tour report. Jika anda menghapusnya, tour reportnya akan di hapus juga.' : 'Are you sure you would like to do this?')
+              ->action(function (ProfitLoss $record, Component $livewire, Tables\Actions\DeleteAction $action) {
+                $tourReport = $record->invoice->tourReport;
+                // $tourReport ? $tourReport->delete() : null;
+                if ($tourReport) {
+                  Notification::make()
+                    ->danger()
+                    ->title('Delete failed')
+                    ->body("{$record->invoice->code} has Tour Report.")
+                    ->send();
+                  $action->cancel();
+                }
+                $record->delete();
+                $livewire->js('location.reload();');
+              }),
+          ]),
+        ])
+      );
   }
 
   public static function getRelations(): array

@@ -13,23 +13,35 @@ use App\Models\Destination;
 use App\Models\TourTemplate;
 use Filament\Resources\Resource;
 use App\Enums\NavigationGroupLabel;
+use Filament\Tables\Filters\Filter;
 use Filament\Forms\Components\Select;
+use Filament\Tables\Actions\EditAction;
+use Filament\Tables\Actions\ViewAction;
+use Filament\Tables\Columns\TextColumn;
 use Filament\Forms\Components\Component;
 use Filament\Forms\Components\TextInput;
 use Filament\Tables\Actions\ActionGroup;
+use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\RichEditor;
+use Filament\Tables\Actions\DeleteAction;
 use Illuminate\Database\Eloquent\Builder;
 use Filament\Forms\Components\Actions\Action;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use App\Filament\Resources\TourTemplateResource\Pages;
+use EightyNine\Approvals\Tables\Actions\ApprovalActions;
+use EightyNine\Approvals\Tables\Columns\ApprovalStatusColumn;
 use App\Filament\Resources\TourTemplateResource\RelationManagers;
-use Filament\Forms\Components\FileUpload;
-use Filament\Forms\Components\RichEditor;
 
 class TourTemplateResource extends Resource
 {
   protected static ?string $model = TourTemplate::class;
 
   protected static ?string $navigationIcon = 'fontisto-holiday-village';
+
+  public static function getLabel(): string
+  {
+    return __('navigation.label.' . static::getSlug());
+  }
 
   public static function getNavigationGroup(): ?string
   {
@@ -86,27 +98,39 @@ class TourTemplateResource extends Resource
 
     return $table
       ->columns([
-        Tables\Columns\TextColumn::make('name')
+        TextColumn::make('name')
           ->searchable(),
-        Tables\Columns\TextColumn::make('regency.name')
+        TextColumn::make('regency.name')
           ->searchable()
           ->sortable(),
-        Tables\Columns\TextColumn::make('destinations')
+        TextColumn::make('destinations')
           ->badge()
           ->searchable()
           ->formatStateUsing(fn(string $state): string => $destination->find($state)->name),
-        Tables\Columns\TextColumn::make('created_at')
+        TextColumn::make('created_at')
           ->dateTime()
           ->sortable()
           ->toggleable(isToggledHiddenByDefault: true),
-        Tables\Columns\TextColumn::make('updated_at')
+        TextColumn::make('updated_at')
           ->dateTime()
           ->sortable()
           ->toggleable(isToggledHiddenByDefault: true),
+        ApprovalStatusColumn::make('approvalStatus.status')
+          ->label('Approval Status')
+          ->sortable(),
       ])
       ->filters([
-        //
-      ]);
+        Filter::make('approved')->approval(),
+      ])
+      ->actions(
+        ApprovalActions::make([
+          ActionGroup::make([
+            ViewAction::make(),
+            EditAction::make(),
+            DeleteAction::make(),
+          ]),
+        ])
+      );
   }
 
   public static function getPages(): array

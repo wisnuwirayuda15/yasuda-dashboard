@@ -42,6 +42,11 @@ class EmployeeResource extends Resource
 
   protected static ?string $navigationIcon = 'fluentui-people-team-toolbox-20';
 
+  public static function getLabel(): string
+  {
+    return __('navigation.label.' . static::getSlug());
+  }
+
   public static function getNavigationGroup(): ?string
   {
     return NavigationGroupLabel::HR->getLabel();
@@ -227,7 +232,7 @@ class EmployeeResource extends Resource
           ->hintAction(
             fn(Employee $record) =>
             FormAction::make('create_user')
-              ->label('Buat User')
+              ->label('Buat User Baru')
               ->icon(UserResource::getNavigationIcon())
               ->url(UserResource::getUrl('create', ['employee' => $record->id]))
           ),

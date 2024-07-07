@@ -3,10 +3,15 @@
 namespace App\Models;
 
 use App\Enums\DestinationType;
+use App\Models\Scopes\ApprovedScope;
 use Illuminate\Database\Eloquent\Model;
+use EightyNine\Approvals\Models\ApprovableModel;
+use Illuminate\Database\Eloquent\Attributes\ScopedBy;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
-class Destination extends Model
+#[ScopedBy([ApprovedScope::class])]
+
+class Destination extends ApprovableModel
 {
   use HasFactory;
 

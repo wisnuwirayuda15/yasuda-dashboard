@@ -32,6 +32,11 @@ class RewardResource extends Resource
 
   protected static ?string $navigationIcon = 'fluentui-reward-12';
 
+  public static function getLabel(): string
+  {
+    return __('navigation.label.' . static::getSlug());
+  }
+
   public static function getNavigationGroup(): ?string
   {
     return NavigationGroupLabel::MARKETING->getLabel();

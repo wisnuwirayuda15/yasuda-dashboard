@@ -31,6 +31,11 @@ class SalesVisitResource extends Resource
 
   protected static ?string $navigationIcon = 'fas-handshake';
 
+  public static function getLabel(): string
+  {
+    return __('navigation.label.' . static::getSlug());
+  }
+
   public static function getNavigationGroup(): ?string
   {
     return NavigationGroupLabel::MARKETING->getLabel();
