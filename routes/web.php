@@ -15,9 +15,11 @@ use Illuminate\Foundation\Auth\EmailVerificationRequest;
 |
 */
 
-Route::get('/', function () {
-  return redirect('/dashboard');
-});
+if (filled(env('APP_PATH'))) {
+  Route::get('/', function () {
+    return redirect(env('APP_PATH'));
+  });
+}
 
 Route::controller(PdfController::class)
   ->prefix('generate')
