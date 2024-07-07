@@ -221,7 +221,7 @@ class AdminPanelProvider extends PanelProvider
       ->default()
       ->spa()
       ->id('admin')
-      ->path(env('APP_PATH'))
+      ->path(env('APP_PATH', 'dashboard'))
       ->login(Login::class)
       ->passwordReset()
       ->emailVerification()
