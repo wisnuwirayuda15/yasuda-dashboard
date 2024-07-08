@@ -239,8 +239,8 @@ class AdminPanelProvider extends PanelProvider
       ->pages([])
       ->discoverWidgets(app_path('Filament/Widgets'), 'App\\Filament\\Widgets')
       ->widgets([
-        // Widgets\AccountWidget::class,
-        // Widgets\FilamentInfoWidget::class,
+          // Widgets\AccountWidget::class,
+          // Widgets\FilamentInfoWidget::class,
         VersionsWidget::class,
         MeetingCalendarWidget::class,
       ])
@@ -297,6 +297,7 @@ class AdminPanelProvider extends PanelProvider
         QuickCreatePlugin::make()
           ->slideOver()
           ->sortBy('navigation')
+          ->hidden(fn() => blank(auth()->user()->email_verified_at))
           // ->rounded(fn(): bool => match (CustomPlatform::detect()) {
           //   CustomPlatform::Windows, CustomPlatform::Mac, CustomPlatform::Linux => true,
           //   CustomPlatform::Mobile => false,
