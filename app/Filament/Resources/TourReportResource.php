@@ -105,8 +105,8 @@ class TourReportResource extends Resource
           ->label('Pembayaran Customer')
           ->money('IDR')
           ->sortable(),
-        TextColumn::make('difference')
-          ->label('Selisih')
+        TextColumn::make('defisit_surplus')
+          ->label('Defisit / Surplus')
           ->money('IDR')
           ->sortable(),
         TextColumn::make('created_at')
@@ -174,6 +174,7 @@ class TourReportResource extends Resource
           ->disabled()
           ->dehydrated()
           ->allowHtml()
+          ->hiddenOn('edit')
           ->prefixIcon(InvoiceResource::getNavigationIcon())
           ->default(static::$invoice->id)
           ->relationship('invoice', 'id')
@@ -515,7 +516,8 @@ class TourReportResource extends Resource
           ->inlineLabel()
           ->label('Defisit/Surplus Tour')
           ->content(function (Get $get, Set $set, Placeholder $component) {
-            $total = $get('plan_totals') - $get('act_totals');
+            // $total = $get('plan_totals') - $get('act_totals');
+            $total = $get('difference');
             $set($component, $total);
             return view('filament.components.badges.default', [
               'text' => idr($total),
@@ -581,33 +583,33 @@ class TourReportResource extends Resource
     // $totalBus = $inv->order->orderFleets()->count();
     // $backupPrice = $inv->profitLoss->backup_price;
 
-    if ($inv->profitLoss->eat_price > 0) {
-      $qty = $anak + $tambahan + $pembina + $special;
-      $costsDetail['makan-paket'] = [
-        'slug' => 'makan-paket',
-        'name' => 'Makan Paket',
-        'plan_qty' => $qty,
-        'plan_price' => $inv->profitLoss->eat_price,
-        'plan_total' => 0,
-        'act_qty' => $qty,
-        'act_price' => $inv->profitLoss->eat_price,
-        'act_total' => 0,
-      ];
-    }
+    // if ($inv->profitLoss->eat_price > 0) {
+    //   $qty = $anak + $tambahan + $pembina + $special;
+    //   $costsDetail['makan-paket'] = [
+    //     'slug' => 'makan-paket',
+    //     'name' => 'Makan Paket Box',
+    //     'plan_qty' => $qty,
+    //     'plan_price' => $inv->profitLoss->eat_price,
+    //     'plan_total' => 0,
+    //     'act_qty' => $qty,
+    //     'act_price' => $inv->profitLoss->eat_price,
+    //     'act_total' => 0,
+    //   ];
+    // }
 
-    if ($inv->profitLoss->eat_child_price > 0) {
-      $qty = $anak;
-      $costsDetail['makan-anak'] = [
-        'slug' => 'makan-anak',
-        'name' => 'Makan Porsi Anak',
-        'plan_qty' => $qty,
-        'plan_price' => $inv->profitLoss->eat_child_price,
-        'plan_total' => 0,
-        'act_qty' => $qty,
-        'act_price' => $inv->profitLoss->eat_child_price,
-        'act_total' => 0,
-      ];
-    }
+    // if ($inv->profitLoss->eat_child_price > 0) {
+    //   $qty = $anak;
+    //   $costsDetail['makan-anak'] = [
+    //     'slug' => 'makan-anak',
+    //     'name' => 'Makan Porsi Anak',
+    //     'plan_qty' => $qty,
+    //     'plan_price' => $inv->profitLoss->eat_child_price,
+    //     'plan_total' => 0,
+    //     'act_qty' => $qty,
+    //     'act_price' => $inv->profitLoss->eat_child_price,
+    //     'act_total' => 0,
+    //   ];
+    // }
 
     if ($inv->profitLoss->eat_prasmanan_price > 0) {
       $qty = $anak + $tambahan + $pembina + $special;

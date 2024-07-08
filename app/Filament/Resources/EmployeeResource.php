@@ -42,6 +42,8 @@ class EmployeeResource extends Resource
 
   protected static ?string $navigationIcon = 'fluentui-people-team-toolbox-20';
 
+  protected static ?int $navigationSort = -6;
+
   public static function getLabel(): string
   {
     return __('navigation.label.' . static::getSlug());

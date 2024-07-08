@@ -16,6 +16,7 @@ use App\Filament\Pages\Auth\Login;
 use Filament\Support\Colors\Color;
 use Illuminate\Support\HtmlString;
 use App\Enums\NavigationGroupLabel;
+use App\Filament\Resources\MeetingResource\Widgets\MeetingCalendarWidget;
 use Filament\Tables\Filters\Filter;
 use Filament\View\PanelsRenderHook;
 use Filament\Livewire\Notifications;
@@ -130,7 +131,7 @@ class AdminPanelProvider extends PanelProvider
             TableEditAction::make(),
             TableDeleteAction::make(),
           ])->tooltip('Actions'),
-        ], ActionsPosition::AfterColumns);
+        ], ActionsPosition::BeforeColumns);
     });
 
     Select::configureUsing(function (Select $select): void {
@@ -204,10 +205,13 @@ class AdminPanelProvider extends PanelProvider
 
   public function panel(Panel $panel): Panel
   {
+    $spa = env('SPA', false);
+
     return $panel
       ->default()
-      ->spa()
       ->id('admin')
+      ->spa($spa)
+      ->unsavedChangesAlerts(!$spa)
       ->path(env('APP_PATH', 'dashboard'))
       ->login(Login::class)
       ->passwordReset()
@@ -215,7 +219,7 @@ class AdminPanelProvider extends PanelProvider
       ->requiresEmailVerification()
       ->font('Poppins')
       ->viteTheme('resources/css/filament/admin/theme.css')
-      ->favicon(asset('favicon.svg'))
+      ->favicon(asset('favicon-white.svg'))
       ->brandLogo(asset('/img/logos/logo-light.svg'))
       ->darkModeBrandLogo(asset('/img/logos/logo-dark.svg'))
       ->brandLogoHeight('35px')
@@ -235,9 +239,10 @@ class AdminPanelProvider extends PanelProvider
       ->pages([])
       ->discoverWidgets(app_path('Filament/Widgets'), 'App\\Filament\\Widgets')
       ->widgets([
-        Widgets\AccountWidget::class,
-        Widgets\FilamentInfoWidget::class,
+        // Widgets\AccountWidget::class,
+        // Widgets\FilamentInfoWidget::class,
         VersionsWidget::class,
+        MeetingCalendarWidget::class,
       ])
       ->colors([
         'primary' => Color::Rose,
@@ -292,11 +297,11 @@ class AdminPanelProvider extends PanelProvider
         QuickCreatePlugin::make()
           ->slideOver()
           ->sortBy('navigation')
-          ->rounded(fn(): bool => match (CustomPlatform::detect()) {
-            CustomPlatform::Windows, CustomPlatform::Mac, CustomPlatform::Linux => true,
-            CustomPlatform::Mobile => false,
-            default => false,
-          })
+          // ->rounded(fn(): bool => match (CustomPlatform::detect()) {
+          //   CustomPlatform::Windows, CustomPlatform::Mac, CustomPlatform::Linux => true,
+          //   CustomPlatform::Mobile => false,
+          //   default => false,
+          // })
           // ->label(fn(): ?string => match (CustomPlatform::detect()) {
           //   CustomPlatform::Windows, CustomPlatform::Mac, CustomPlatform::Linux => null,
           //   CustomPlatform::Mobile => 'Create',

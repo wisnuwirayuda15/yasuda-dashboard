@@ -82,10 +82,10 @@
 
 @section('content')
   <div class="flex justify-center overflow-x-auto">
-    <div class="rounded-lg border-2 border-slate-500 bg-white text-black md:w-[1000px]">
+    <div class="m-5 rounded-lg border-2 border-slate-500 bg-white text-black md:m-14 min-w-max scale">
       <div class="container mx-auto">
         <div class="mx-8 my-6">
-          <div class="hidden md:block">
+          <div>
             <section id="header">
               <div class="grid grid-cols-2">
                 <div>
@@ -486,9 +486,6 @@
                 </div>
               </footer>
             </section>
-          </div>
-          <div class="text-center text-red-500 md:hidden">
-            <p>{{ __('invoice.preview-warning') }}</p>
           </div>
         </div>
       </div>

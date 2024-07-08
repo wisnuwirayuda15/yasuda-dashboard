@@ -19,21 +19,33 @@ class ViewProfitLoss extends ViewRecord
 
   protected function getHeaderActions(): array
   {
-    $loyaltyPoint = $this->getRecord()->invoice->loyaltyPoint;
+    $pnl = $this->getRecord();
+
+    $loyaltyPoint = $pnl->invoice->loyaltyPoint;
+
+    $approved = $pnl->isApprovalCompleted();
 
     return [
       Actions\Action::make('view_invoice')
         ->label('Lihat Invoice')
         ->icon(InvoiceResource::getNavigationIcon())
         ->color('info')
-        ->url(InvoiceResource::getUrl('view', ['record' => $this->getRecord()->invoice->id])),
+        ->url(InvoiceResource::getUrl('view', ['record' => $pnl->invoice->id])),
       Actions\Action::make('create_and_update_loyalty_point')
         ->icon(LoyaltyPointResource::getNavigationIcon())
         ->label(($loyaltyPoint ? 'Perbarui' : 'Buat') . ' Loyalty Point')
         ->color($loyaltyPoint ? 'warning' : 'success')
-        // ->disabled(fn() => $loyaltyPoint)
-        ->action(function () use ($loyaltyPoint) {
-          $pnl = $this->getRecord();
+        ->modal(false)
+        ->action(function (Actions\Action $action) use ($loyaltyPoint, $approved, $pnl) {
+          if (!$approved) {
+            Notification::make()
+              ->danger()
+              ->title('Failed')
+              ->body("Profit & Loss not approved!")
+              ->send();
+
+            $action->cancel();
+          }
 
           $inv = $pnl->invoice;
 

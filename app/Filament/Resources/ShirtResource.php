@@ -27,6 +27,7 @@ use Filament\Forms\Components\Checkbox;
 use Filament\Forms\Components\Fieldset;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Tabs\Tab;
+use Filament\Tables\Columns\TextColumn;
 use Filament\Forms\Components\TextInput;
 use Illuminate\Database\Eloquent\Builder;
 use Filament\Forms\Components\ColorPicker;
@@ -86,34 +87,32 @@ class ShirtResource extends Resource
   {
     return $table
       ->columns([
-        Tables\Columns\TextColumn::make('invoice.code')
+        TextColumn::make('invoice.code')
+          ->badge()
           ->sortable(),
-        Tables\Columns\TextColumn::make('total')
+        TextColumn::make('total')
           ->label('Total Baju')
           ->numeric()
           ->sortable(),
-        Tables\Columns\TextColumn::make('invoice.order.trip_date')
+        TextColumn::make('invoice.order.trip_date')
           ->label('Tanggal')
           ->sortable(),
-        Tables\Columns\TextColumn::make('invoice.order.customer.name')
+        TextColumn::make('invoice.order.customer.name')
           ->sortable(),
-        Tables\Columns\TextColumn::make('invoice.order.customer.address')
+        TextColumn::make('invoice.order.customer.address')
           ->label('Alamat')
           ->sortable(),
-        Tables\Columns\TextColumn::make('status')
+        TextColumn::make('status')
           ->label('Status')
           ->sortable(),
-        Tables\Columns\TextColumn::make('created_at')
+        TextColumn::make('created_at')
           ->dateTime()
           ->sortable()
           ->toggleable(isToggledHiddenByDefault: true),
-        Tables\Columns\TextColumn::make('updated_at')
+        TextColumn::make('updated_at')
           ->dateTime()
           ->sortable()
           ->toggleable(isToggledHiddenByDefault: true),
-      ])
-      ->filters([
-        //
       ]);
   }
 

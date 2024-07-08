@@ -40,6 +40,8 @@ class CustomerResource extends Resource
 
   protected static ?string $recordTitleAttribute = 'name';
 
+  protected static ?int $navigationSort = -10;
+
   public static function getLabel(): string
   {
     return __('navigation.label.' . static::getSlug());
@@ -71,6 +73,7 @@ class CustomerResource extends Resource
   public static function table(Table $table): Table
   {
     return $table
+      ->paginationPageOptions([5, 10, 15, 20, 30, 50])
       ->columns([
         TextColumn::make('code')
           ->badge()
@@ -134,7 +137,6 @@ class CustomerResource extends Resource
           Tables\Actions\DeleteBulkAction::make(),
         ]),
       ]);
-    ;
   }
 
   public static function getRelations(): array
@@ -202,10 +204,12 @@ class CustomerResource extends Resource
           ->relationship('district', 'name', fn(Get $get, Builder $query) => $query->where('regency_id', $get('regency_id'))),
         TextInput::make('lat')
           ->numeric()
-          ->maxLength(255),
+        // ->maxLength(255)
+        ,
         TextInput::make('lng')
           ->numeric()
-          ->maxLength(255),
+        // ->maxLength(255)
+        ,
         Map::make('location')
           ->afterStateUpdated(function (Set $set, ?array $state) {
             $set('lat', $state['lat']);

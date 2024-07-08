@@ -30,6 +30,8 @@ class LoyaltyPointResource extends Resource
 
   protected static ?string $navigationIcon = 'heroicon-s-star';
 
+  protected static ?int $navigationSort = -7;
+
   public static function getLabel(): string
   {
     return __('navigation.label.' . static::getSlug());

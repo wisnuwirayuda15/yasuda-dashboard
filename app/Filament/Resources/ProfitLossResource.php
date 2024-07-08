@@ -448,7 +448,7 @@ class ProfitLossResource extends Resource
           ->aside()
           ->schema([
             static::getCostFields('snack', 'Snack & Mineral', 10000, description: 'Total kursi + (Jumlah bus x 3)', aside: false),
-            static::getCostFields('eat', 'Paket', 25000, $makan, description: 'Program + Anak + Tambahan + Pembina + Special', aside: false),
+            static::getCostFields('eat', 'Paket Box', 25000, $makan, description: 'Program + Anak + Tambahan + Pembina + Special', aside: false),
             static::getCostFields('eat_child', 'Porsi Anak', 0, $makanAnak, description: 'Program + Anak', aside: false),
             static::getCostFields('eat_prasmanan', 'Prasmanan', 0, $makan, description: 'Program + Anak + Tambahan + Pembina + Special', aside: false),
           ]),
@@ -695,8 +695,7 @@ class ProfitLossResource extends Resource
                 $itemData = $component->getRawItemState($arguments['item']);
                 return DestinationResource::getUrl('edit', ['record' => $itemData['id']]);
               }, true)
-          ])
-          ->resetAction(),
+          ]),
         Placeholder::make('destinations_cost_total')
           ->hiddenLabel()
           ->extraAttributes(['class' => 'hidden'])

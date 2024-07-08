@@ -18,6 +18,7 @@
         "awcodes/filament-quick-create": "^3.3",
         "awcodes/filament-table-repeater": "^3.0",
         "awcodes/filament-versions": "^2.0",
+        "barryvdh/laravel-dompdf": "^2.2",
         "bezhansalleh/filament-language-switch": "^3.0",
         "bezhansalleh/filament-shield": "^3.2",
         "blade-ui-kit/blade-icons": "^1.6",

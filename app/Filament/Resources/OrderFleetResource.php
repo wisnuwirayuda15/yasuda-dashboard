@@ -54,6 +54,7 @@ use EightyNine\Approvals\Tables\Actions\DiscardAction;
 use EightyNine\Approvals\Tables\Actions\ApprovalActions;
 use EightyNine\Approvals\Tables\Columns\ApprovalStatusColumn;
 use App\Filament\Resources\OrderFleetResource\RelationManagers;
+use Livewire\Component;
 use Malzariey\FilamentDaterangepickerFilter\Filters\DateRangeFilter;
 
 class OrderFleetResource extends Resource
@@ -61,6 +62,8 @@ class OrderFleetResource extends Resource
   protected static ?string $model = OrderFleet::class;
 
   protected static ?string $navigationIcon = 'mdi-bus-marker';
+
+  protected static ?int $navigationSort = -9;
 
   public static function getLabel(): string
   {
@@ -132,16 +135,16 @@ class OrderFleetResource extends Resource
           ->searchable(),
         TextColumn::make('order.customer.name')
           ->sortable()
+          ->alignCenter()
           ->placeholder('No customer')
-        // ->tooltip(fn(OrderFleet $record) => ($record->order_id ? 'Change' : 'Select') . ' order')
-        // ->action(static::getSelectOrderAction())
-        ,
+          ->tooltip(fn(OrderFleet $record) => ($record->order_id ? 'Change' : 'Select') . ' order')
+          ->action(static::getSelectOrderAction()),
         TextColumn::make('employee.name')
           ->sortable()
+          ->alignCenter()
           ->placeholder('No tour leader')
-        // ->tooltip(fn(OrderFleet $record) => ($record->employee_id ? 'Change' : 'Select') . ' tour leader')
-        // ->action(static::getSelectTourLeaderAction())
-        ,
+          ->tooltip(fn(OrderFleet $record) => ($record->employee_id ? 'Change' : 'Select') . ' tour leader')
+          ->action(static::getSelectTourLeaderAction()),
         TextColumn::make('trip_date')
           ->date()
           ->formatStateUsing(fn(Carbon $state): string => $state->translatedFormat('d/m/Y')),
@@ -332,13 +335,14 @@ class OrderFleetResource extends Resource
             },
           ]),
       ])
-      ->action(function (array $data, OrderFleet $record): void {
+      ->action(function (array $data, Component $livewire,OrderFleet $record): void {
         $record->update(['order_id' => $data['order_id']]);
         Notification::make()
           ->success()
           ->title('Success')
           ->body("Order added for {$record->code}")
           ->send();
+        $livewire->js('location.reload();');
       });
   }
 
@@ -378,7 +382,7 @@ class OrderFleetResource extends Resource
             }
           )
       ])
-      ->action(function (array $data, Collection $records): void {
+      ->action(function (array $data, Component $livewire, Collection $records): void {
         $codes = $records->pluck('code')->implode(', ');
 
         $records->each->update(['order_id' => $data['order_id']]);
@@ -388,6 +392,8 @@ class OrderFleetResource extends Resource
           ->title('Success')
           ->body("Order added for <strong>{$codes}</strong>")
           ->send();
+
+        $livewire->js('location.reload();');
       });
   }
 
@@ -455,13 +461,14 @@ class OrderFleetResource extends Resource
             }
           )
       ])
-      ->action(function (array $data, OrderFleet $record): void {
+      ->action(function (array $data, Component $livewire, OrderFleet $record): void {
         $record->update(['employee_id' => $data['employee_id']]);
         Notification::make()
           ->success()
           ->title('Success')
           ->body("Tour leader added for {$record->code}")
           ->send();
+        $livewire->js('location.reload();');
       });
   }
 

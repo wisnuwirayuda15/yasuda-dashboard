@@ -57,6 +57,8 @@ class InvoiceResource extends Resource
 
   protected static ?string $navigationIcon = 'fas-file-invoice';
 
+  protected static ?int $navigationSort = -8;
+
   protected static ?Order $order = null;
 
   public static function getLabel(): string
