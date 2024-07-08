@@ -273,7 +273,9 @@ class ShirtResource extends Resource
                   ->required()
                   ->default(0)
                   ->qty(),
-              ])->columns(2)
+              ])
+              ->columns(2)
+              ->resetAction()
           ])
       ]);
 

@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use Closure;
+use Filament\Forms\Components\Repeater;
 use Filament\Forms\Set;
 use Illuminate\Support\HtmlString;
 use Filament\Tables\Filters\Filter;
@@ -170,6 +171,25 @@ class MacroServiceProvider extends ServiceProvider
         ->required()
         ->hiddenOn('view')
         ->label('Semua perhitungan sudah dicek dan tidak ada kesalahan');
+      return $this;
+    });
+
+    Repeater::macro('resetAction', function (): static {
+      $this
+        ->hintAction(
+          Action::make('reset')
+            ->button()
+            ->color('danger')
+            ->slideOver(false)
+            ->icon('gmdi-restart-alt-tt')
+            ->requiresConfirmation()
+            ->modalHeading('Are you sure?')
+            ->modalDescription('All existing items will be removed.')
+            ->tooltip('Remove all items')
+            ->visible(fn(?array $state) => count($state) > 1)
+            ->action(fn(Set $set) => $set($this, [])),
+        );
+
       return $this;
     });
 

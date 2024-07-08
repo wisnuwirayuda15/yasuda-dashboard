@@ -21,6 +21,8 @@ class ViewInvoice extends ViewRecord
   {
     $inv = $this->getRecord();
 
+    $approved = $inv->isApprovalCompleted();
+
     $customer = $inv->order->customer;
 
     $generateInvoiceUrl = route('generate.invoice', $inv->code);
@@ -36,7 +38,7 @@ class ViewInvoice extends ViewRecord
     $shirtUrl = $shirt ? ShirtResource::getUrl('view', ['record' => $inv->shirt->id]) : ShirtResource::getUrl('create', ['invoice' => $inv->code]);
 
     $profitLossUrl = $pl ? ProfitLossResource::getUrl('view', ['record' => $inv->profitLoss->id]) : ProfitLossResource::getUrl('create', ['invoice' => $inv->code]);
-    
+
     $tourReportUrl = $tr ? TourReportResource::getUrl('view', ['record' => $inv->tourReport->id]) : TourReportResource::getUrl('create', ['invoice' => $inv->code]);
 
     $tourLeaderNotAllSet = $inv->order->whereHas('orderFleets', function (Builder $query) {
@@ -70,13 +72,21 @@ class ViewInvoice extends ViewRecord
           ->visible($pl)
           ->hidden($tourLeaderNotAllSet)
           ->url($tourReportUrl),
-      ])->tooltip('Menu'),
+      ])->tooltip('Menu')
+        ->visible($approved),
       Action::make('export_pdf')
         ->label('Export')
         ->tooltip('Export invoice dalam bentuk PDF')
         ->color('danger')
         ->icon('tabler-pdf')
         ->url($generateInvoiceUrl, true)
+        ->visible($approved),
+      Action::make('not_approved')
+        ->disabled()
+        ->label('Invoice not aprroved')
+        ->color('danger')
+        ->icon('heroicon-s-x-circle')
+        ->hidden($approved),
     ];
   }
 }

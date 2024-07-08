@@ -130,7 +130,12 @@ class TourTemplateResource extends Resource
             DeleteAction::make(),
           ]),
         ])
-      );
+      )
+      ->bulkActions([
+        Tables\Actions\BulkActionGroup::make([
+          Tables\Actions\DeleteBulkAction::make(),
+        ]),
+      ]);
   }
 
   public static function getPages(): array

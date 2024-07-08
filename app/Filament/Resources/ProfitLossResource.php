@@ -695,7 +695,8 @@ class ProfitLossResource extends Resource
                 $itemData = $component->getRawItemState($arguments['item']);
                 return DestinationResource::getUrl('edit', ['record' => $itemData['id']]);
               }, true)
-          ]),
+          ])
+          ->resetAction(),
         Placeholder::make('destinations_cost_total')
           ->hiddenLabel()
           ->extraAttributes(['class' => 'hidden'])

@@ -642,7 +642,8 @@ class InvoiceResource extends Resource
             $item = $component->getRawItemState($arguments['item']);
             return $item['order'] !== count($component->getState());
           })
-      );
+      )
+      ->resetAction();
   }
 
   public static function getDefaultMainCostItems(): array

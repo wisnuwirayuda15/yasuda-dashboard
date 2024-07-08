@@ -143,19 +143,6 @@ class AdminPanelProvider extends PanelProvider
 
     Repeater::configureUsing(function (Repeater $repeater): void {
       $repeater
-        ->hintAction(
-          FormAction::make('reset')
-            ->button()
-            ->color('danger')
-            ->slideOver(false)
-            ->icon('gmdi-restart-alt-tt')
-            ->requiresConfirmation()
-            ->modalHeading('Are you sure?')
-            ->modalDescription('All existing items will be removed.')
-            ->tooltip('Remove all items')
-            ->visible(fn(?array $state) => count($state) > 1)
-            ->action(fn(Set $set) => $set($repeater, [])),
-        )
         ->expandAllAction(fn(FormAction $action) => $action
           ->label('Expand')
           ->icon('heroicon-s-chevron-down')
@@ -315,11 +302,11 @@ class AdminPanelProvider extends PanelProvider
             CustomPlatform::Mobile => 'Create',
             default => 'Create',
           })
-          ->renderUsingHook(fn(): ?string => match (CustomPlatform::detect()) {
-            CustomPlatform::Windows, CustomPlatform::Mac, CustomPlatform::Linux => PanelsRenderHook::GLOBAL_SEARCH_AFTER,
-            CustomPlatform::Mobile => PanelsRenderHook::SIDEBAR_NAV_START,
-            default => PanelsRenderHook::GLOBAL_SEARCH_AFTER,
-          })
+          // ->renderUsingHook(fn(): ?string => match (CustomPlatform::detect()) {
+          //   CustomPlatform::Windows, CustomPlatform::Mac, CustomPlatform::Linux => PanelsRenderHook::GLOBAL_SEARCH_AFTER,
+          //   CustomPlatform::Mobile => PanelsRenderHook::SIDEBAR_NAV_START,
+          //   default => PanelsRenderHook::GLOBAL_SEARCH_AFTER,
+          // })
           ->excludes([
             ProfitLossResource::class,
             TourReportResource::class,

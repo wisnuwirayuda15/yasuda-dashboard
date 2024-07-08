@@ -128,7 +128,13 @@ class CustomerResource extends Resource
           ->exporter(CustomerExporter::class)
           ->label('Export')
           ->color('success')
+      ])
+      ->bulkActions([
+        Tables\Actions\BulkActionGroup::make([
+          Tables\Actions\DeleteBulkAction::make(),
+        ]),
       ]);
+    ;
   }
 
   public static function getRelations(): array
