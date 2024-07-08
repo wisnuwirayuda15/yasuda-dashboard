@@ -21,6 +21,15 @@ class ProfitLossExporter extends Exporter
       ExportColumn::make('invoice.order.code'),
       ExportColumn::make('invoice.order.customer.name')
         ->label('Customer Name'),
+      ExportColumn::make('net_sales')
+        ->state(function (ProfitLoss $record): ?float {
+          $inv = $record->invoice;
+          $mainCosts = $inv->main_costs;
+          $totalPrices = array_sum(array_map(fn($cost) => $cost['qty'] * $cost['price'], $mainCosts)) ?: 0;
+          $totalCashbacks = array_sum(array_map(fn($cost) => $cost['qty'] * $cost['cashback'], $mainCosts)) ?: 0;
+          $totalNetTransactions = $totalPrices - $totalCashbacks;
+          return $totalNetTransactions;
+        }),
       ExportColumn::make('adjusted_income')
         ->label('Income (Plan)'),
       ExportColumn::make('actual_income')

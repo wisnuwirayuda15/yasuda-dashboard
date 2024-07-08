@@ -103,6 +103,17 @@ class ProfitLossResource extends Resource
           ->searchable(),
         TextColumn::make('invoice.order.customer.name')
           ->searchable(),
+        TextColumn::make('net_sales')
+          ->label('Net Sales')
+          ->money('IDR')
+          ->state(function (ProfitLoss $record): ?float {
+            $inv = $record->invoice;
+            $mainCosts = $inv->main_costs;
+            $totalPrices = array_sum(array_map(fn($cost) => $cost['qty'] * $cost['price'], $mainCosts)) ?: 0;
+            $totalCashbacks = array_sum(array_map(fn($cost) => $cost['qty'] * $cost['cashback'], $mainCosts)) ?: 0;
+            $totalNetTransactions = $totalPrices - $totalCashbacks;
+            return $totalNetTransactions;
+          }),
         TextColumn::make('adjusted_income')
           ->label('Income (Plan)')
           ->sortable()
@@ -137,7 +148,7 @@ class ProfitLossResource extends Resource
       ->headerActions([
         ExportAction::make()
           ->hidden(fn(): bool => static::getModel()::count() === 0)
-          ->visible(fn(): bool => Route::current()->getName() === static::getRouteBaseName() . '.index')
+          // ->visible(fn(): bool => Route::current()->getName() === static::getRouteBaseName() . '.index')
           ->exporter(ProfitLossExporter::class)
           ->label('Export')
           ->color('success')

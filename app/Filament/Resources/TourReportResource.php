@@ -122,7 +122,7 @@ class TourReportResource extends Resource
       ->headerActions([
         ExportAction::make()
           ->hidden(fn(): bool => static::getModel()::count() === 0)
-          ->visible(fn(): bool => Route::current()->getName() === static::getRouteBaseName() . '.index')
+          // ->visible(fn(): bool => Route::current()->getName() === static::getRouteBaseName() . '.index')
           ->exporter(TourReportExporter::class)
           ->label('Export')
           ->color('success')

@@ -70,10 +70,10 @@ class LoyaltyPointResource extends Resource
           ->searchable(),
         TextColumn::make('invoice.order.customer.name')
           ->searchable(),
-        TextColumn::make('description')
-          ->html(),
-        TextColumn::make('cash_status')
-          ->badge(),
+        // TextColumn::make('description')
+        //   ->html(),
+        // TextColumn::make('cash_status')
+        //   ->badge(),
         TextColumn::make('invoice.code')
           ->badge()
           ->sortable(),

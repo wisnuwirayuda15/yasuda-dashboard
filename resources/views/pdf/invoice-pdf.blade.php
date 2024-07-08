@@ -81,7 +81,7 @@
 @extends('pdf.layout.main', ['title' => "{$code}_{$lembaga}_{$order->trip_date->translatedFormat('d-m-Y')}"])
 
 @section('content')
-  <div class="flex justify-center overflow-auto">
+  <div class="flex justify-center overflow-scroll">
     <div class="m-5 min-w-max rounded-lg border-2 border-slate-500 bg-white text-black md:m-14">
       <div class="container mx-auto">
         <div class="mx-8 my-6">

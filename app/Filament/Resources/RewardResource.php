@@ -16,6 +16,7 @@ use Filament\Tables\Table;
 use Filament\Resources\Resource;
 use App\Enums\NavigationGroupLabel;
 use Filament\Forms\Components\Select;
+use Filament\Tables\Columns\TextColumn;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
 use Filament\Forms\Components\DatePicker;
@@ -101,27 +102,30 @@ class RewardResource extends Resource
   {
     return $table
       ->columns([
-        Tables\Columns\TextColumn::make('customer.code')
+        TextColumn::make('customer.code')
           ->searchable()
           ->badge()
           ->label('Customer Code'),
-        Tables\Columns\TextColumn::make('customer.name')
+        TextColumn::make('customer.name')
           ->searchable()
           ->label('Customer Name')
           ->sortable(),
-        Tables\Columns\TextColumn::make('cash_status'),
-        Tables\Columns\TextColumn::make('date')
+        TextColumn::make('description')
+          ->searchable()
+          ->limit(100),
+        TextColumn::make('cash_status'),
+        TextColumn::make('date')
           ->sortable()
           ->label('Tanggal Pelaksanaan')
           ->formatStateUsing(fn(Carbon $state): string => $state->translatedFormat('d/m/Y')),
-        Tables\Columns\TextColumn::make('amount')
+        TextColumn::make('amount')
           ->money('IDR')
           ->sortable(),
-        Tables\Columns\TextColumn::make('created_at')
+        TextColumn::make('created_at')
           ->dateTime()
           ->sortable()
           ->toggleable(isToggledHiddenByDefault: true),
-        Tables\Columns\TextColumn::make('updated_at')
+        TextColumn::make('updated_at')
           ->dateTime()
           ->sortable()
           ->toggleable(isToggledHiddenByDefault: true),
