@@ -297,11 +297,11 @@ class AdminPanelProvider extends PanelProvider
             CustomPlatform::Mobile => false,
             default => false,
           })
-          ->label(fn(): ?string => match (CustomPlatform::detect()) {
-            CustomPlatform::Windows, CustomPlatform::Mac, CustomPlatform::Linux => null,
-            CustomPlatform::Mobile => 'Create',
-            default => 'Create',
-          })
+          // ->label(fn(): ?string => match (CustomPlatform::detect()) {
+          //   CustomPlatform::Windows, CustomPlatform::Mac, CustomPlatform::Linux => null,
+          //   CustomPlatform::Mobile => 'Create',
+          //   default => 'Create',
+          // })
           // ->renderUsingHook(fn(): ?string => match (CustomPlatform::detect()) {
           //   CustomPlatform::Windows, CustomPlatform::Mac, CustomPlatform::Linux => PanelsRenderHook::GLOBAL_SEARCH_AFTER,
           //   CustomPlatform::Mobile => PanelsRenderHook::SIDEBAR_NAV_START,
