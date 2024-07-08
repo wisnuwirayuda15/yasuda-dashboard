@@ -112,6 +112,7 @@ class RewardResource extends Resource
           ->sortable(),
         TextColumn::make('description')
           ->searchable()
+          ->html()
           ->limit(100),
         TextColumn::make('cash_status'),
         TextColumn::make('date')
