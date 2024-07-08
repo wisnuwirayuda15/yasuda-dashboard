@@ -22,19 +22,19 @@ class PdfController extends Controller
   {
     $pdfName = "{$invoice->code}_{$invoice->order->customer->name}_{$invoice->order->trip_date->translatedFormat('d-m-Y')}.pdf";
 
-    if (app()->environment('local')) {
-      return Pdf::view('pdf.invoice-pdf', compact('invoice'))
-        // ->withBrowsershot(function (Browsershot $browsershot) {
-        // $browsershot
-        // ->noSandbox()
-        // ->setNodeBinary('C:/Program Files/nodejs %~dp0;%PATH%;')
-        // ->setNodeBinary('/usr/bin/node')->setNpmBinary('/usr/bin/npm')
-        // ;
-        // })
-        ->margins(10, 0, 10, 0)
-        ->format(Format::A2)
-        ->name("{$invoice->code}_{$invoice->order->customer->name}_{$invoice->order->trip_date->translatedFormat('d-m-Y')}.pdf");
-    }
+    // if (app()->environment('local')) {
+    //   return Pdf::view('pdf.invoice-pdf', compact('invoice'))
+    //     ->withBrowsershot(function (Browsershot $browsershot) {
+    //       $browsershot
+    //         ->noSandbox()
+    //         ->setNodeBinary('C:/Program Files/nodejs %~dp0;%PATH%;')
+    //         ->setNodeBinary('/usr/bin/node')->setNpmBinary('/usr/bin/npm')
+    //       ;
+    //     })
+    //     ->margins(10, 0, 10, 0)
+    //     ->format(Format::A2)
+    //     ->name("{$invoice->code}_{$invoice->order->customer->name}_{$invoice->order->trip_date->translatedFormat('d-m-Y')}.pdf");
+    // }
 
     // return DomPDF::loadView('pdf.invoice-pdf', compact('invoice'))
     //   ->setPaper('a2', 'landscape')

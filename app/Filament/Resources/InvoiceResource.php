@@ -170,10 +170,10 @@ class InvoiceResource extends Resource
   public static function getRelations(): array
   {
     return [
-      RelationGroup::make('', [
-        ProfitLossRelationManager::class,
-        TourReportRelationManager::class,
-      ]),
+      // RelationGroup::make('', [
+      //   ProfitLossRelationManager::class,
+      //   TourReportRelationManager::class,
+      // ]),
     ];
   }
 

@@ -81,8 +81,8 @@
 @extends('pdf.layout.main', ['title' => "{$code}_{$lembaga}_{$order->trip_date->translatedFormat('d-m-Y')}"])
 
 @section('content')
-  <div class="flex justify-center overflow-x-auto">
-    <div class="m-5 rounded-lg border-2 border-slate-500 bg-white text-black md:m-14 min-w-max scale">
+  <div class="flex justify-center overflow-auto">
+    <div class="m-5 min-w-max rounded-lg border-2 border-slate-500 bg-white text-black md:m-14">
       <div class="container mx-auto">
         <div class="mx-8 my-6">
           <div>
@@ -469,7 +469,7 @@
                   Special Notes
                 </div>
                 <div class="prose min-w-full">
-                  <div class="min-h-56 w-full rounded-md border-2 border-blue-500 bg-slate-100 px-4 leading-6">
+                  <div class="min-h-max w-full rounded-md border-2 border-blue-500 bg-slate-100 px-4 leading-6">
                     {!! $notes ?: '-' !!}
                   </div>
                 </div>

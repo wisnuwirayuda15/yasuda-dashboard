@@ -79,7 +79,7 @@
 @endphp
 
 <x-dynamic-component :component="$getEntryWrapperView()" :entry="$entry">
-  <div class="flex justify-center overflow-x-auto">
+  <div class="flex justify-center overflow-auto">
     <div class="rounded-lg border-2 border-slate-500 bg-white text-black">
       <div class="container mx-auto">
         <div class="mx-8 my-6">
@@ -467,7 +467,7 @@
                   Special Notes
                 </div>
                 <div class="prose min-w-full">
-                  <div class="min-h-56 w-full rounded-md border-2 border-blue-500 bg-slate-100 px-4 leading-6">
+                  <div class="min-h-max w-full rounded-md border-2 border-blue-500 bg-slate-100 px-4 leading-6">
                     {!! $notes ?: '-' !!}
                   </div>
                 </div>
