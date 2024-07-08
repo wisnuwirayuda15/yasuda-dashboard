@@ -234,6 +234,7 @@ models:
     customer_id: unique foreign constrained onDelete:cascade
     employee_id: foreign constrained onDelete:cascade nullable
     image: string nullable
+    date: datetime nullable
     priority: string:50
     visit_status: string:50
 

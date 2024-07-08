@@ -6,6 +6,7 @@ use Filament\Actions;
 use Illuminate\Database\Eloquent\Model;
 use App\Filament\Resources\UserResource;
 use Filament\Resources\Pages\EditRecord;
+use Illuminate\Auth\Access\AuthorizationException;
 
 class EditUser extends EditRecord
 {
@@ -19,6 +20,15 @@ class EditUser extends EditRecord
         ->slideOver(false)
         ->requiresPasswordConfirmation(),
     ];
+  }
+
+  protected function mutateFormDataBeforeFill(array $data): array
+  {
+    if ($data['id'] === auth()->id()) {
+      throw new AuthorizationException();
+    }
+
+    return $data;
   }
 
   protected function handleRecordUpdate(Model $record, array $data): Model

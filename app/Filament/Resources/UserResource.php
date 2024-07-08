@@ -195,7 +195,8 @@ class UserResource extends Resource
       ->actions([
         Tables\Actions\ActionGroup::make([
           Tables\Actions\ViewAction::make(),
-          Tables\Actions\EditAction::make(),
+          Tables\Actions\EditAction::make()
+            ->hidden(fn(User $record): bool => $record->id == auth()->id()),
           static::getDeleteAction(),
           static::getRemoveEmployeeAction(),
           static::getSendEmailVerificationAction(),
@@ -223,9 +224,9 @@ class UserResource extends Resource
   public static function getDeleteAction(): TableAction
   {
     return Tables\Actions\DeleteAction::make()
-      ->hidden(fn(User $record): bool => $record->id === auth()->user()->id || $record->employable?->exists())
+      ->hidden(fn(User $record): bool => $record->id === auth()->id() || $record->employable?->exists())
       ->before(function (User $record, Tables\Actions\DeleteAction $action) {
-        if ($record->id === auth()->user()->id) {
+        if ($record->id === auth()->id()) {
           Notification::make()
             ->danger()
             ->title('Nu uhh...')

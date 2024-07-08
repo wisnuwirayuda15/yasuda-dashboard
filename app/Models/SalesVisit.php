@@ -20,6 +20,7 @@ class SalesVisit extends Model
         'employee_id',
         'image',
         'priority',
+        'date',
         'visit_status',
     ];
 
@@ -32,6 +33,7 @@ class SalesVisit extends Model
         'id' => 'integer',
         'customer_id' => 'integer',
         'employee_id' => 'integer',
+        'date' => 'datetime',
     ];
 
     public function customer(): BelongsTo

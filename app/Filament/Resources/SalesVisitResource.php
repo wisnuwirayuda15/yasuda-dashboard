@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources;
 
+use Carbon\Carbon;
 use Filament\Forms;
 use Filament\Tables;
 use Filament\Forms\Get;
@@ -18,7 +19,9 @@ use Filament\Forms\Components\Group;
 use Filament\Forms\Components\Radio;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Section;
+use Filament\Tables\Columns\TextColumn;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\FileUpload;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
@@ -81,6 +84,10 @@ class SalesVisitResource extends Resource
                   ->required()
                   ->label('Visited By')
                   ->relationship('employee', 'name', fn(Builder $query) => $query->whereNot('role', EmployeeRole::TOUR_LEADER->value)),
+                DatePicker::make('date')
+                  ->required()
+                  ->label('Tanggal Kunjungan')
+                  ->default(today()),
                 FileUpload::make('image')
                   ->label('Bukti Kunjungan')
                   ->image()
@@ -98,31 +105,38 @@ class SalesVisitResource extends Resource
   {
     return $table
       ->columns([
-        Tables\Columns\TextColumn::make('customer.code')
+        TextColumn::make('customer.code')
           ->badge()
+          ->searchable()
           ->label('Customer Code')
           ->sortable(),
-        Tables\Columns\TextColumn::make('customer.name')
+        TextColumn::make('customer.name')
           ->label('Customer Name')
           ->sortable()
+          ->searchable()
           ->tooltip('Lihat Customer')
           ->url(fn(SalesVisit $record) => CustomerResource::getUrl('view', ['record' => $record->customer_id])),
-        Tables\Columns\TextColumn::make('employee.name')
+        TextColumn::make('employee.name')
           ->placeholder('Not visited')
+          ->searchable()
           ->sortable(),
-        Tables\Columns\TextColumn::make('priority')
+        TextColumn::make('date')
+          ->date()
+          ->label('Tanggal Kunjungan')
+          ->formatStateUsing(fn(Carbon $state): string => $state->translatedFormat('d/m/Y')),
+        TextColumn::make('priority')
           ->badge()
           ->color(fn(string $state): string => $state === 'yes' ? 'success' : 'danger')
           ->formatStateUsing(fn(string $state): string => Str::headline($state)),
-        Tables\Columns\TextColumn::make('visit_status')
+        TextColumn::make('visit_status')
           ->badge()
           ->color(fn(string $state): string => $state === 'done' ? 'success' : 'danger')
           ->formatStateUsing(fn(string $state): string => Str::headline($state)),
-        Tables\Columns\TextColumn::make('created_at')
+        TextColumn::make('created_at')
           ->dateTime()
           ->sortable()
           ->toggleable(isToggledHiddenByDefault: true),
-        Tables\Columns\TextColumn::make('updated_at')
+        TextColumn::make('updated_at')
           ->dateTime()
           ->sortable()
           ->toggleable(isToggledHiddenByDefault: true),
