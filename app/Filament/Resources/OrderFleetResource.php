@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources;
 
+use App\Filament\Resources\OrderFleetResource\Widgets\OrderFleetCalendarWidget;
 use Closure;
 use Carbon\Carbon;
 use Filament\Forms;
@@ -151,19 +152,10 @@ class OrderFleetResource extends Resource
         TextColumn::make('remaining_day')
           ->badge()
           ->alignCenter()
+          ->state(fn(OrderFleet $record): string => $record->getRemainingDay())
           ->sortable(query: function (Builder $query, string $direction): Builder {
             return $query->orderBy('trip_date', $direction);
           })
-          ->state(
-            function (OrderFleet $record): string {
-              $date = $record->trip_date;
-              return match (true) {
-                $date->isToday() => OrderFleetStatus::ON_TRIP->getLabel(),
-                $date->isPast() => OrderFleetStatus::FINISHED->getLabel(),
-                default => today()->diffInDays($date),
-              };
-            }
-          )
           ->color(fn(string $state) => match ($state) {
             OrderFleetStatus::ON_TRIP->getLabel() => OrderFleetStatus::ON_TRIP->getColor(),
             default => match (true) {
@@ -174,24 +166,13 @@ class OrderFleetResource extends Resource
           }),
         TextColumn::make('status')
           ->badge()
+          ->state(fn(OrderFleet $record): string => $record->getStatus())
           ->color(fn(string $state) => match ($state) {
             OrderFleetStatus::BOOKED->getLabel() => OrderFleetStatus::BOOKED->getColor(),
             OrderFleetStatus::ON_TRIP->getLabel() => OrderFleetStatus::ON_TRIP->getColor(),
             OrderFleetStatus::FINISHED->getLabel() => OrderFleetStatus::FINISHED->getColor(),
             default => OrderFleetStatus::READY->getColor(),
-          })
-          ->state(
-            function (OrderFleet $record): string {
-              $date = $record->trip_date;
-              $order = $record->order()->exists();
-              return match (true) {
-                $order => OrderFleetStatus::BOOKED->getLabel(),
-                $date->isToday() => OrderFleetStatus::ON_TRIP->getLabel(),
-                $date->isPast() => OrderFleetStatus::FINISHED->getLabel(),
-                default => OrderFleetStatus::READY->getLabel(),
-              };
-            }
-          ),
+          }),
         TextColumn::make('fleet.name')
           ->label('Mitra Armada'),
         TextColumn::make('fleet.category')
@@ -333,7 +314,7 @@ class OrderFleetResource extends Resource
             },
           ]),
       ])
-      ->action(function (array $data, Component $livewire,OrderFleet $record): void {
+      ->action(function (array $data, Component $livewire, OrderFleet $record): void {
         $record->update(['order_id' => $data['order_id']]);
         Notification::make()
           ->success()
@@ -464,7 +445,7 @@ class OrderFleetResource extends Resource
         Notification::make()
           ->success()
           ->title('Success')
-          ->body("Tour leader added for {$record->code}")
+          ->body("Tour leader added for <strong>{$record->code}</strong>")
           ->send();
         $livewire->js('location.reload();');
       });
@@ -484,7 +465,7 @@ class OrderFleetResource extends Resource
           Notification::make()
             ->success()
             ->title('Success')
-            ->body("Tour leader removed from {$record->code}")
+            ->body("Tour leader removed from <strong>{$record->code}</strong>")
             ->send();
         }
       );

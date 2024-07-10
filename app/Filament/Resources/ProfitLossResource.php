@@ -107,14 +107,7 @@ class ProfitLossResource extends Resource
         TextColumn::make('net_sales')
           ->label('Net Sales')
           ->money('IDR')
-          ->state(function (ProfitLoss $record): ?float {
-            $inv = $record->invoice;
-            $mainCosts = $inv->main_costs;
-            $totalPrices = array_sum(array_map(fn($cost) => $cost['qty'] * $cost['price'], $mainCosts)) ?: 0;
-            $totalCashbacks = array_sum(array_map(fn($cost) => $cost['qty'] * $cost['cashback'], $mainCosts)) ?: 0;
-            $totalNetTransactions = $totalPrices - $totalCashbacks;
-            return $totalNetTransactions;
-          }),
+          ->state(fn(ProfitLoss $record): float => $record->calculateNetSales()),
         TextColumn::make('adjusted_income')
           ->label('Income (Plan)')
           ->sortable()
@@ -123,11 +116,7 @@ class ProfitLossResource extends Resource
           ->label('Income (Actual)')
           ->money('IDR')
           ->placeholder('No tour report')
-          ->state(function (ProfitLoss $record): ?float {
-            return $record->invoice->tourReport
-              ? $record->adjusted_income + $record->invoice->tourReport->difference
-              : null;
-          }),
+          ->state(fn(ProfitLoss $record): ?float => $record->calculateIncome()),
         TextColumn::make('invoice.order.trip_date')
           ->label('Tanggal')
           ->formatStateUsing(fn(Carbon $state): string => $state->translatedFormat('d/m/Y')),

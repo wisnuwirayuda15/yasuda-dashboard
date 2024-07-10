@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\OrderFleetStatus;
 use App\Enums\FleetPaymentStatus;
 use App\Models\Scopes\ApprovedScope;
 use Illuminate\Database\Eloquent\Model;
@@ -15,6 +16,31 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 class OrderFleet extends ApprovableModel
 {
   use HasFactory;
+
+  public function getStatus(): string
+  {
+    $date = $this->trip_date;
+
+    $order = $this->order()->exists();
+
+    return match (true) {
+      $order => OrderFleetStatus::BOOKED->getLabel(),
+      $date->isToday() => OrderFleetStatus::ON_TRIP->getLabel(),
+      $date->isPast() => OrderFleetStatus::FINISHED->getLabel(),
+      default => OrderFleetStatus::READY->getLabel(),
+    };
+  }
+
+  public function getRemainingDay(): string|int
+  {
+    $date = $this->trip_date;
+
+    return match (true) {
+      $date->isToday() => OrderFleetStatus::ON_TRIP->getLabel(),
+      $date->isPast() => OrderFleetStatus::FINISHED->getLabel(),
+      default => today()->diffInDays($date),
+    };
+  }
 
   /**
    * The attributes that are mass assignable.

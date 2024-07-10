@@ -28,29 +28,9 @@ class OrderFleetExporter extends Exporter
         ->formatStateUsing(fn($state): string => $state->translatedFormat('d/m/Y')),
       ExportColumn::make('remaining_day')
         ->label('Remaining Day')
-        ->state(
-          function (OrderFleet $record): string {
-            $date = $record->trip_date;
-            return match (true) {
-              $date->isToday() => OrderFleetStatus::ON_TRIP->getLabel(),
-              $date->isPast() => OrderFleetStatus::FINISHED->getLabel(),
-              default => today()->diffInDays($date),
-            };
-          }
-        ),
+        ->state(fn(OrderFleet $record): string => $record->getRemainingDay()),
       ExportColumn::make('status')
-        ->state(
-          function (OrderFleet $record): string {
-            $date = $record->trip_date;
-            $order = $record->order()->exists();
-            return match (true) {
-              $order => OrderFleetStatus::BOOKED->getLabel(),
-              $date->isToday() => OrderFleetStatus::ON_TRIP->getLabel(),
-              $date->isPast() => OrderFleetStatus::FINISHED->getLabel(),
-              default => OrderFleetStatus::READY->getLabel(),
-            };
-          }
-        ),
+        ->state(fn(OrderFleet $record): string => $record->getStatus()),
       ExportColumn::make('fleet.name')
         ->label('Mitra Armada'),
       ExportColumn::make('fleet.category')

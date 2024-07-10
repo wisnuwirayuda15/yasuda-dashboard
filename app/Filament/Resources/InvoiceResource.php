@@ -30,6 +30,7 @@ use Filament\Forms\Components\Checkbox;
 use Filament\Forms\Components\Fieldset;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Tabs\Tab;
+use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Illuminate\Database\Eloquent\Model;
 use Filament\Forms\Components\TextInput;
@@ -101,6 +102,16 @@ class InvoiceResource extends Resource
           ->label('Tanggal')
           ->formatStateUsing(fn(Carbon $state): string => $state->translatedFormat('d/m/Y'))
           ->sortable(),
+        IconColumn::make('profitLoss')
+          ->label('Profit & Loss')
+          ->state(fn(Invoice $record): bool => $record->profitLoss()->exists())
+          ->boolean()
+          ->alignCenter(),
+        IconColumn::make('tourReport')
+          ->label('Tour Report')
+          ->state(fn(Invoice $record): bool => $record->tourReport()->exists())
+          ->boolean()
+          ->alignCenter(),
         TextColumn::make('created_at')
           ->dateTime()
           ->sortable()

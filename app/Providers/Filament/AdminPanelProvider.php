@@ -2,6 +2,9 @@
 
 namespace App\Providers\Filament;
 
+use App\Filament\Resources\OrderFleetResource\Widgets\OrderFleetCalendarWidget;
+use App\Filament\Widgets\FleetWidget;
+use App\Filament\Widgets\ProfitLossWidget;
 use Filament\Pages;
 use Filament\Panel;
 use Filament\Widgets;
@@ -77,7 +80,7 @@ class AdminPanelProvider extends PanelProvider
     // Register scroll to top event
     FilamentView::registerRenderHook(
       PanelsRenderHook::SCRIPTS_AFTER,
-      function (): string {
+      function (): HtmlString {
         $event = JavascriptEvent::SCROLL_TO_TOP->value;
 
         $js = new HtmlString(<<<HTML
@@ -242,15 +245,16 @@ class AdminPanelProvider extends PanelProvider
         default => null,
       })
       ->readOnlyRelationManagersOnResourceViewPagesByDefault(false)
+      ->pages([])
       ->discoverResources(app_path('Filament/Resources'), 'App\\Filament\\Resources')
       ->discoverPages(app_path('Filament/Pages'), 'App\\Filament\\Pages')
-      ->pages([])
       ->discoverWidgets(app_path('Filament/Widgets'), 'App\\Filament\\Widgets')
       ->widgets([
-        // Widgets\AccountWidget::class,
-        // Widgets\FilamentInfoWidget::class,
+          // Widgets\AccountWidget::class,
+          // Widgets\FilamentInfoWidget::class,
+          // VersionsWidget::class,
+        OrderFleetCalendarWidget::class,
         MeetingCalendarWidget::class,
-        // VersionsWidget::class,
       ])
       ->colors([
         'primary' => Color::Rose,

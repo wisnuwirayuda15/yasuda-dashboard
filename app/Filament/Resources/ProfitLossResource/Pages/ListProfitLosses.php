@@ -16,6 +16,7 @@ class ListProfitLosses extends ListRecords
     return [
       Actions\Action::make('list_invoice')
         ->label('Lihat Invoice')
+        ->visible(fn() => auth()->user()->can('view_any_invoice'))
         ->tooltip('Anda bisa membuat analisis profit & loss dari halaman invoice')
         ->icon(InvoiceResource::getNavigationIcon())
         ->url(InvoiceResource::getUrl('index')),

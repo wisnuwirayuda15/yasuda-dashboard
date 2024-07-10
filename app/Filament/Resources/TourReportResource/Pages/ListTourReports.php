@@ -16,6 +16,7 @@ class ListTourReports extends ListRecords
     return [
       Actions\Action::make('list_invoice')
         ->label('Lihat Invoice')
+        ->visible(fn() => auth()->user()->can('view_any_invoice'))
         ->tooltip('Anda bisa membuat tour report dari halaman invoice')
         ->icon(InvoiceResource::getNavigationIcon())
         ->url(InvoiceResource::getUrl('index')),

@@ -22,23 +22,13 @@ class ProfitLossExporter extends Exporter
       ExportColumn::make('invoice.order.customer.name')
         ->label('Customer Name'),
       ExportColumn::make('net_sales')
-        ->state(function (ProfitLoss $record): ?float {
-          $inv = $record->invoice;
-          $mainCosts = $inv->main_costs;
-          $totalPrices = array_sum(array_map(fn($cost) => $cost['qty'] * $cost['price'], $mainCosts)) ?: 0;
-          $totalCashbacks = array_sum(array_map(fn($cost) => $cost['qty'] * $cost['cashback'], $mainCosts)) ?: 0;
-          $totalNetTransactions = $totalPrices - $totalCashbacks;
-          return $totalNetTransactions;
-        }),
+        ->label('Net Sales')
+        ->state(fn(ProfitLoss $record): float => $record->calculateNetSales()),
       ExportColumn::make('adjusted_income')
         ->label('Income (Plan)'),
       ExportColumn::make('actual_income')
         ->label('Income (Actual)')
-        ->state(function (ProfitLoss $record): float|string {
-          return $record->invoice->tourReport
-            ? $record->adjusted_income + $record->invoice->tourReport->difference
-            : '-';
-        }),
+        ->state(fn(ProfitLoss $record): ?float => $record->calculateNetSales() ?? null),
       ExportColumn::make('invoice.order.trip_date')
         ->label('Tanggal')
         ->formatStateUsing(fn(Carbon $state): string => $state->translatedFormat('d/m/Y')),

@@ -22,12 +22,23 @@ class MeetingCalendarWidget extends FullCalendarWidget
     return Event::query()
       ->where('date', '>=', $fetchInfo['start'])
       ->get()->map(
-        fn(Event $event) => EventData::make()
-          ->id($event->id)
-          ->title($event->title)
-          ->start($event->date)
+        fn(Event $record) => EventData::make()
+          ->id($record->id)
+          ->title($record->title)
+          ->start($record->date)
       )
       ->toArray();
+  }
+
+  public function config(): array
+  {
+    return [
+      'headerToolbar' => [
+        'left' => 'prev,next',
+        'center' => 'title',
+        'right' => 'dayGridMonth,dayGridWeek,dayGridDay,today',
+      ],
+    ];
   }
 
   public function getFormSchema(): array

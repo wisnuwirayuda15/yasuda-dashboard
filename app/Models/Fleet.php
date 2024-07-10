@@ -45,7 +45,7 @@ class Fleet extends ApprovableModel
 
   public static function getGroupOptionsByCategories(): array
   {
-    return Fleet::query()
+    return self::query()
       ->select('category', 'id', 'name', 'seat_set')
       ->get()
       ->groupBy('category')
