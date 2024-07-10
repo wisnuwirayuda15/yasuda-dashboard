@@ -4,6 +4,7 @@ namespace App\Filament\Resources\ProfitLossResource\Pages;
 
 use Filament\Actions;
 use App\Enums\CashFlow;
+use App\Models\OrderFleet;
 use App\Enums\FleetCategory;
 use App\Models\LoyaltyPoint;
 use Filament\Support\Colors\Color;
@@ -31,7 +32,7 @@ class ViewProfitLoss extends ViewRecord
         ->icon(InvoiceResource::getNavigationIcon())
         ->color('info')
         ->url(InvoiceResource::getUrl('view', ['record' => $pnl->invoice->id])),
-      Actions\Action::make('create_and_update_loyalty_point')
+      Actions\Action::make('create_or_update_loyalty_point')
         ->icon(LoyaltyPointResource::getNavigationIcon())
         ->label(($loyaltyPoint ? 'Perbarui' : 'Buat') . ' Loyalty Point')
         ->color($loyaltyPoint ? 'warning' : 'success')
@@ -41,7 +42,7 @@ class ViewProfitLoss extends ViewRecord
             Notification::make()
               ->danger()
               ->title('Failed')
-              ->body("Profit & Loss not approved!")
+              ->body("Profit & Loss not yet approved!")
               ->send();
 
             $action->cancel();
@@ -51,16 +52,9 @@ class ViewProfitLoss extends ViewRecord
 
           $order = $inv->order;
 
-          [$mediumTotal, $bigTotal, $legrestTotal] = [0, 0, 0];
-
-          foreach ($order->orderFleets as $orderFleet) {
-            $fleet = $orderFleet->fleet;
-            match ($fleet->category->value) {
-              FleetCategory::MEDIUM->value => $mediumTotal++,
-              FleetCategory::BIG->value => $bigTotal++,
-              FleetCategory::LEGREST->value => $legrestTotal++,
-            };
-          }
+          $mediumTotal = $order->orderFleets->filter(fn(OrderFleet $orderFleet) => $orderFleet->fleet->category->value === FleetCategory::MEDIUM->value)->count();
+          $bigTotal = $order->orderFleets->filter(fn(OrderFleet $orderFleet) => $orderFleet->fleet->category->value === FleetCategory::BIG->value)->count();
+          $legrestTotal = $order->orderFleets->filter(fn(OrderFleet $orderFleet) => $orderFleet->fleet->category->value === FleetCategory::LEGREST->value)->count();
 
           $bonus = $mediumTotal * $pnl->medium_subs_bonus + $bigTotal * $pnl->big_subs_bonus + $legrestTotal * $pnl->legrest_subs_bonus;
 
@@ -72,7 +66,7 @@ class ViewProfitLoss extends ViewRecord
             Notification::make()
               ->success()
               ->title('Success')
-              ->body("Loyalty Point for <strong>{$inv->code}</strong> updated")
+              ->body("Loyalty Point for <strong>{$inv->code}</strong> updated!")
               ->send();
           } else {
             $inv->loyaltyPoint()->create([
@@ -84,7 +78,7 @@ class ViewProfitLoss extends ViewRecord
             Notification::make()
               ->success()
               ->title('Success')
-              ->body("Loyalty Point for <strong>{$inv->code}</strong> created")
+              ->body("Loyalty Point for <strong>{$inv->code}</strong> created!")
               ->send();
           }
 

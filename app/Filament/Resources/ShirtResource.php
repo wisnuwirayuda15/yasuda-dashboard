@@ -90,6 +90,7 @@ class ShirtResource extends Resource
       ->columns([
         TextColumn::make('invoice.code')
           ->badge()
+          ->searchable()
           ->sortable(),
         TextColumn::make('total')
           ->label('Total Baju')
@@ -99,13 +100,17 @@ class ShirtResource extends Resource
           ->label('Tanggal')
           ->sortable(),
         TextColumn::make('invoice.order.customer.name')
+          ->searchable()
           ->sortable(),
         TextColumn::make('invoice.order.customer.address')
-          ->label('Alamat')
-          ->sortable(),
+          ->label('Alamat'),
         TextColumn::make('status')
           ->label('Status')
-          ->sortable(),
+          ->badge()
+          ->sortable()
+          ->searchable()
+          ->color(fn(string $state) => $state === 'sent' ? 'success' : 'warning')
+          ->formatStateUsing(fn(string $state) => Str::headline($state)),
         TextColumn::make('created_at')
           ->dateTime()
           ->sortable()

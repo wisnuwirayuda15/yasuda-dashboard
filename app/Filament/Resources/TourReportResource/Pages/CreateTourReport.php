@@ -3,10 +3,12 @@
 namespace App\Filament\Resources\TourReportResource\Pages;
 
 use App\Models\Invoice;
+use Filament\Notifications\Notification;
 use Illuminate\Database\Eloquent\Builder;
 use Filament\Resources\Pages\CreateRecord;
 use App\Filament\Resources\InvoiceResource;
 use App\Filament\Resources\TourReportResource;
+use App\Models\TourReport;
 
 class CreateTourReport extends CreateRecord
 {
@@ -18,9 +20,21 @@ class CreateTourReport extends CreateRecord
   {
     $inv = Invoice::where('code', request('invoice'))->firstOrFail();
 
+    $pnlApproved = (bool) $inv->profitLoss?->isApprovalCompleted();
+
+    if (!$pnlApproved) {
+      Notification::make()
+      ->danger()
+      ->title('Ooppsss...')
+      ->body('Profit & Loss not yet approved!')
+      ->send();
+      
+      redirect(InvoiceResource::getUrl('view', ['record' => $inv->id]));
+    }
+
     $pnl = $inv->profitLoss;
 
-    $tr = $inv->tourReport;
+    $tr = TourReport::withoutGlobalScopes()->where('invoice_id', $inv->id)->first();
 
     // All order fleets must have tour leader before creating tour report
     $tourLeaderNotAllSet = $inv->order->whereHas('orderFleets', function (Builder $query) {

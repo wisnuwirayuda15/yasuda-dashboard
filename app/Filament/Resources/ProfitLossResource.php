@@ -43,6 +43,7 @@ use App\Filament\Resources\ProfitLossResource\Pages;
 use EightyNine\Approvals\Tables\Actions\ApprovalActions;
 use EightyNine\Approvals\Tables\Columns\ApprovalStatusColumn;
 use App\Filament\Resources\ProfitLossResource\RelationManagers;
+use App\Models\TourReport;
 
 class ProfitLossResource extends Resource
 {
@@ -161,14 +162,14 @@ class ProfitLossResource extends Resource
             Tables\Actions\DeleteAction::make()
               ->modalHeading('Delete Profit & Loss Analysis')
               // ->modalDescription(fn(ProfitLoss $record): string => $record->invoice->tourReport ? $record->invoice->code . ' sudah memiliki tour report. Jika anda menghapusnya, tour reportnya akan di hapus juga.' : 'Are you sure you would like to do this?')
-              ->action(function (ProfitLoss $record, Component $livewire, Tables\Actions\DeleteAction $action) {
-                $tourReport = $record->invoice->tourReport;
-                // $tourReport ? $tourReport->delete() : null;
+              ->action(function (ProfitLoss $record, Tables\Actions\DeleteAction $action) {
+                $tourReport = TourReport::withoutGlobalScopes()->where('invoice_id', $record->invoice_id)->exists();
+                // $tourReport = $record->invoice->tourReport;
                 if ($tourReport) {
                   Notification::make()
                     ->danger()
                     ->title('Delete failed')
-                    ->body("{$record->invoice->code} has Tour Report.")
+                    ->body("Invoice <strong>{$record->invoice->code}</strong> has Tour Report")
                     ->send();
                   $action->cancel();
                 }

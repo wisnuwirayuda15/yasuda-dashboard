@@ -247,10 +247,10 @@ class AdminPanelProvider extends PanelProvider
       ->pages([])
       ->discoverWidgets(app_path('Filament/Widgets'), 'App\\Filament\\Widgets')
       ->widgets([
-          // Widgets\AccountWidget::class,
-          // Widgets\FilamentInfoWidget::class,
-        VersionsWidget::class,
+        // Widgets\AccountWidget::class,
+        // Widgets\FilamentInfoWidget::class,
         MeetingCalendarWidget::class,
+        // VersionsWidget::class,
       ])
       ->colors([
         'primary' => Color::Rose,
@@ -282,7 +282,7 @@ class AdminPanelProvider extends PanelProvider
           ->selectable(true)
           ->editable(true),
         VersionsPlugin::make()
-          ->hasNavigationView(false)
+          ->hasNavigationView(fn() => app()->environment('local'))
           ->widgetColumnSpan('full'),
         FilamentShieldPlugin::make()
           ->gridColumns(2)

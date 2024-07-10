@@ -71,6 +71,10 @@ class TourReportResource extends Resource
   public static function form(Form $form): Form
   {
     $record = $form->getRecord();
+    
+    if (auth()->user()->employable?->role === EmployeeRole::TOUR_LEADER && $record->employee_id !== auth()->user()->employable?->id) {
+      abort(403);
+    }
 
     if (blank($record)) {
       $invoice = request('invoice');
@@ -669,7 +673,7 @@ class TourReportResource extends Resource
     //   ];
     // }
 
-    if ($inv->profitLoss->eat_prasmanan_price > 0) {
+    if ($inv->profitLoss->eat_prasmanan_price ?? 0 > 0) {
       $qty = $anak + $tambahan + $pembina + $special;
       $costsDetail['makan-prasmanan'] = [
         'slug' => 'makan-prasmanan',

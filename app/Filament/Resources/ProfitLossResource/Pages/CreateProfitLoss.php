@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Route;
 use Filament\Resources\Pages\CreateRecord;
 use Illuminate\Contracts\Support\Htmlable;
 use App\Filament\Resources\ProfitLossResource;
+use App\Models\ProfitLoss;
 
 class CreateProfitLoss extends CreateRecord
 {
@@ -16,9 +17,11 @@ class CreateProfitLoss extends CreateRecord
 
   public function beforeFill(): void
   {
-    $pnl = Invoice::where('code', request('invoice'))->firstOrFail()->profitLoss;
+    $inv = Invoice::where('code', request('invoice'))->firstOrFail();
+
+    $pnl = ProfitLoss::withoutGlobalScopes()->where('invoice_id', $inv->id)->first();
 
     // Each invoice should only has one profit & loss
-    $pnl ? redirect(ProfitLossResource::getUrl('view', ['record' => $pnl->id])) : null;
+    (bool) $pnl ? redirect(ProfitLossResource::getUrl('view', ['record' => $pnl->id])) : null;
   }
 }

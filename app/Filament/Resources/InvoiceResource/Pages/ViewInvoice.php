@@ -29,15 +29,15 @@ class ViewInvoice extends ViewRecord
 
     $whatsAppUrl = "https://api.whatsapp.com/send?phone={$customer->phone}&text=$generateInvoiceUrl";
 
-    $shirt = $inv->shirt()->exists();
+    $shirt = (bool) $inv->shirt;
 
-    $pl = $inv->profitLoss()->exists();
+    $pnl = (bool) $inv->profitLoss;
 
-    $tr = $inv->tourReport()->exists();
+    $tr = (bool) $inv->tourReport;
 
     $shirtUrl = $shirt ? ShirtResource::getUrl('view', ['record' => $inv->shirt->id]) : ShirtResource::getUrl('create', ['invoice' => $inv->code]);
 
-    $profitLossUrl = $pl ? ProfitLossResource::getUrl('view', ['record' => $inv->profitLoss->id]) : ProfitLossResource::getUrl('create', ['invoice' => $inv->code]);
+    $profitLossUrl = $pnl ? ProfitLossResource::getUrl('view', ['record' => $inv->profitLoss->id]) : ProfitLossResource::getUrl('create', ['invoice' => $inv->code]);
 
     $tourReportUrl = $tr ? TourReportResource::getUrl('view', ['record' => $inv->tourReport->id]) : TourReportResource::getUrl('create', ['invoice' => $inv->code]);
 
@@ -61,7 +61,7 @@ class ViewInvoice extends ViewRecord
           ->color('secondary')
           ->url($shirtUrl),
         Action::make('pnl')
-          ->label(($pl ? 'Lihat' : 'Buat') . ' Analisis P&L')
+          ->label(($pnl ? 'Lihat' : 'Buat') . ' Analisis P&L')
           ->icon(ProfitLossResource::getNavigationIcon())
           ->color('info')
           ->url($profitLossUrl),
@@ -69,7 +69,7 @@ class ViewInvoice extends ViewRecord
           ->label(($tr ? 'Lihat' : 'Buat') . ' Tour Report')
           ->icon(TourReportResource::getNavigationIcon())
           ->color('warning')
-          ->visible($pl)
+          ->visible($pnl)
           ->hidden($tourLeaderNotAllSet)
           ->url($tourReportUrl),
       ])->tooltip('Menu')

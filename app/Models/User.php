@@ -13,7 +13,6 @@ use Filament\Models\Contracts\FilamentUser;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
-use Symfony\Component\HttpKernel\Exception\HttpException;
 use Jeffgreco13\FilamentBreezy\Traits\TwoFactorAuthenticatable;
 
 class User extends Authenticatable implements HasAvatar, HasName, FilamentUser, MustVerifyEmail
@@ -42,7 +41,7 @@ class User extends Authenticatable implements HasAvatar, HasName, FilamentUser, 
     // if ($this->employable?->exists() || $this->email === env('ADMIN_EMAIL', 'yasudajayatour@gmail.com')) {
     //   return true;
     // }
-    // throw new HttpException(403, 'Your account is not activated, contact your admin for futher information');
+    // abort(403, 'Your account is not activated, contact your admin for futher information');
   }
 
   public function getFilamentName(): string
