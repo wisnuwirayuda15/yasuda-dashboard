@@ -74,7 +74,7 @@ class ProfitLossResource extends Resource
         $invoice = $parameters['invoice'];
       }
 
-      static::$invoice = Invoice::where('code', $invoice)->with(['order', 'order.orderFleets.fleet', 'order.customer'])->firstOrFail();
+      static::$invoice = Invoice::where('code', $invoice)->with(['order', 'order.orderFleets.fleet', 'order.customer'])->first();
     } else {
       static::$invoice = $record->invoice;
     }
@@ -138,9 +138,7 @@ class ProfitLossResource extends Resource
           ->dateTime()
           ->sortable()
           ->toggleable(isToggledHiddenByDefault: true),
-        ApprovalStatusColumn::make('approvalStatus.status')
-          ->label('Approval Status')
-          ->sortable(),
+        ApprovalStatusColumn::make('approvalStatus.status'),
       ])
       ->filters([
         Filter::make('approved')->approval(),
@@ -175,7 +173,7 @@ class ProfitLossResource extends Resource
                   $action->cancel();
                 }
                 $record->delete();
-                $livewire->js('location.reload();');
+                // $livewire->js('location.reload();');
               }),
           ]),
         ])
@@ -203,16 +201,10 @@ class ProfitLossResource extends Resource
   {
     return Section::make('General information')
       ->schema([
-        Select::make('invoice_id')
+        Hidden::make('invoice_id')
           ->required()
           ->unique(ignoreRecord: true)
-          ->disabled()
-          ->dehydrated()
-          ->allowHtml()
-          ->prefixIcon(InvoiceResource::getNavigationIcon())
-          ->default(static::$invoice->id)
-          ->relationship('invoice', 'id')
-          ->getOptionLabelFromRecordUsing(fn(Invoice $record) => view('filament.components.badges.invoice', compact('record'))),
+          ->default(fn() => static::$invoice->id),
         Placeholder::make('invoice_code')
           ->label('Invoice :')
           ->inlineLabel()

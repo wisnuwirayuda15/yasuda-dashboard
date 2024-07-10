@@ -36,6 +36,7 @@ use Filament\Forms\Components\Actions\Action;
 use App\Filament\Resources\ShirtResource\Pages;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use App\Filament\Resources\ShirtResource\RelationManagers;
+use Filament\Forms\Components\Hidden;
 
 class ShirtResource extends Resource
 {
@@ -69,7 +70,7 @@ class ShirtResource extends Resource
         $invoice = $parameters['invoice'];
       }
 
-      static::$invoice = Invoice::where('code', $invoice)->doesntHave('shirt')->with(['order', 'order.customer'])->firstOrFail();
+      static::$invoice = Invoice::where('code', $invoice)->doesntHave('shirt')->with(['order', 'order.customer'])->first();
     } else {
       static::$invoice = $record->invoice;
     }
@@ -137,18 +138,10 @@ class ShirtResource extends Resource
   {
     return Section::make('General Information')
       ->schema([
-        Select::make('invoice_id')
+        Hidden::make('invoice_id')
           ->required()
           ->unique(ignoreRecord: true)
-          ->allowHtml()
-          ->disabled()
-          ->dehydrated()
-          ->live(true)
-          ->columnSpanFull()
-          ->prefixIcon(InvoiceResource::getNavigationIcon())
-          ->default(fn() => static::$invoice->id)
-          ->relationship('invoice')
-          ->getOptionLabelFromRecordUsing(fn(Invoice $record) => view('filament.components.badges.invoice', compact('record'))),
+          ->default(fn() => static::$invoice->id),
         Group::make([
           Placeholder::make('invoice_code')
             ->label('Invoice :')

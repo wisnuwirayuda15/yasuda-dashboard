@@ -51,6 +51,11 @@ class Employee extends Model
     return $this->hasMany(OrderFleet::class);
   }
 
+  public function tourReports(): HasMany
+  {
+    return $this->hasMany(TourReport::class);
+  }
+
   public function employable()
   {
     return $this->morphOne(User::class, 'employable');

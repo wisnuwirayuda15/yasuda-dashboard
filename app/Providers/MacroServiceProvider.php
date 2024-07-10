@@ -109,7 +109,7 @@ class MacroServiceProvider extends ServiceProvider
       return $this;
     });
 
-    TextInput::macro('currency', function (int|Closure $minValue = 0, string|Closure $prefix = 'Rp'): static {
+    TextInput::macro('currency', function (int|Closure $minValue = 0, string|Closure|null $prefix = 'Rp'): static {
       $this
         ->live(true)
         ->numeric()
@@ -137,7 +137,7 @@ class MacroServiceProvider extends ServiceProvider
       return $this;
     });
 
-    TextInput::macro('code', function (string|Closure $code, bool $editable = true, bool $generateable = true): static {
+    TextInput::macro('code', function (string|Closure $code, bool $editable = true, bool $generateable = false, bool $resetable = true): static {
       $edit = ['edit', 'editOption', 'editOption.editOption', 'createOption.editOption'];
       $view = ['view', 'viewOption', 'viewOption.viewOption', 'createOption.viewOption'];
 
@@ -161,6 +161,13 @@ class MacroServiceProvider extends ServiceProvider
             ->visible($generateable)
             ->action(function (TextInput $component, Set $set) use ($code) {
               $set($component, $code);
+            }),
+          Action::make('reset')
+            ->icon('gmdi-restart-alt-o')
+            ->hidden(fn($operation) => $operation === 'view')
+            ->visible($resetable)
+            ->action(function (TextInput $component, Set $set) use ($code) {
+              $set($component, $code);
             })
         ]);
       return $this;
@@ -180,7 +187,6 @@ class MacroServiceProvider extends ServiceProvider
           Action::make('reset')
             ->button()
             ->color('danger')
-            ->slideOver(false)
             ->icon('gmdi-restart-alt-tt')
             ->requiresConfirmation()
             ->modalHeading('Are you sure?')

@@ -3,12 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\Invoice;
-use Illuminate\View\View;
 use Spatie\LaravelPdf\PdfBuilder;
 use Spatie\LaravelPdf\Facades\Pdf;
 use Spatie\Browsershot\Browsershot;
 use Spatie\LaravelPdf\Enums\Format;
-use Barryvdh\DomPDF\Facade\Pdf as DomPDF;
 
 class PdfController extends Controller
 {
@@ -35,10 +33,6 @@ class PdfController extends Controller
     //     ->format(Format::A2)
     //     ->name("{$invoice->code}_{$invoice->order->customer->name}_{$invoice->order->trip_date->translatedFormat('d-m-Y')}.pdf");
     // }
-
-    // return DomPDF::loadView('pdf.invoice-pdf', compact('invoice'))
-    //   ->setPaper('a2', 'landscape')
-    //   ->stream($pdfName);
 
     return view('pdf.invoice-pdf', compact('invoice'));
   }

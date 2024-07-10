@@ -21,10 +21,13 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Toggle;
 use Filament\Forms\Components\Section;
 use Illuminate\Auth\Events\Registered;
+use Filament\Tables\Actions\EditAction;
+use Filament\Tables\Actions\ViewAction;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
+use Filament\Tables\Actions\ActionGroup;
 use Filament\Tables\Columns\ImageColumn;
 use Filament\Forms\Components\FileUpload;
 use Illuminate\Database\Eloquent\Builder;
@@ -91,14 +94,16 @@ class UserResource extends Resource
             TextInput::make('email')
               ->unique(ignoreRecord: true)
               ->email()
-              ->live(onBlur: true, condition: $operation === 'edit')
+              ->live(true, condition: $operation === 'edit')
               ->helperText(fn(?User $record, $state) => $record?->email !== $state && $operation === 'edit' ? 'Jika diganti, email ini perlu diverifikasi ulang' : null)
+              ->default(fn() => static::$employee ? $username . '@gmail.com' : null)
               ->placeholder(fn() => (static::$employee ? $username : 'user') . '@gmail.com')
               ->prefixIcon('fas-envelope')
               ->required()
               ->columnSpan(1)
               ->maxLength(255),
             Select::make('roles')
+              ->required()
               ->relationship('roles', 'name')
               ->multiple()
               ->preload()
@@ -125,6 +130,7 @@ class UserResource extends Resource
               ->live(true)
               ->columnSpanFull()
               ->visible(fn(Get $get, string $operation): bool => $get('change_password') || $operation === 'create')
+              ->columns(2)
               ->schema([
                 Password::make('password')
                   ->required()
@@ -132,7 +138,6 @@ class UserResource extends Resource
                   ->minLength(8)
                   ->maxLength(255)
                   ->helperText('Password minimal harus berisi 8 karakter')
-                  ->copyable(color: 'warning')
                   ->regeneratePassword(color: 'secondary', using: function (Set $set) {
                     $generated = Str::password(16);
                     $set('password_confirmation', $generated);
@@ -162,7 +167,6 @@ class UserResource extends Resource
           ->alignCenter(),
         TextColumn::make('roles.name')
           ->badge()
-          // ->label('Roles')
           ->placeholder('Not assigned')
           ->formatStateUsing(fn(?string $state): string => Str::headline($state))
           ->searchable(),
@@ -188,14 +192,16 @@ class UserResource extends Resource
       ])
       ->filters([
         Filter::make('verified')
+          ->label('Email Verified')
           ->query(fn(Builder $query): Builder => $query->whereNotNull('email_verified_at')),
         Filter::make('has_employee')
+          ->label('Has Employee')
           ->query(fn(Builder $query): Builder => $query->whereHas('employable')),
       ])
       ->actions([
-        Tables\Actions\ActionGroup::make([
-          Tables\Actions\ViewAction::make(),
-          Tables\Actions\EditAction::make()
+        ActionGroup::make([
+          ViewAction::make(),
+          EditAction::make()
             ->hidden(fn(User $record): bool => $record->id == auth()->id()),
           static::getDeleteAction(),
           static::getRemoveEmployeeAction(),
@@ -258,17 +264,18 @@ class UserResource extends Resource
   {
     return TableAction::make('remove_employee')
       ->requiresConfirmation()
-      ->slideOver(false)
       ->visible(fn(User $record): bool => (bool) $record->employable)
       ->icon('fas-user-xmark')
       ->label('Remove Employee')
       ->color('warning')
       ->action(function (User $record): void {
         $record->employable()->dissociate();
+
         $record->update([
           'employable_id' => null,
           'employable_type' => null
         ]);
+
         Notification::make()
           ->success()
           ->title('Success')
@@ -280,27 +287,27 @@ class UserResource extends Resource
   public static function getSendEmailVerificationAction(): TableAction
   {
     return TableAction::make('send_email_verification')
-      ->hidden(fn(User $record): bool => (bool) $record->email_verified_at)
-      ->modal(false)
       ->icon('gmdi-mail')
       ->label('Send Email Verification')
       ->color('success')
+      ->requiresConfirmation()
+      ->hidden(fn(User $record): bool => $record->hasVerifiedEmail())
       ->action(function (User $record, TableAction $action): void {
-        if ($record->email_verified_at) {
+        if ($record->hasVerifiedEmail()) {
           Notification::make()
             ->danger()
             ->title('Failed')
-            ->body('Email already verified')
+            ->body("<strong>{$record->email}</strong> already verified")
             ->send();
           $action->cancel();
         }
 
-        event(new Registered($record));
+        $record->sendEmailVerificationNotification();
 
         Notification::make()
           ->success()
-          ->title('Success')
-          ->body("Email verification sent to <strong>{$record->email}</strong>")
+          ->title('Email Verification')
+          ->body("Email verification link has been sent to <strong>{$record->email}</strong>")
           ->send();
       });
   }

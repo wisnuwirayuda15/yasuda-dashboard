@@ -201,7 +201,7 @@ class EmployeeSeeder extends Seeder
     foreach (static::getEmployees() as $employee) {
       $employee['photo'] = 'https://randomuser.me/api/portraits/' . ($employee['gender'] === Gender::MALE->value ? 'men' : 'women') . '/' . fake()->unique()->numberBetween(1, 99) . '.jpg';
 
-      $employee['code'] = emp_code(new Employee, $employee['role'] === EmployeeRole::TOUR_LEADER->value ? '02/TLF/' : '01/YSD/');
+      $employee['code'] = get_code(new Employee, $employee['role'] === EmployeeRole::TOUR_LEADER->value ? '02/TLF/' : '01/YSD/', false);
 
       $employee['join_date'] = $employee['join_date'] ?? today()->subDays(rand(0, 365));
 

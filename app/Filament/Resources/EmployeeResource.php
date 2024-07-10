@@ -21,7 +21,6 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Section;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
-use Illuminate\Database\Eloquent\Model;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
 use Filament\Tables\Columns\ImageColumn;
@@ -33,7 +32,6 @@ use Filament\Forms\Components\ToggleButtons;
 use Ysfkaya\FilamentPhoneInput\Forms\PhoneInput;
 use App\Filament\Resources\EmployeeResource\Pages;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
-use Filament\Forms\Components\Actions\Action as FormAction;
 use App\Filament\Resources\EmployeeResource\RelationManagers;
 
 class EmployeeResource extends Resource
@@ -64,7 +62,7 @@ class EmployeeResource extends Resource
           ->schema([
             TextInput::make('code')
               ->live(true)
-              ->code(emp_code(new Employee, '01/YSD/'), generateable: false),
+              ->code(fn(Get $get) => get_code(new Employee, $get('role') === EmployeeRole::TOUR_LEADER->value ? '02/TLF/' : '01/YSD/', false)),
             FileUpload::make('photo')
               ->image()
               ->imageEditor()
@@ -119,11 +117,10 @@ class EmployeeResource extends Resource
                   ->afterStateUpdated(function (Set $set, ?string $state): void {
                     if (blank($state)) {
                       return;
-                    } else if ($state === EmployeeRole::TOUR_LEADER->value) {
-                      $set('code', emp_code(new Employee, '02/TLF/'));
-                    } else {
-                      $set('code', emp_code(new Employee, '01/YSD/'));
                     }
+                    $prefix = $state === EmployeeRole::TOUR_LEADER->value ? '02/TLF/' : '01/YSD/';
+                    $code = get_code(new Employee, $prefix, false);
+                    $set('code', $code);
                   })
                   ->loadingIndicator(),
               ])
@@ -140,10 +137,9 @@ class EmployeeResource extends Resource
         IconColumn::make('is_user_assigned')
           ->label('Is User Assigned')
           ->state(fn(Employee $record) => $record->employable()->exists())
-          ->tooltip(fn(Employee $record) => $record->employable?->name ?? 'Assign User')
+          ->tooltip(fn(Employee $record) => $record->employable?->name)
           ->boolean()
-          ->alignCenter()
-          ->action(static::getAssignUserAction()),
+          ->alignCenter(),
         TextColumn::make('code')
           ->badge()
           ->searchable(),
@@ -197,7 +193,8 @@ class EmployeeResource extends Resource
           Tables\Actions\ViewAction::make(),
           Tables\Actions\EditAction::make(),
           Tables\Actions\DeleteAction::make(),
-          static::getAssignUserAction()
+          static::getAssignUserAction(),
+          static::getCreateUserAction(),
         ])
       ]);
   }
@@ -221,23 +218,21 @@ class EmployeeResource extends Resource
 
   public static function getAssignUserAction(): Action
   {
-    return Action::make('assign_user')
+    return Action::make('select_user')
       ->icon(UserResource::getNavigationIcon())
-      ->label('Assign User')
+      ->label('Select User Account')
       ->color('info')
+      // ->visible(fn(Employee $record) => $record->employable()->exists())
       ->form([
         Select::make('user_id')
           ->required()
           ->label('Select User')
           ->default(fn(Employee $record) => $record->employable?->id)
-          ->options(fn(Employee $record) => User::whereNotMorphedTo('employable', Employee::class)->orWhere('id', $record->employable?->id)->pluck('name', 'id'))
-          ->hintAction(
-            fn(Employee $record) =>
-            FormAction::make('create_user')
-              ->label('Buat User Baru')
-              ->icon(UserResource::getNavigationIcon())
-              ->url(UserResource::getUrl('create', ['employee' => $record->id]))
-          ),
+          ->options(function (Employee $record) {
+            return User::whereNotMorphedTo('employable', Employee::class)
+              ->orWhere('id', $record->employable?->id)
+              ->pluck('name', 'id');
+          })
       ])
       ->action(function (array $data, Employee $record): void {
         if ($record->employable()->exists()) {
@@ -246,7 +241,7 @@ class EmployeeResource extends Resource
             'employable_type' => null
           ]);
         }
-        $user = User::findOrFail($data['user_id']);
+        $user = User::find($data['user_id']);
         $record->employable()->save($user);
         Notification::make()
           ->success()
@@ -254,5 +249,15 @@ class EmployeeResource extends Resource
           ->body("User assigned for <strong>{$record->name}</strong>")
           ->send();
       });
+  }
+
+  public static function getCreateUserAction(): Action
+  {
+    return Action::make('create_user')
+      ->icon('fas-user-plus')
+      ->label('Create User Account')
+      ->color('success')
+      ->hidden(fn(Employee $record) => $record->employable()->exists())
+      ->url(fn(Employee $record) => UserResource::getUrl('create', ['employee' => $record->id]));
   }
 }

@@ -15,9 +15,11 @@ use Illuminate\Foundation\Auth\EmailVerificationRequest;
 |
 */
 
-if (filled(env('APP_PATH'))) {
-  Route::get('/', function () {
-    return redirect(env('APP_PATH'));
+$appPath = env('APP_PATH', 'dashboard');
+
+if (filled($appPath) || $appPath !== '/') {
+  Route::get('/', function () use ($appPath) {
+    return redirect($appPath);
   });
 }
 

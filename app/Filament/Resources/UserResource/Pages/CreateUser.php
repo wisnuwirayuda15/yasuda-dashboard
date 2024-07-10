@@ -19,13 +19,16 @@ class CreateUser extends CreateRecord
   {
     $user = static::getModel()::create($data);
 
-    // event(new Registered($user)); //send email verification
+    // $user->sendEmailVerificationNotification();
 
-    // Notification::make()
-    //   ->successg()
-    //   ->title('Email Verification')
-    //   ->body('Email verification link has been sent to ' . $user->email . '.')
-    //   ->send();
+    Notification::make()
+      ->warning()
+      ->title('Email Verification')
+      // ->body("Email verification link has been sent to <strong>{$user->email}</strong>")
+      ->body("Akun <strong>{$user->email}</strong> hanya dapat digunakan jika email sudah terverifikasi, silahkan kirim email verifikasi untuk email terkait.")
+      ->persistent()
+      ->send()
+      ->sendToDatabase(auth()->user());
 
     if (isset($data['employee_id'])) {
       $employee = Employee::find($data['employee_id']);

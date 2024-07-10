@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Filament\Panel;
 use Laravel\Sanctum\HasApiTokens;
 use Filament\Models\Contracts\HasName;
@@ -14,6 +13,7 @@ use Filament\Models\Contracts\FilamentUser;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 use Jeffgreco13\FilamentBreezy\Traits\TwoFactorAuthenticatable;
 
 class User extends Authenticatable implements HasAvatar, HasName, FilamentUser, MustVerifyEmail
@@ -24,9 +24,12 @@ class User extends Authenticatable implements HasAvatar, HasName, FilamentUser, 
   {
     // return $this->avatar_url ? Storage::url($this->avatar_url) : null;
 
-    if ($this->employable?->photo) {
-      $photo = $this->employable?->photo;
-      return str_starts_with($photo, 'http') ? $photo : Storage::url($photo);
+    $employeePhoto = $this->employable?->photo;
+
+    if ($employeePhoto) {
+      return str_starts_with($employeePhoto, 'http')
+        ? $employeePhoto
+        : Storage::url($employeePhoto);
     }
 
     return null;
@@ -35,6 +38,11 @@ class User extends Authenticatable implements HasAvatar, HasName, FilamentUser, 
   public function canAccessPanel(Panel $panel): bool
   {
     return true;
+
+    // if ($this->employable?->exists() || $this->email === env('ADMIN_EMAIL', 'yasudajayatour@gmail.com')) {
+    //   return true;
+    // }
+    // throw new HttpException(403, 'Your account is not activated, contact your admin for futher information');
   }
 
   public function getFilamentName(): string
@@ -48,7 +56,6 @@ class User extends Authenticatable implements HasAvatar, HasName, FilamentUser, 
 
     $this->save();
   }
-
 
   /**
    * The attributes that are mass assignable.

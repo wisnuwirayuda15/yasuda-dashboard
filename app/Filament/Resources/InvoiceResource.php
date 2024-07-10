@@ -109,9 +109,7 @@ class InvoiceResource extends Resource
           ->dateTime()
           ->sortable()
           ->toggleable(isToggledHiddenByDefault: true),
-        ApprovalStatusColumn::make('approvalStatus.status')
-          ->label('Approval Status')
-          ->sortable(),
+        ApprovalStatusColumn::make('approvalStatus.status'),
       ])
       ->headerActions([
         ExportAction::make()
@@ -135,23 +133,23 @@ class InvoiceResource extends Resource
               ->color('danger')
               ->icon('tabler-pdf')
               ->url(fn(Invoice $record) => route('generate.invoice', $record->code), true),
-            Tables\Actions\Action::make('tour_report')
-              ->icon(TourReportResource::getNavigationIcon())
-              ->color('warning')
-              ->label(function (Invoice $record): string {
-                return ($record->tourReport()->exists() ? 'Lihat' : 'Buat') . ' Tour Report';
-              })
-              ->visible(function (Invoice $record): bool {
-                return (bool) $record->profitLoss()->exists();
-              })
-              ->hidden(function (Invoice $record): bool {
-                return $record->order()->whereHas('orderFleets', function (Builder $query) {
-                  $query->whereNull('employee_id');
-                })->exists();
-              })
-              ->url(function (Invoice $record): string {
-                return $record->tourReport()->exists() ? TourReportResource::getUrl('view', ['record' => $record->tourReport->id]) : TourReportResource::getUrl('create', ['invoice' => $record->code]);
-              })
+            // Tables\Actions\Action::make('tour_report')
+            //   ->icon(TourReportResource::getNavigationIcon())
+            //   ->color('warning')
+            //   ->label(function (Invoice $record): string {
+            //     return ($record->tourReport()->exists() ? 'Lihat' : 'Buat') . ' Tour Report';
+            //   })
+            //   ->visible(function (Invoice $record): bool {
+            //     return (bool) $record->profitLoss()->exists();
+            //   })
+            //   ->hidden(function (Invoice $record): bool {
+            //     return $record->order()->whereHas('orderFleets', function (Builder $query) {
+            //       $query->whereNull('employee_id');
+            //     })->exists();
+            //   })
+            //   ->url(function (Invoice $record): string {
+            //     return $record->tourReport()->exists() ? TourReportResource::getUrl('view', ['record' => $record->tourReport->id]) : TourReportResource::getUrl('create', ['invoice' => $record->code]);
+            //   })
           ])
         ])
       );

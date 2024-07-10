@@ -76,13 +76,19 @@
   $totalDp = array_sum(array_map(fn($dp) => $dp['amount'], $downPayments)) ?: 0;
   $kekurangan = $totalTransactions - $totalDp;
   $status = $kekurangan == 0 ? InvoiceStatus::PAID_OFF->getLabel() : ($kekurangan > 0 ? InvoiceStatus::UNDER_PAYMENT->getLabel() : InvoiceStatus::OVER_PAYMENT->getLabel());
+
+  $title = "{$code}_{$lembaga}_{$order->trip_date->translatedFormat('d-m-Y')}";
 @endphp
 
-@extends('pdf.layout.main', ['title' => "{$code}_{$lembaga}_{$order->trip_date->translatedFormat('d-m-Y')}"])
+@extends('pdf.layout.main', ['title' => $title])
+
+@section('head-import')
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/alpinejs/3.14.1/cdn.min.js"></script>
+@endsection
 
 @section('content')
-  <div class="flex justify-center overflow-scroll">
-    <div class="m-5 min-w-max rounded-lg border-2 border-slate-500 bg-white text-black md:m-14">
+  <div class="lg:flex lg:justify-center">
+    <div class="min-w-max rounded-lg border-2 border-slate-500 bg-white text-black md:m-14">
       <div class="container mx-auto">
         <div class="mx-8 my-6">
           <div>
@@ -490,5 +496,11 @@
         </div>
       </div>
     </div>
+  </div>
+
+  <div class="fixed bottom-4 left-1/2 flex -translate-x-1/2 transform flex-col space-y-4" x-data>
+    <x-pushable-button class="no-print" backgroundColor="#bf2828" edgeColor="#a13232" shadowColor="#7d2d2d" textColor="#FFFFFF" icon="tabler-download" x-on:click="window.print()">
+      Save to PDF
+    </x-pushable-button>
   </div>
 @endsection

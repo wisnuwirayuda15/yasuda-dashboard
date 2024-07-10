@@ -22,6 +22,7 @@ class TourReport extends ApprovableModel
      */
     protected $fillable = [
         'invoice_id',
+        'employee_id',
         'main_costs',
         'other_costs',
         'customer_repayment',
@@ -40,6 +41,7 @@ class TourReport extends ApprovableModel
     protected $casts = [
         'id' => 'integer',
         'invoice_id' => 'integer',
+        'employee_id' => 'integer',
         'main_costs' => 'array',
         'other_costs' => 'array',
         'customer_repayment' => 'integer',
@@ -53,5 +55,10 @@ class TourReport extends ApprovableModel
     public function invoice(): BelongsTo
     {
         return $this->belongsTo(Invoice::class);
+    }
+
+    public function employee(): BelongsTo
+    {
+        return $this->belongsTo(Employee::class);
     }
 }

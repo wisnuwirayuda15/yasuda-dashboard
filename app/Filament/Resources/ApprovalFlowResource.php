@@ -17,7 +17,6 @@ use Filament\Forms\Components\Select;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Forms\Components\TextInput;
 use Illuminate\Database\Eloquent\Builder;
-use EightyNine\Approvals\Models\ApprovableModel;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use EightyNine\Approvals\Services\ModelScannerService;
 use RingleSoft\LaravelProcessApproval\Models\ProcessApprovalFlow;

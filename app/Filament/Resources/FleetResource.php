@@ -135,9 +135,7 @@ class FleetResource extends Resource
           ->dateTime()
           ->sortable()
           ->toggleable(isToggledHiddenByDefault: true),
-        ApprovalStatusColumn::make('approvalStatus.status')
-          ->label('Approval Status')
-          ->sortable(),
+        ApprovalStatusColumn::make('approvalStatus.status'),
       ])
       ->filters([
         Filter::make('approved')->approval(),

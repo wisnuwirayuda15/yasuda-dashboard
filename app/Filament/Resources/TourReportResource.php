@@ -8,37 +8,45 @@ use Filament\Tables;
 use App\Models\Invoice;
 use Filament\Forms\Get;
 use Filament\Forms\Set;
-use Livewire\Component;
 use Filament\Forms\Form;
 use App\Models\TourReport;
 use Filament\Tables\Table;
 use App\Models\Destination;
 use Illuminate\Support\Str;
 use App\Enums\DestinationType;
+use App\Enums\EmployeeRole;
 use Filament\Resources\Resource;
 use Awcodes\TableRepeater\Header;
 use App\Enums\NavigationGroupLabel;
-use Filament\Forms\Components\Tabs;
+use Filament\Tables\Actions\Action;
 use Filament\Tables\Filters\Filter;
+use Filament\Forms\Components\Radio;
 use Filament\Support\Enums\MaxWidth;
 use Filament\Forms\Components\Hidden;
-use Filament\Forms\Components\Select;
 use Filament\Support\Enums\Alignment;
 use Illuminate\Support\Facades\Route;
 use Filament\Forms\Components\Section;
+use Filament\Support\Enums\ActionSize;
 use Filament\Forms\Components\Checkbox;
 use Filament\Forms\Components\Fieldset;
-use Filament\Forms\Components\Tabs\Tab;
+use Filament\Tables\Actions\EditAction;
+use Filament\Tables\Actions\ViewAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Forms\Components\TextInput;
+use Filament\Tables\Actions\ActionGroup;
+use Filament\Tables\Actions\DeleteAction;
 use Filament\Tables\Actions\ExportAction;
+use Filament\Tables\Filters\SelectFilter;
 use Illuminate\Database\Eloquent\Builder;
 use Filament\Forms\Components\Placeholder;
 use App\Filament\Exports\TourReportExporter;
 use Awcodes\TableRepeater\Components\TableRepeater;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use App\Filament\Resources\TourReportResource\Pages;
-use EightyNine\Approvals\Tables\Actions\ApprovalActions;
+use EightyNine\Approvals\Tables\Actions\RejectAction;
+use EightyNine\Approvals\Tables\Actions\SubmitAction;
+use EightyNine\Approvals\Tables\Actions\ApproveAction;
+use EightyNine\Approvals\Tables\Actions\DiscardAction;
 use EightyNine\Approvals\Tables\Columns\ApprovalStatusColumn;
 use App\Filament\Resources\TourReportResource\RelationManagers;
 
@@ -72,7 +80,7 @@ class TourReportResource extends Resource
         $invoice = $parameters['invoice'];
       }
 
-      static::$invoice = Invoice::where('code', $invoice)->with(['order', 'order.orderFleets.fleet', 'order.orderFleets.employee', 'order.customer'])->firstOrFail();
+      static::$invoice = Invoice::where('code', $invoice)->with(['order', 'order.orderFleets.fleet', 'order.orderFleets.employee', 'order.customer'])->first();
     } else {
       static::$invoice = $record->invoice;
     }
@@ -101,6 +109,8 @@ class TourReportResource extends Resource
           ->searchable(),
         TextColumn::make('invoice.order.customer.name')
           ->searchable(),
+        TextColumn::make('employee.name')
+          ->searchable(),
         TextColumn::make('customer_repayment')
           ->label('Pembayaran Customer')
           ->money('IDR')
@@ -111,13 +121,13 @@ class TourReportResource extends Resource
           ->sortable(),
         TextColumn::make('created_at')
           ->dateTime()
-          ->sortable(),
+          ->sortable()
+          ->toggleable(isToggledHiddenByDefault: true),
         TextColumn::make('updated_at')
           ->dateTime()
-          ->sortable(),
-        ApprovalStatusColumn::make('approvalStatus.status')
-          ->label('Approval Status')
-          ->sortable(),
+          ->sortable()
+          ->toggleable(isToggledHiddenByDefault: true),
+        ApprovalStatusColumn::make('approvalStatus.status'),
       ])
       ->headerActions([
         ExportAction::make()
@@ -127,24 +137,53 @@ class TourReportResource extends Resource
           ->label('Export')
           ->color('success')
       ])
+      ->modifyQueryUsing(
+        function (Builder $query) {
+          if (auth()->user()->employable?->role === EmployeeRole::TOUR_LEADER) {
+            return $query->where('employee_id', auth()->user()->employable?->id);
+          }
+        }
+      )
       ->filters([
         Filter::make('approved')->approval(),
+        SelectFilter::make('employee')
+          ->multiple()
+          ->preload()
+          ->relationship('employee', 'name', fn(Builder $query) => $query->where('role', EmployeeRole::TOUR_LEADER->value)),
       ])
-      ->actions(
-        ApprovalActions::make([
-          Tables\Actions\ActionGroup::make([
-            Tables\Actions\ViewAction::make()
-              ->modalWidth(MaxWidth::MaxContent),
-            Tables\Actions\EditAction::make()
-              ->modalWidth(MaxWidth::MaxContent),
-            Tables\Actions\DeleteAction::make()
-              ->action(function (TourReport $record, Component $livewire) {
-                $record->delete();
-                $livewire->js('location.reload();');
-              }),
-          ]),
-        ])
-      );
+      ->actions([
+        ActionGroup::make([
+          // SubmitAction::make(),
+          ApproveAction::make(),
+          DiscardAction::make(),
+          RejectAction::make(),
+          Action::make('submit')
+            ->label('Submit')
+            ->color('primary')
+            ->icon('heroicon-m-arrow-right-circle')
+            ->requiresConfirmation()
+            ->visible(
+              fn(TourReport $record) =>
+              $record->employee?->id === auth()->user()->employable?->id && !$record->isSubmitted()
+            )
+            ->action(fn(TourReport $record) => $record->submit(auth()->user())),
+        ])->label(__('filament-approvals::approvals.actions.approvals'))
+          ->icon('heroicon-m-ellipsis-vertical')
+          ->size(ActionSize::Small)
+          ->color('primary')
+          ->button(),
+        ActionGroup::make([
+          ViewAction::make(),
+          EditAction::make(),
+          DeleteAction::make(),
+        ])->visible(function (?TourReport $record): ?bool {
+          $approved = $record?->isApprovalCompleted();
+          if (blank($approved)) {
+            return true;
+          }
+          return (bool) $approved;
+        })
+      ]);
   }
 
   public static function getRelations(): array
@@ -168,52 +207,50 @@ class TourReportResource extends Resource
   {
     return Section::make('General Information')
       ->schema([
-        Select::make('invoice_id')
+        Hidden::make('invoice_id')
           ->required()
           ->unique(ignoreRecord: true)
-          ->disabled()
-          ->dehydrated()
-          ->allowHtml()
-          ->hiddenOn('edit')
-          ->prefixIcon(InvoiceResource::getNavigationIcon())
-          ->default(static::$invoice->id)
-          ->relationship('invoice', 'id')
-          ->getOptionLabelFromRecordUsing(fn(Invoice $record) => view('filament.components.badges.invoice', compact('record'))),
+          ->default(fn() => static::$invoice->id),
         Placeholder::make('invoice_code')
           ->label('Invoice :')
           ->inlineLabel()
           ->extraAttributes(['class' => 'font-bold'])
-          ->content(static::$invoice->code),
+          ->content(fn() => static::$invoice->code),
         Placeholder::make('order_code')
           ->label('Order :')
           ->inlineLabel()
           ->extraAttributes(['class' => 'font-bold'])
-          ->content(static::$invoice->order->code),
-        Placeholder::make('tour_leader_name')
+          ->content(fn() => static::$invoice->order->code),
+        // Placeholder::make('tour_leader_name')
+        //   ->label('Tour Leader :')
+        //   ->inlineLabel()
+        //   ->extraAttributes(['class' => 'font-bold'])
+        //   ->content(function () {
+        //     $tourLeaderNames =
+        //       static::$invoice->order->orderFleets
+        //         ->pluck('employee.name')
+        //         ->unique()
+        //         ->toArray();
+        //     return view('filament.components.lists.array', ['array' => $tourLeaderNames]);
+        //   }),
+        Radio::make('employee_id')
+          ->required()
           ->label('Tour Leader :')
+          ->helperText('Tour leader yang ditugaskan untuk mengedit tour report ini.')
           ->inlineLabel()
-          ->extraAttributes(['class' => 'font-bold'])
-          ->content(function () {
-            $orderFleets = static::$invoice->order->orderFleets;
-            $tourLeaderNames = [];
-            foreach ($orderFleets as $orderFleet) {
-              $tourLeader = $orderFleet->employee->name;
-              if (!in_array($tourLeader, $tourLeaderNames)) {
-                $tourLeaderNames[] = $tourLeader;
-              }
-            }
-            return view('filament.components.lists.array', ['array' => $tourLeaderNames]);
-          }),
+          ->hidden(fn(?TourReport $record, string $operation) => $operation === 'edit' && $record?->employee?->id === auth()->user()->employable?->id)
+          ->options(fn() => static::$invoice->order->orderFleets
+            ->pluck('employee.name', 'employee.id')
+            ->unique()
+            ->toArray()),
         Placeholder::make('armada')
           ->label('Armada :')
           ->inlineLabel()
           ->extraAttributes(['class' => 'font-bold'])
           ->content(function () {
-            $orderFleets = static::$invoice->order->orderFleets;
-            foreach ($orderFleets as $orderFleet) {
-              $fleet = $orderFleet->fleet->name . ' (' . $orderFleet->fleet->seat_set->value . ')';
-              $fleetNames[] = $fleet;
-            }
+            $fleetNames = static::$invoice->order->orderFleets->map(function ($orderFleet) {
+              return $orderFleet->fleet->name . ' (' . $orderFleet->fleet->seat_set->value . ')';
+            })->toArray();
             return view('filament.components.lists.array', ['array' => $fleetNames]);
           }),
         Placeholder::make('customer_name')
@@ -261,10 +298,14 @@ class TourReportResource extends Resource
               ->width('auto'),
             Header::make('Qty (Plan)')
               ->align(Alignment::Center)
-              ->width('80px'),
+              ->width('75px'),
             Header::make('Harga (Plan)')
               ->align(Alignment::Center)
-              ->width('auto'),
+              ->width('100px'),
+            Header::make('DP')
+              ->label('DP')
+              ->align(Alignment::Center)
+              ->width('100px'),
             Header::make('Total (Plan)')
               ->align(Alignment::Center)
               ->width('auto'),
@@ -273,7 +314,7 @@ class TourReportResource extends Resource
               ->width('80px'),
             Header::make('Harga (Aktual)')
               ->align(Alignment::Center)
-              ->width('auto'),
+              ->width('100px'),
             Header::make('Total (Aktual)')
               ->align(Alignment::Center)
               ->width('auto'),
@@ -302,13 +343,19 @@ class TourReportResource extends Resource
               ->disabled()
               ->dehydrated()
               ->default(0)
-              ->currency(),
+              ->currency(prefix: null),
+            TextInput::make('dp')
+              ->required()
+              ->disabled(fn(?TourReport $record, string $operation) => $operation === 'edit' && $record?->employee?->id === auth()->user()->employable?->id)
+              ->dehydrated()
+              ->default(0)
+              ->currency(prefix: null),
             Placeholder::make('plan_total')
               ->hiddenLabel()
               ->extraAttributes(['class' => 'text-green-500'])
               ->content(
                 function (Get $get, Set $set, Placeholder $component) {
-                  $total = $get('plan_qty') * $get('plan_price');
+                  $total = $get('plan_qty') * $get('plan_price') - $get('dp');
                   $set($component, $total);
                   return idr($total);
                 }
@@ -323,7 +370,7 @@ class TourReportResource extends Resource
               ->required()
               ->default(0)
               ->hidden(fn(Get $get) => $get('slug') === 'lain-lain')
-              ->currency(),
+              ->currency(prefix: null),
             Placeholder::make('act_price')
               ->hiddenLabel()
               ->visible(fn(Get $get) => $get('slug') === 'lain-lain')
@@ -341,7 +388,7 @@ class TourReportResource extends Resource
               ->extraAttributes(['class' => 'text-yellow-500'])
               ->content(
                 function (Get $get, Set $set, Placeholder $component) {
-                  $total = $get('act_qty') * $get('act_price');
+                  $total = $get('act_qty') * $get('act_price') - $get('dp');
                   $set($component, $total);
                   return idr($total);
                 }
@@ -361,9 +408,20 @@ class TourReportResource extends Resource
           ->columns(3)
           ->schema(function () {
             foreach (['plan', 'act', 'difference'] as $key) {
-              $textColor = $key === 'plan' ? 'text-green-500' : ($key === 'act' ? 'text-yellow-500' : 'text-red-500');
+              $textColor = match ($key) {
+                'plan' => 'text-green-500',
+                'act' => 'text-yellow-500',
+                'difference' => 'text-red-500',
+              };
               $totalPlaceholders[] = Placeholder::make("{$key}_totals")
-                ->extraAttributes(['class' => "$textColor font-semibold"])
+                ->label(function () use ($key) {
+                  return match ($key) {
+                    'plan' => 'Total Plan',
+                    'act' => 'Total Aktual',
+                    'difference' => 'Total Selisih',
+                  };
+                })
+                ->extraAttributes(['class' => "{$textColor} font-semibold"])
                 ->content(function (Get $get, Set $set, Placeholder $component) use ($key) {
                   $total = array_sum(array_map(fn($cost) => $cost["{$key}_total"], $get('main_costs'))) ?: 0;
                   $set($component, $total);
@@ -426,7 +484,7 @@ class TourReportResource extends Resource
                   return idr($total);
                 }
               ),
-          ]),
+          ])->resetAction(),
         Fieldset::make('Total')
           ->columns(3)
           ->schema([
@@ -574,8 +632,8 @@ class TourReportResource extends Resource
         'plan_qty' => $qty,
         'plan_price' => $price,
         'plan_total' => 0,
-        'act_qty' => $qty,
-        'act_price' => $price,
+        'act_qty' => 0,
+        'act_price' => 0,
         'act_total' => 0,
       ];
     }
@@ -619,8 +677,8 @@ class TourReportResource extends Resource
         'plan_qty' => $qty,
         'plan_price' => $inv->profitLoss->eat_prasmanan_price,
         'plan_total' => 0,
-        'act_qty' => $qty,
-        'act_price' => $inv->profitLoss->eat_prasmanan_price,
+        'act_qty' => 0,
+        'act_price' => 0,
         'act_total' => 0,
       ];
     }
@@ -639,25 +697,25 @@ class TourReportResource extends Resource
     return $costsDetail;
   }
 
-  public static function getOtherCostItem(int|float $price = 0): array
-  {
-    $inv = static::$invoice;
+  // public static function getOtherCostItem(int|float $price = 0): array
+  // {
+  //   $inv = static::$invoice;
 
-    $totalBus = $inv->order->orderFleets()->count();
+  //   $totalBus = $inv->order->orderFleets()->count();
 
-    $backupPrice = $inv->profitLoss->backup_price;
+  //   $backupPrice = $inv->profitLoss->backup_price;
 
-    $otherCost = [
-      'slug' => 'lain-lain',
-      'name' => 'Lain-lain',
-      'plan_qty' => 1,
-      'plan_price' => $backupPrice * $totalBus,
-      'plan_total' => 0,
-      'act_qty' => 1,
-      'act_price' => $price,
-      'act_total' => 0,
-    ];
+  //   $otherCost = [
+  //     'slug' => 'lain-lain',
+  //     'name' => 'Lain-lain',
+  //     'plan_qty' => 1,
+  //     'plan_price' => $backupPrice * $totalBus,
+  //     'plan_total' => 0,
+  //     'act_qty' => 1,
+  //     'act_price' => $price,
+  //     'act_total' => 0,
+  //   ];
 
-    return $otherCost;
-  }
+  //   return $otherCost;
+  // }
 }

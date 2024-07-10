@@ -109,7 +109,7 @@ models:
     role: string:50
     status: string:50
     relationships:
-      hasMany: OrderFleet
+      hasMany: OrderFleet, TourReport
 
   # TourLeader:
   #   # user_id: foreign constrained onDelete:cascade unique nullable
@@ -208,6 +208,7 @@ models:
 
   TourReport:
     invoice_id: unique foreign constrained onDelete:cascade
+    employee_id: nullable foreign constrained onDelete:cascade
     main_costs: json
     other_costs: json nullable
     customer_repayment: bigInteger default:0

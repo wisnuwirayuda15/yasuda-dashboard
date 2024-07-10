@@ -16,7 +16,6 @@ use App\Filament\Pages\Auth\Login;
 use Filament\Support\Colors\Color;
 use Illuminate\Support\HtmlString;
 use App\Enums\NavigationGroupLabel;
-use App\Filament\Resources\MeetingResource\Widgets\MeetingCalendarWidget;
 use Filament\Tables\Filters\Filter;
 use Filament\View\PanelsRenderHook;
 use Filament\Livewire\Notifications;
@@ -65,9 +64,11 @@ use Saade\FilamentFullCalendar\FilamentFullCalendarPlugin;
 use Filament\Forms\Components\Actions\Action as FormAction;
 use Filament\Tables\Actions\ActionGroup as TableActionGroup;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
+use EightyNine\Approvals\Tables\Columns\ApprovalStatusColumn;
 use Filament\Tables\Actions\DeleteAction as TableDeleteAction;
 use Filament\Pages\Auth\EmailVerification\EmailVerificationPrompt;
 use Joaopaulolndev\FilamentCheckSslWidget\FilamentCheckSslWidgetPlugin;
+use App\Filament\Resources\MeetingResource\Widgets\MeetingCalendarWidget;
 
 class AdminPanelProvider extends PanelProvider
 {
@@ -130,7 +131,7 @@ class AdminPanelProvider extends PanelProvider
             TableViewAction::make(),
             TableEditAction::make(),
             TableDeleteAction::make(),
-          ])->tooltip('Actions'),
+          ]),
         ], ActionsPosition::BeforeColumns);
     });
 
@@ -176,9 +177,16 @@ class AdminPanelProvider extends PanelProvider
         ->tooltip('Export data to Excel');
     });
 
+    ApprovalStatusColumn::configureUsing(function (ApprovalStatusColumn $column) {
+      $column
+        ->label('Approval Status')
+        ->sortable()
+        ->toggleable();
+    });
+
     MountableAction::configureUsing(fn(MountableAction $action) => $action->slideOver());
 
-    TableDeleteAction::configureUsing(fn(TableDeleteAction $action) => $action->slideOver(false));
+    // TableDeleteAction::configureUsing(fn(TableDeleteAction $action) => $action->slideOver(false));
 
     LanguageSwitch::configureUsing(function (LanguageSwitch $switch): void {
       $hook = match (CustomPlatform::detect()) {
@@ -205,7 +213,7 @@ class AdminPanelProvider extends PanelProvider
 
   public function panel(Panel $panel): Panel
   {
-    $spa = env('SPA', false);
+    $spa = (bool) env('SPA', false);
 
     return $panel
       ->default()
