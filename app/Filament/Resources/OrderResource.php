@@ -182,7 +182,8 @@ class OrderResource extends Resource
           ->color('success')
       ])
       ->filters([
-        Filter::make('approved')->approval(),
+        Filter::make('approved')->approved(),
+        Filter::make('notApproved')->notApproved(),
       ])
       ->actions(
         ApprovalActions::make([

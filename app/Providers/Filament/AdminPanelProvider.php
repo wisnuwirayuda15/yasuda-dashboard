@@ -112,7 +112,7 @@ class AdminPanelProvider extends PanelProvider
         ->paginationPageOptions([5, 10, 15, 20])
         // ->filters(
         //   [
-        //     Filter::make('approved')->approval(),
+        //     Filter::make('approved')->approved(),
         //   ],
         //   FiltersLayout::AboveContentCollapsible
         // )

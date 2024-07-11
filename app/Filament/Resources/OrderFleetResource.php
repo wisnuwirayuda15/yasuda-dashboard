@@ -215,7 +215,8 @@ class OrderFleetResource extends Resource
         Filter::make('has_tour_leader')
           ->label('Sudah terdapat tour leader')
           ->query(fn(Builder $query): Builder => $query->whereHas('employee')),
-        Filter::make('approved')->approval(),
+        Filter::make('approved')->approved(),
+        Filter::make('notApproved')->notApproved(),
       ])
       ->headerActions([
         ExportAction::make()

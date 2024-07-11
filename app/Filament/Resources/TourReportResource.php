@@ -149,7 +149,8 @@ class TourReportResource extends Resource
         }
       )
       ->filters([
-        Filter::make('approved')->approval(),
+        Filter::make('approved')->approved(),
+        Filter::make('notApproved')->notApproved(),
         SelectFilter::make('employee')
           ->multiple()
           ->preload()

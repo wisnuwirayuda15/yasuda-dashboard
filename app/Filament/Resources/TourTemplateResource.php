@@ -118,7 +118,8 @@ class TourTemplateResource extends Resource
         ApprovalStatusColumn::make('approvalStatus.status'),
       ])
       ->filters([
-        Filter::make('approved')->approval(),
+        Filter::make('approved')->approved(),
+        Filter::make('notApproved')->notApproved(),
       ])
       ->actions(
         ApprovalActions::make([

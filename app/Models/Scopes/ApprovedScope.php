@@ -20,10 +20,14 @@ class ApprovedScope implements Scope
     }
   }
 
-  public static function getQuery(Builder $builder): Builder
+  public static function getQuery(Builder $builder, bool $whereNot = false): Builder
   {
-    return $builder->whereHas('approvalStatus', function (Builder $query) {
-      $query->where('status', 'Approved');
+    return $builder->whereHas('approvalStatus', function (Builder $query) use ($whereNot) {
+      if ($whereNot) {
+        $query->whereNot('status', 'Approved');
+      } else {
+        $query->where('status', 'Approved');
+      }
     });
   }
 }

@@ -199,10 +199,18 @@ class MacroServiceProvider extends ServiceProvider
       return $this;
     });
 
-    Filter::macro('approval', function (): static {
+    Filter::macro('approved', function (): static {
       $this
         ->label('Approved')
         ->query(fn(Builder $query): Builder => ApprovedScope::getQuery($query));
+
+      return $this;
+    });
+
+    Filter::macro('notApproved', function (): static {
+      $this
+        ->label('Not Approved')
+        ->query(fn(Builder $query): Builder => ApprovedScope::getQuery($query, true));
 
       return $this;
     });
