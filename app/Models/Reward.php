@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\CashFlow;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -33,6 +34,7 @@ class Reward extends Model
         'customer_id' => 'integer',
         'date' => 'datetime',
         'amount' => 'integer',
+        'cash_status' => CashFlow::class,
     ];
 
     public function customer(): BelongsTo

@@ -114,7 +114,7 @@ class RewardResource extends Resource
           ->searchable()
           ->html()
           ->limit(100),
-        TextColumn::make('cash_status'),
+        // TextColumn::make('cash_status'),
         TextColumn::make('date')
           ->sortable()
           ->label('Tanggal Pelaksanaan')
