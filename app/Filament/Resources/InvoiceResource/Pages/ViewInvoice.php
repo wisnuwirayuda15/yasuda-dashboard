@@ -29,11 +29,11 @@ class ViewInvoice extends ViewRecord
 
     $whatsAppUrl = "https://api.whatsapp.com/send?phone={$customer->phone}&text=$generateInvoiceUrl";
 
-    $shirt = (bool) $inv->shirt;
+    $shirt = $inv->shirt()->exists();
 
-    $pnl = (bool) $inv->profitLoss;
+    $pnl = $inv->profitLoss()->exists();
 
-    $tr = (bool) $inv->tourReport;
+    $tr = $inv->tourReport()->exists();
 
     $shirtUrl = $shirt ? ShirtResource::getUrl('view', ['record' => $inv->shirt->id]) : ShirtResource::getUrl('create', ['invoice' => $inv->code]);
 
