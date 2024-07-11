@@ -81,13 +81,13 @@ class LoyaltyPointResource extends Resource
           ->label('Tanggal Pelaksanaan')
           ->formatStateUsing(fn(Carbon $state): string => $state->translatedFormat('d/m/Y')),
         TextColumn::make('medium_bus_total')
-          ->label('Big Bus')
+          ->label('Medium Bus')
           ->numeric()
           ->state(function (LoyaltyPoint $record) {
             return $record->invoice->order->orderFleets->filter(fn(OrderFleet $orderFleet) => $orderFleet->fleet->category->value === FleetCategory::MEDIUM->value)->count();
           }),
         TextColumn::make('big_bus_total')
-          ->label('Medium Bus')
+          ->label('Big Bus')
           ->numeric()
           ->state(function (LoyaltyPoint $record) {
             return $record->invoice->order->orderFleets->filter(fn(OrderFleet $orderFleet) => $orderFleet->fleet->category->value === FleetCategory::BIG->value)->count();

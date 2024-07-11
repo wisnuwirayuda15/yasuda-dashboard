@@ -31,13 +31,13 @@ class OrderFleet extends ApprovableModel
     };
   }
 
-  public function getRemainingDay(): string|int
+  public function getRemainingDay(): int
   {
     $date = $this->trip_date;
 
     return match (true) {
-      $date->isToday() => OrderFleetStatus::ON_TRIP->getLabel(),
-      $date->isPast() => OrderFleetStatus::FINISHED->getLabel(),
+      $date->isToday() ||
+      $date->isPast() => 0,
       default => today()->diffInDays($date),
     };
   }

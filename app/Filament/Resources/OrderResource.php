@@ -72,10 +72,6 @@ class OrderResource extends Resource
           ->required()
           ->relationship('customer', 'name', fn(Builder $query) => $query->whereNot('status', CustomerStatus::CANDIDATE->value)->orderBy('created_at', 'desc'))
           ->prefixIcon(fn() => CustomerResource::getNavigationIcon()),
-        Select::make('regency_id')
-          ->required()
-          ->relationship('regency', 'name')
-          ->columnSpan(fn(string $operation) => in_array($operation, ['create', 'view']) ? 'full' : null),
         Select::make('destinations')
           ->required()
           ->multiple()
@@ -94,6 +90,10 @@ class OrderResource extends Resource
               $set('regency_id', $tourTemplate['regency_id']);
               $set('destinations', $tourTemplate['destinations']);
             })),
+        Select::make('regency_id')
+          ->required()
+          ->relationship('regency', 'name')
+          ->columnSpan(fn(string $operation) => in_array($operation, ['create', 'view']) ? 'full' : null),
         Group::make([
           Toggle::make('change_date')
             ->live()
@@ -153,6 +153,7 @@ class OrderResource extends Resource
           ->searchable(),
         TextColumn::make('customer.name')
           ->numeric()
+          ->searchable()
           ->sortable(),
         TextColumn::make('trip_date')
           ->date()
