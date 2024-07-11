@@ -148,7 +148,7 @@ class MacroServiceProvider extends ServiceProvider
         ->default(fn() => $code)
         ->unique(ignoreRecord: true)
         ->hiddenOn($edit)
-        ->helperText(fn($operation) => !in_array($operation, $view) ? 'The code is generated automatically' . ($editable ? ' and can be edited.' : '.') : null)
+        ->helperText(fn($operation) => !in_array($operation, $view) ? 'Code otomatis terbuat' . ($editable ? ' dan bisa diubah.' : '.') : null)
         ->hintActions([
           Action::make('edit')
             ->icon('tabler-edit')

@@ -18,7 +18,7 @@ class ManageMeetings extends ManageRecords
     ];
   }
 
-  protected function getFooterWidgets(): array
+  protected function getHeaderWidgets(): array
   {
     return [
       MeetingCalendarWidget::class,

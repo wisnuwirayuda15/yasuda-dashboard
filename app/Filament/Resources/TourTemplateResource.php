@@ -70,15 +70,15 @@ class TourTemplateResource extends Resource
                 }
               })
           ),
-        Select::make('regency_id')
-          ->required()
-          ->live(true)
-          ->relationship('regency', 'name'),
         Select::make('destinations')
           ->required()
           ->live(true)
           ->multiple()
           ->options(Destination::pluck('name', 'id')),
+        Select::make('regency_id')
+          ->required()
+          ->live(true)
+          ->relationship('regency', 'name'),
         FileUpload::make('image')
           ->image()
           ->imageEditor()
