@@ -41,7 +41,7 @@ class ViewInvoice extends ViewRecord
 
     $tourReportUrl = $tr ? TourReportResource::getUrl('view', ['record' => $inv->tourReport->id]) : TourReportResource::getUrl('create', ['invoice' => $inv->code]);
 
-    $tourLeaderNotAllSet = $inv->order->whereHas('orderFleets', function (Builder $query) {
+    $tourLeaderNotAllSet = $inv->order()->whereHas('orderFleets', function (Builder $query) {
       $query->whereNull('employee_id');
     })->exists();
 

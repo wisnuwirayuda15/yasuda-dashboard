@@ -3,12 +3,14 @@
 namespace App\Filament\Resources\TourReportResource\Pages;
 
 use App\Models\Invoice;
+use App\Models\TourReport;
+use Illuminate\Database\Eloquent\Model;
 use Filament\Notifications\Notification;
 use Illuminate\Database\Eloquent\Builder;
 use Filament\Resources\Pages\CreateRecord;
 use App\Filament\Resources\InvoiceResource;
 use App\Filament\Resources\TourReportResource;
-use App\Models\TourReport;
+use EightyNine\Approvals\Models\ApprovableModel;
 
 class CreateTourReport extends CreateRecord
 {
@@ -24,11 +26,11 @@ class CreateTourReport extends CreateRecord
 
     if (!$pnlApproved) {
       Notification::make()
-      ->danger()
-      ->title('Ooppsss...')
-      ->body('Profit & Loss not yet approved!')
-      ->send();
-      
+        ->danger()
+        ->title('Ooppsss...')
+        ->body('Profit & Loss not yet approved!')
+        ->send();
+
       redirect(InvoiceResource::getUrl('view', ['record' => $inv->id]));
     }
 
@@ -66,5 +68,19 @@ class CreateTourReport extends CreateRecord
     }
 
     return $data;
+  }
+
+  protected function handleRecordCreation(array $data): Model
+  {
+    $model = static::getModel()::create($data);
+
+    instant_approval($data, $model);
+
+    return $model;
+  }
+
+  protected function getRedirectUrl(): string
+  {
+    return $this->getResource()::getUrl('index');
   }
 }

@@ -2,14 +2,15 @@
 
 namespace App\Filament\Resources\UserResource\Pages;
 
-use App\Filament\Resources\EmployeeResource;
 use Filament\Actions;
 use App\Models\Employee;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Database\Eloquent\Model;
 use App\Filament\Resources\UserResource;
 use Filament\Notifications\Notification;
+use Filament\Notifications\Actions\Action;
 use Filament\Resources\Pages\CreateRecord;
+use App\Filament\Resources\EmployeeResource;
 
 class CreateUser extends CreateRecord
 {

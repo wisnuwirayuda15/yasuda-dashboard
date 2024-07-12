@@ -38,7 +38,7 @@ class CustomerResource extends Resource
 
   protected static ?string $navigationIcon = 'fas-users';
 
-  protected static ?string $recordTitleAttribute = 'name';
+  // protected static ?string $recordTitleAttribute = 'name';
 
   protected static ?int $navigationSort = -10;
 

@@ -7,6 +7,7 @@ use App\Models\OrderFleet;
 use Illuminate\Database\Eloquent\Model;
 use App\Filament\Resources\OrderResource;
 use Filament\Resources\Pages\CreateRecord;
+use EightyNine\Approvals\Models\ApprovableModel;
 
 class CreateOrder extends CreateRecord
 {
@@ -14,14 +15,21 @@ class CreateOrder extends CreateRecord
 
   protected function handleRecordCreation(array $data): Model
   {
-    $record = static::getModel()::create($data);
+    $model = static::getModel()::create($data);
 
     if (filled($data['order_fleet_ids'])) {
       $orderFleets = OrderFleet::findOrFail($data['order_fleet_ids']);
-      
-      $orderFleets->each->update(['order_id' => $record->id]);
+
+      $orderFleets->each->update(['order_id' => $model->id]);
     }
 
-    return $record;
+    instant_approval($data, $model);
+
+    return $model;
+  }
+
+  protected function getRedirectUrl(): string
+  {
+    return $this->getResource()::getUrl('index');
   }
 }

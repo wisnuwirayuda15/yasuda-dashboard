@@ -147,9 +147,9 @@ models:
     trip_date: datetime
     # duration: integer default:1
     # status: string:50
-    payment_status: string:50
-    payment_date: datetime nullable
-    payment_amount: bigInteger nullable
+    # payment_status: string:50
+    # payment_date: datetime nullable
+    # payment_amount: bigInteger nullable
 
   Invoice:
     code: string index unique #INV-00001

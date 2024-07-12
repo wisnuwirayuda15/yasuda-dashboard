@@ -43,7 +43,7 @@ class FleetResource extends Resource
 
   protected static ?string $navigationIcon = 'fas-bus';
 
-  protected static ?string $recordTitleAttribute = 'name';
+  // protected static ?string $recordTitleAttribute = 'name';
 
   public static function getLabel(): string
   {

@@ -96,7 +96,7 @@ class UserResource extends Resource
               ->email()
               ->live(true, condition: $operation === 'edit')
               ->helperText(fn(?User $record, $state) => $record?->email !== $state && $operation === 'edit' ? 'Jika diganti, email ini perlu diverifikasi ulang' : null)
-              ->default(fn() => static::$employee ? $username . '@gmail.com' : null)
+              // ->default(fn() => static::$employee ? $username . '@gmail.com' : null)
               ->placeholder(fn() => (static::$employee ? $username : 'user') . '@gmail.com')
               ->prefixIcon('fas-envelope')
               ->required()

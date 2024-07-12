@@ -22,4 +22,9 @@ class CreateShirt extends CreateRecord
       redirect(ShirtResource::getUrl('view', ['record' => $shirt->id]));
     }
   }
+
+  protected function getRedirectUrl(): string
+  {
+    return $this->getResource()::getUrl('index');
+  }
 }

@@ -2,9 +2,11 @@
 
 namespace App\Filament\Resources\TourTemplateResource\Pages;
 
-use App\Filament\Resources\TourTemplateResource;
 use Filament\Actions;
+use Illuminate\Database\Eloquent\Model;
 use Filament\Resources\Pages\ManageRecords;
+use App\Filament\Resources\TourTemplateResource;
+use EightyNine\Approvals\Models\ApprovableModel;
 
 class ManageTourTemplates extends ManageRecords
 {
@@ -13,7 +15,14 @@ class ManageTourTemplates extends ManageRecords
   protected function getHeaderActions(): array
   {
     return [
-      Actions\CreateAction::make(),
+      Actions\CreateAction::make()
+        ->using(function (array $data): Model {
+          $model = static::getModel()::create($data);
+          
+          instant_approval($data, $model);
+      
+          return $model;
+        })
     ];
   }
 

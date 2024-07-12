@@ -9,13 +9,16 @@ use App\Models\Destination;
 use App\Enums\DestinationType;
 use Filament\Resources\Resource;
 use App\Enums\NavigationGroupLabel;
+use Filament\Tables\Filters\Filter;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Checkbox;
 use Filament\Tables\Actions\EditAction;
 use Filament\Tables\Actions\ViewAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Forms\Components\TextInput;
 use Filament\Tables\Actions\ActionGroup;
 use Filament\Tables\Actions\DeleteAction;
+use Filament\Tables\Filters\SelectFilter;
 use Ysfkaya\FilamentPhoneInput\Forms\PhoneInput;
 use App\Filament\Resources\DestinationResource\Pages;
 use EightyNine\Approvals\Tables\Actions\ApprovalActions;
@@ -44,6 +47,7 @@ class DestinationResource extends Resource
       ->schema([
         TextInput::make('name')
           ->required()
+          ->unique(ignoreRecord: true)
           ->maxLength(255),
         Select::make('type')
           ->required()
@@ -66,6 +70,7 @@ class DestinationResource extends Resource
         TextInput::make('high_season_price')
           ->default(0)
           ->currency(minValue: 0),
+        Checkbox::make('submission')->submission()
       ]);
   }
 
@@ -103,6 +108,13 @@ class DestinationResource extends Resource
           ->sortable()
           ->toggleable(isToggledHiddenByDefault: true),
         ApprovalStatusColumn::make('approvalStatus.status'),
+      ])
+      ->filters([
+        SelectFilter::make('type')
+          ->multiple()
+          ->options(DestinationType::class),
+        Filter::make('approved')->approved(),
+        Filter::make('notApproved')->notApproved(),
       ])
       ->actions(
         ApprovalActions::make([

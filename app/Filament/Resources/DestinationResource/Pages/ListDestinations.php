@@ -29,20 +29,20 @@ class ListDestinations extends ListRecords
     $this->dispatch(\App\Enums\JavascriptEvent::SCROLL_TO_TOP->value);
   }
 
-  public function getTabs(): array
-  {
-    $array = [
-      'all' => Tab::make()->icon('fluentui-grid-dots-28-o'),
-    ];
+  // public function getTabs(): array
+  // {
+  //   $array = [
+  //     'all' => Tab::make()->icon('fluentui-grid-dots-28-o'),
+  //   ];
 
-    foreach (static::$types::cases() as $type) {
-      if (Destination::withoutGlobalScopes()->where('type', $type->value)->exists()) {
-        $array[$type->value] = Tab::make($type->getLabel())
-          ->icon($type->getIcon())
-          ->modifyQueryUsing(fn(Builder $query) => $query->where('type', $type->value));
-      }
-    }
+  //   foreach (static::$types::cases() as $type) {
+  //     if (Destination::withoutGlobalScopes()->where('type', $type->value)->exists()) {
+  //       $array[$type->value] = Tab::make($type->getLabel())
+  //         ->icon($type->getIcon())
+  //         ->modifyQueryUsing(fn(Builder $query) => $query->where('type', $type->value));
+  //     }
+  //   }
 
-    return $array;
-  }
+  //   return $array;
+  // }
 }

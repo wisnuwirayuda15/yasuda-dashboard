@@ -21,7 +21,7 @@ class CreateApprovalFlow extends CreateRecord
     if (Str::startsWith($class, '\\')) {
       $class = Str::replaceFirst("\\", "", $class);
     }
-    
+
     return ProcessApproval::createFlow($data["name"], $class);
   }
 }

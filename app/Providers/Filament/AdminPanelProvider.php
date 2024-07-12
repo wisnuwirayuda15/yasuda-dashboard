@@ -109,6 +109,7 @@ class AdminPanelProvider extends PanelProvider
       $table
         ->modifyQueryUsing(fn(Builder $query) => $query->withoutGlobalScopes())
         ->extremePaginationLinks()
+        ->defaultSort('created_at', 'desc')
         ->paginationPageOptions([5, 10, 15, 20])
         // ->filters(
         //   [
@@ -237,13 +238,13 @@ class AdminPanelProvider extends PanelProvider
       ->sidebarCollapsibleOnDesktop()
       ->maxContentWidth(MaxWidth::Full)
       ->databaseNotifications()
-      ->globalSearchKeyBindings(['command+k', 'ctrl+k'])
-      ->globalSearchFieldSuffix(fn(): ?string => match (CustomPlatform::detect()) {
-        CustomPlatform::Windows, CustomPlatform::Linux => 'CTRL+K',
-        CustomPlatform::Mac => '⌘K',
-        CustomPlatform::Mobile => null,
-        default => null,
-      })
+      // ->globalSearchKeyBindings(['command+k', 'ctrl+k'])
+      // ->globalSearchFieldSuffix(fn(): ?string => match (CustomPlatform::detect()) {
+      //   CustomPlatform::Windows, CustomPlatform::Linux => 'CTRL+K',
+      //   CustomPlatform::Mac => '⌘K',
+      //   CustomPlatform::Mobile => null,
+      //   default => null,
+      // })
       ->readOnlyRelationManagersOnResourceViewPagesByDefault(false)
       ->pages([])
       ->discoverResources(app_path('Filament/Resources'), 'App\\Filament\\Resources')

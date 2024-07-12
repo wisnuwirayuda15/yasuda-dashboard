@@ -1,7 +1,9 @@
 <?php
 
 use Illuminate\Support\Number;
+use Illuminate\Database\Eloquent\Model;
 use Haruncpi\LaravelIdGenerator\IdGenerator;
+use EightyNine\Approvals\Models\ApprovableModel;
 
 if (!function_exists('emp_code')) {
   /**
@@ -189,5 +191,34 @@ if (!function_exists('enum_map')) {
   function enum_map(array $enum): array
   {
     return array_map(fn($x) => $x->value, $enum);
+  }
+}
+
+if (!function_exists('instant_approval')) {
+  /**
+   * A function for instant approval based on certain conditions.
+   *
+   * @param array $data The data array to be processed.
+   * @param string|Model $model The model instance to be approved.
+   * @param string $name The name of the submission (default is 'submission').
+   * @return void
+   */
+  function instant_approval(array $data, string|Model $model, string $name = 'submission'): void
+  {
+    if ($model instanceof ApprovableModel && !$model->isApprovalCompleted()) {
+      $user = auth()->user();
+
+      $shouldSubmit = isset($data[$name]) && $data[$name] === true;
+
+      if ($shouldSubmit || $user->hasRole('super_admin')) {
+        if (!$model->isSubmitted()) {
+          $model->submit(user: $user);
+        }
+
+        if ($user->hasRole('super_admin')) {
+          $model::withoutGlobalScopes()->find($model->id)->approve(user: $user);
+        }
+      }
+    }
   }
 }

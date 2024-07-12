@@ -3,11 +3,13 @@
 namespace App\Filament\Resources\ProfitLossResource\Pages;
 
 use App\Models\Invoice;
+use App\Models\ProfitLoss;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Database\Eloquent\Model;
 use Filament\Resources\Pages\CreateRecord;
 use Illuminate\Contracts\Support\Htmlable;
 use App\Filament\Resources\ProfitLossResource;
-use App\Models\ProfitLoss;
+use EightyNine\Approvals\Models\ApprovableModel;
 
 class CreateProfitLoss extends CreateRecord
 {
@@ -23,5 +25,19 @@ class CreateProfitLoss extends CreateRecord
 
     // Each invoice should only has one profit & loss
     (bool) $pnl ? redirect(ProfitLossResource::getUrl('view', ['record' => $pnl->id])) : null;
+  }
+
+  protected function handleRecordCreation(array $data): Model
+  {
+    $model = static::getModel()::create($data);
+
+    instant_approval($data, $model);
+
+    return $model;
+  }
+
+  protected function getRedirectUrl(): string
+  {
+    return $this->getResource()::getUrl('index');
   }
 }

@@ -34,10 +34,10 @@ return [
   */
 
   'nav.group' => NavigationGroupLabel::SETTING->getLabel(),
-  'nav.role.label' => 'Roles',
+  'nav.role.label' => 'Job Titles',
   'nav.role.icon' => 'heroicon-s-shield-check',
-  'resource.label.role' => 'Role',
-  'resource.label.roles' => 'Roles',
+  'resource.label.role' => 'Job Title',
+  'resource.label.roles' => 'Job Titles',
 
   /*
   |--------------------------------------------------------------------------

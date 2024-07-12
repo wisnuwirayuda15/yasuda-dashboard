@@ -11,6 +11,7 @@ use Illuminate\Support\Str;
 use Illuminate\Database\Seeder;
 use EightyNine\Approvals\Services\ModelScannerService;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+use RingleSoft\LaravelProcessApproval\Enums\ApprovalTypeEnum;
 use RingleSoft\LaravelProcessApproval\Facades\ProcessApproval;
 
 class ApprovalFlowSeeder extends Seeder
@@ -33,11 +34,11 @@ class ApprovalFlowSeeder extends Seeder
 
       $flow->steps()->create([
         'role_id' => 1,
-        'action' => 'Approve',
+        'action' => ucwords(ApprovalTypeEnum::APPROVE->value),
         'order' => 1
       ]);
     }
 
-    $cmd->info('Done!');
+    $cmd->info('Aprroval flows created!');
   }
 }

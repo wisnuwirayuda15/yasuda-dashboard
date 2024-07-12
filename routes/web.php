@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\PdfController;
+use App\Http\Controllers\EmailController;
 use Illuminate\Foundation\Auth\EmailVerificationRequest;
 
 /*
@@ -29,6 +30,14 @@ Route::controller(PdfController::class)
   ->group(function () {
     Route::get('invoice/{invoice:code}', 'invoice')->name('invoice');
   });
+
+// Route::controller(EmailController::class)
+//   ->prefix('email')
+//   ->name('email.')
+//   ->middleware(['auth'])
+//   ->group(function () {
+//     Route::get('send/verification/{user}', 'sendVerification')->name('send.verification');
+//   });
 
 Route::get('/email/verify/{id}/{hash}', fn(EmailVerificationRequest $request) => $request->fulfill())
   ->middleware(['auth', 'signed'])

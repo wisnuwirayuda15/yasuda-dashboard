@@ -34,10 +34,10 @@ return [
   */
 
   'nav.group' => NavigationGroupLabel::SETTING->getLabel(),
-  'nav.role.label' => 'Peran',
+  'nav.role.label' => 'Jabatan',
   'nav.role.icon' => 'heroicon-s-shield-check',
-  'resource.label.role' => 'Peran',
-  'resource.label.roles' => 'Peran',
+  'resource.label.role' => 'Jabatan',
+  'resource.label.roles' => 'Jabatan',
 
   /*
   |--------------------------------------------------------------------------

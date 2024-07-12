@@ -22,13 +22,14 @@ class ModelApprovalSeeder extends Seeder
   {
     $cmd = $this->command;
 
-    $cmd->warn('Aprroving all Models...');
+    $cmd->warn('Aprroving all approvable models...');
 
     $user = User::first();
 
     $models = (new ModelScannerService())->getApprovableModels();
 
     foreach ($models as $model) {
+      /** @var \Illuminate\Database\Eloquent\Model $model */
       foreach ($model::withoutGlobalScopes()->get() as $model) {
         if (!$model->isApprovalCompleted()) {
           $model->approve(user: $user);
@@ -36,6 +37,6 @@ class ModelApprovalSeeder extends Seeder
       }
     }
 
-    $cmd->info('Done!');
+    $cmd->info('All approvable models approved!');
   }
 }

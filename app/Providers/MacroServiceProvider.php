@@ -48,18 +48,19 @@ class MacroServiceProvider extends ServiceProvider
             ->hidePasswordManagerIcons()
             ->label('Confirm Password')
         ])
-        ->modalDescription('Confirm your password to perform this action.')
+        ->modalDescription('Mohon konfirmasi password anda untuk melakukan aksi ini.')
         ->action(function (array $data, Model $record, MountableAction $action) {
           if (!Hash::check($data['password'], auth()->user()->password)) {
             Notification::make()
               ->danger()
               ->title('Woops...')
-              ->body('Wrong password!')
+              ->body('Password anda salah!')
               ->send();
             $action->halt();
           }
           $record->delete();
         });
+
       return $this;
     });
 
@@ -106,6 +107,7 @@ class MacroServiceProvider extends ServiceProvider
           'x-model' => 'value',
           'x-on:input' => 'validate()'
         ]);
+
       return $this;
     });
 
@@ -134,6 +136,7 @@ class MacroServiceProvider extends ServiceProvider
           'x-model' => 'value',
           'x-on:input' => 'validate()'
         ]);
+
       return $this;
     });
 
@@ -170,6 +173,7 @@ class MacroServiceProvider extends ServiceProvider
               $set($component, $code);
             })
         ]);
+
       return $this;
     });
 
@@ -178,6 +182,16 @@ class MacroServiceProvider extends ServiceProvider
         ->required()
         ->hiddenOn('view')
         ->label('Semua perhitungan sudah dicek dan tidak ada kesalahan');
+
+      return $this;
+    });
+
+    Checkbox::macro('submission', function (): static {
+      $this
+        ->label('Submit data ini')
+        ->visibleOn('create')
+        ->hidden(auth()->user()->hasRole('super_admin'));
+
       return $this;
     });
 
@@ -223,6 +237,7 @@ class MacroServiceProvider extends ServiceProvider
         ->formatAsYouType(false)
         ->showSelectedDialCode(true)
         ->focusNumberFormat(PhoneInputNumberType::E164);
+
       return $this;
     });
   }
