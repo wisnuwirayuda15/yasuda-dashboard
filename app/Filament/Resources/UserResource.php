@@ -158,6 +158,18 @@ class UserResource extends Resource
     return $table
       ->columns([
         TextColumn::make('name')
+          ->label('Username')
+          ->sortable()
+          ->searchable(),
+        TextColumn::make('email')
+          ->icon('gmdi-mail')
+          ->sortable()
+          ->description(fn(User $record) => $record->email_verified_at ? 'Verified at ' . $record->email_verified_at : 'Not verified')
+          ->searchable(),
+        TextColumn::make('roles.name')
+          ->badge()
+          ->placeholder('Not assigned')
+          ->formatStateUsing(fn(?string $state): string => Str::headline($state))
           ->searchable(),
         IconColumn::make('has_employee')
           ->label('Has Employee')
@@ -165,22 +177,13 @@ class UserResource extends Resource
           ->tooltip(fn(User $record) => $record->employable?->name)
           ->boolean()
           ->alignCenter(),
-        TextColumn::make('roles.name')
-          ->badge()
-          ->placeholder('Not assigned')
-          ->formatStateUsing(fn(?string $state): string => Str::headline($state))
-          ->searchable(),
-        TextColumn::make('email')
-          ->icon('gmdi-mail')
-          // ->description(fn(User $record) => $record->email_verified_at ? 'Verified at ' . $record->email_verified_at : 'Not verified')
-          ->searchable(),
-        TextColumn::make('email_verified_at')
-          ->icon('heroicon-s-check-circle')
-          ->iconColor('success')
-          ->label('Verified At')
-          ->placeholder('Not verified')
-          ->dateTime()
-          ->sortable(),
+        // TextColumn::make('email_verified_at')
+        //   ->icon('heroicon-s-check-circle')
+        //   ->iconColor('success')
+        //   ->label('Verified At')
+        //   ->placeholder('Not verified')
+        //   ->dateTime()
+        //   ->sortable(),
         TextColumn::make('created_at')
           ->dateTime()
           ->sortable()

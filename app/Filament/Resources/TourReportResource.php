@@ -95,6 +95,7 @@ class TourReportResource extends Resource
         static::getMainCostsSection(),
         static::getOtherCostsSection(),
         static::getSummariesSection(),
+        Checkbox::make('submission')->submission(),
         Checkbox::make('confirmation')->confirmation()
       ]);
   }

@@ -18,6 +18,8 @@ enum OrderFleetStatus: string implements HasLabel, HasColor
 
   case CANCELED = 'canceled';
 
+  case ORDERED = 'ordered';
+
   public function getLabel(): ?string
   {
     return match ($this) {
@@ -26,6 +28,7 @@ enum OrderFleetStatus: string implements HasLabel, HasColor
       self::FINISHED => 'Selesai',
       self::BOOKED => 'Dipesan',
       self::CANCELED => 'Dibatalkan',
+      self::ORDERED => 'Invoice Terbit',
     };
   }
 
@@ -37,6 +40,7 @@ enum OrderFleetStatus: string implements HasLabel, HasColor
       self::FINISHED => Color::Green,
       self::BOOKED => Color::Yellow,
       self::CANCELED => Color::Red,
+      self::ORDERED => Color::Orange,
     };
   }
 }

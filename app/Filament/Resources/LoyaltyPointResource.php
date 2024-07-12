@@ -83,18 +83,24 @@ class LoyaltyPointResource extends Resource
         TextColumn::make('medium_bus_total')
           ->label('Medium Bus')
           ->numeric()
+          ->badge()
+          ->color(FleetCategory::MEDIUM->getColor())
           ->state(function (LoyaltyPoint $record) {
             return $record->invoice->order->orderFleets->filter(fn(OrderFleet $orderFleet) => $orderFleet->fleet->category->value === FleetCategory::MEDIUM->value)->count();
           }),
         TextColumn::make('big_bus_total')
           ->label('Big Bus')
           ->numeric()
+          ->badge()
+          ->color(FleetCategory::BIG->getColor())
           ->state(function (LoyaltyPoint $record) {
             return $record->invoice->order->orderFleets->filter(fn(OrderFleet $orderFleet) => $orderFleet->fleet->category->value === FleetCategory::BIG->value)->count();
           }),
         TextColumn::make('legrest_bus_total')
           ->label('Legrest Bus')
           ->numeric()
+          ->badge()
+          ->color(FleetCategory::LEGREST->getColor())
           ->state(function (LoyaltyPoint $record) {
             return $record->invoice->order->orderFleets->filter(fn(OrderFleet $orderFleet) => $orderFleet->fleet->category->value === FleetCategory::LEGREST->value)->count();
           }),

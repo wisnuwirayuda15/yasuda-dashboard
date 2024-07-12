@@ -11,6 +11,7 @@ use Filament\Forms\Set;
 use Livewire\Component;
 use Filament\Forms\Form;
 use App\Models\ProfitLoss;
+use App\Models\TourReport;
 use Filament\Tables\Table;
 use App\Models\Destination;
 use App\Enums\FleetCategory;
@@ -31,19 +32,27 @@ use Filament\Forms\Components\Checkbox;
 use Filament\Forms\Components\Fieldset;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Tabs\Tab;
+use Filament\Tables\Actions\EditAction;
+use Filament\Tables\Actions\ViewAction;
 use Filament\Tables\Columns\TextColumn;
+use Illuminate\Database\Eloquent\Model;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
+use Filament\Tables\Actions\ActionGroup;
+use Filament\Tables\Actions\DeleteAction;
 use Filament\Tables\Actions\ExportAction;
 use Filament\Forms\Components\Placeholder;
 use App\Filament\Exports\ProfitLossExporter;
 use Filament\Forms\Components\ToggleButtons;
 use Filament\Forms\Components\Actions\Action;
 use App\Filament\Resources\ProfitLossResource\Pages;
+use EightyNine\Approvals\Tables\Actions\RejectAction;
+use EightyNine\Approvals\Tables\Actions\SubmitAction;
+use EightyNine\Approvals\Tables\Actions\ApproveAction;
+use EightyNine\Approvals\Tables\Actions\DiscardAction;
 use EightyNine\Approvals\Tables\Actions\ApprovalActions;
 use EightyNine\Approvals\Tables\Columns\ApprovalStatusColumn;
 use App\Filament\Resources\ProfitLossResource\RelationManagers;
-use App\Models\TourReport;
 
 class ProfitLossResource extends Resource
 {
@@ -86,6 +95,7 @@ class ProfitLossResource extends Resource
         static::getCostTabs(),
         static::getOtherIncomeSection(),
         static::getTotalCostsSection(),
+        Checkbox::make('submission')->submission(),
         Checkbox::make('confirmation')->confirmation()
       ]);
   }
@@ -142,33 +152,29 @@ class ProfitLossResource extends Resource
           ->label('Export')
           ->color('success')
       ])
-      ->actions(
-        ApprovalActions::make([
-          Tables\Actions\ActionGroup::make([
-            Tables\Actions\ViewAction::make()
-              ->modalWidth(MaxWidth::MaxContent),
-            Tables\Actions\EditAction::make()
-              ->modalWidth(MaxWidth::MaxContent),
-            Tables\Actions\DeleteAction::make()
-              ->modalHeading('Delete Profit & Loss Analysis')
-              // ->modalDescription(fn(ProfitLoss $record): string => $record->invoice->tourReport ? $record->invoice->code . ' sudah memiliki tour report. Jika anda menghapusnya, tour reportnya akan di hapus juga.' : 'Are you sure you would like to do this?')
-              ->action(function (ProfitLoss $record, Tables\Actions\DeleteAction $action) {
-                $tourReport = TourReport::withoutGlobalScopes()->where('invoice_id', $record->invoice_id)->exists();
-                // $tourReport = $record->invoice->tourReport;
-                if ($tourReport) {
-                  Notification::make()
-                    ->danger()
-                    ->title('Delete failed')
-                    ->body("Invoice <strong>{$record->invoice->code}</strong> has Tour Report")
-                    ->send();
-                  $action->cancel();
-                }
-                $record->delete();
-                // $livewire->js('location.reload();');
-              }),
-          ]),
-        ])
-      );
+      ->actions([
+        SubmitAction::make()->color('info'),
+        ApproveAction::make()->color('success'),
+        DiscardAction::make()->color('warning'),
+        RejectAction::make()->color('danger'),
+        ActionGroup::make([
+          ViewAction::make(),
+          EditAction::make(),
+          DeleteAction::make()
+            ->action(function (ProfitLoss $record, DeleteAction $action) {
+              $tourReport = TourReport::withoutGlobalScopes()->where('invoice_id', $record->invoice_id)->exists();
+              if ($tourReport) {
+                Notification::make()
+                  ->danger()
+                  ->title('Delete failed')
+                  ->body("Invoice <strong>{$record->invoice->code}</strong> has Tour Report")
+                  ->send();
+                $action->cancel();
+              }
+              $record->delete();
+            }),
+        ])->visible(fn(Model $record) => $record->isApprovalCompleted()),
+      ]);
   }
 
   public static function getRelations(): array

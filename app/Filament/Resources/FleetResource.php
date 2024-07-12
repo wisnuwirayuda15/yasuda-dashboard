@@ -16,6 +16,7 @@ use Filament\Resources\Resource;
 use App\Enums\NavigationGroupLabel;
 use Filament\Tables\Filters\Filter;
 use App\Filament\Exports\FleetExporter;
+use Filament\Forms\Components\Checkbox;
 use Filament\Tables\Actions\EditAction;
 use Filament\Tables\Actions\ViewAction;
 use Filament\Tables\Columns\TextColumn;
@@ -33,6 +34,10 @@ use App\Filament\Resources\FleetResource\Pages;
 use Ysfkaya\FilamentPhoneInput\Forms\PhoneInput;
 use Ysfkaya\FilamentPhoneInput\Tables\PhoneColumn;
 use Ysfkaya\FilamentPhoneInput\PhoneInputNumberType;
+use EightyNine\Approvals\Tables\Actions\RejectAction;
+use EightyNine\Approvals\Tables\Actions\SubmitAction;
+use EightyNine\Approvals\Tables\Actions\ApproveAction;
+use EightyNine\Approvals\Tables\Actions\DiscardAction;
 use EightyNine\Approvals\Tables\Actions\ApprovalActions;
 use App\Filament\Resources\FleetResource\RelationManagers;
 use EightyNine\Approvals\Tables\Columns\ApprovalStatusColumn;
@@ -106,6 +111,7 @@ class FleetResource extends Resource
         PhoneInput::make('pic_phone')
           ->required()
           ->indonesian(),
+        Checkbox::make('submission')->submission()
       ]);
   }
 
@@ -148,15 +154,17 @@ class FleetResource extends Resource
           ->label('Export')
           ->color('success')
       ])
-      ->actions(
-        ApprovalActions::make([
-          ActionGroup::make([
-            ViewAction::make(),
-            EditAction::make(),
-            DeleteAction::make(),
-          ]),
-        ])
-      )
+      ->actions([
+        SubmitAction::make()->color('info'),
+        ApproveAction::make()->color('success'),
+        DiscardAction::make()->color('warning'),
+        RejectAction::make()->color('danger'),
+        ActionGroup::make([
+          ViewAction::make(),
+          EditAction::make(),
+          DeleteAction::make(),
+        ])->visible(fn(Model $record) => $record->isApprovalCompleted()),
+      ])
       ->bulkActions([
         Tables\Actions\BulkActionGroup::make([
           Tables\Actions\DeleteBulkAction::make(),

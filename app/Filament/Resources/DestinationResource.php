@@ -15,12 +15,17 @@ use Filament\Forms\Components\Checkbox;
 use Filament\Tables\Actions\EditAction;
 use Filament\Tables\Actions\ViewAction;
 use Filament\Tables\Columns\TextColumn;
+use Illuminate\Database\Eloquent\Model;
 use Filament\Forms\Components\TextInput;
 use Filament\Tables\Actions\ActionGroup;
 use Filament\Tables\Actions\DeleteAction;
 use Filament\Tables\Filters\SelectFilter;
 use Ysfkaya\FilamentPhoneInput\Forms\PhoneInput;
+use EightyNine\Approvals\Tables\Actions\SubmitAction;
 use App\Filament\Resources\DestinationResource\Pages;
+use EightyNine\Approvals\Tables\Actions\RejectAction;
+use EightyNine\Approvals\Tables\Actions\ApproveAction;
+use EightyNine\Approvals\Tables\Actions\DiscardAction;
 use EightyNine\Approvals\Tables\Actions\ApprovalActions;
 use EightyNine\Approvals\Tables\Columns\ApprovalStatusColumn;
 use App\Filament\Resources\DestinationResource\RelationManagers;
@@ -116,15 +121,17 @@ class DestinationResource extends Resource
         Filter::make('approved')->approved(),
         Filter::make('notApproved')->notApproved(),
       ])
-      ->actions(
-        ApprovalActions::make([
-          ActionGroup::make([
-            ViewAction::make(),
-            EditAction::make(),
-            DeleteAction::make(),
-          ])
-        ]),
-      )
+      ->actions([
+        SubmitAction::make()->color('info'),
+        ApproveAction::make()->color('success'),
+        DiscardAction::make()->color('warning'),
+        RejectAction::make()->color('danger'),
+        ActionGroup::make([
+          ViewAction::make(),
+          EditAction::make(),
+          DeleteAction::make(),
+        ])->visible(fn(Model $record) => $record->isApprovalCompleted())
+      ])
       ->bulkActions([
         Tables\Actions\BulkActionGroup::make([
           Tables\Actions\DeleteBulkAction::make(),

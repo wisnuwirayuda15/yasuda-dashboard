@@ -22,9 +22,11 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Toggle;
 use Filament\Forms\Components\Section;
 use App\Filament\Exports\OrderExporter;
+use Filament\Forms\Components\Checkbox;
 use Filament\Tables\Actions\EditAction;
 use Filament\Tables\Actions\ViewAction;
 use Filament\Tables\Columns\TextColumn;
+use Illuminate\Database\Eloquent\Model;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
 use Filament\Tables\Actions\ActionGroup;
@@ -40,6 +42,10 @@ use Filament\Forms\Components\Actions\Action;
 use Filament\Tables\Actions\DeleteBulkAction;
 use App\Filament\Resources\OrderResource\Pages;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use EightyNine\Approvals\Tables\Actions\RejectAction;
+use EightyNine\Approvals\Tables\Actions\SubmitAction;
+use EightyNine\Approvals\Tables\Actions\ApproveAction;
+use EightyNine\Approvals\Tables\Actions\DiscardAction;
 use EightyNine\Approvals\Tables\Actions\ApprovalActions;
 use App\Filament\Resources\OrderResource\RelationManagers;
 use EightyNine\Approvals\Tables\Columns\ApprovalStatusColumn;
@@ -136,8 +142,8 @@ class OrderResource extends Resource
                   ->toArray();
               }),
           ]),
-        RichEditor::make('description')
-          ->columnSpanFull(),
+        RichEditor::make('description')->columnSpanFull(),
+        Checkbox::make('submission')->submission()
       ]);
   }
 
@@ -186,28 +192,30 @@ class OrderResource extends Resource
         Filter::make('approved')->approved(),
         Filter::make('notApproved')->notApproved(),
       ])
-      ->actions(
-        ApprovalActions::make([
-          ActionGroup::make([
-            ViewAction::make(),
-            EditAction::make(),
-            DeleteAction::make()
-              ->before(function (DeleteAction $action, Order $record) {
-                $inv = $record->invoice()->exists();
-                $of = $record->orderFleets()->exists();
-                if ($inv || $of) {
-                  Notification::make()
-                    ->danger()
-                    ->title('Failed to delete!')
-                    ->body($inv ? 'Invoice untuk order ini sudah dibuat.' : 'Order sudah dijadwalkan.')
-                    ->persistent()
-                    ->send();
-                  $action->cancel();
-                }
-              }),
-          ])
-        ]),
-      );
+      ->actions([
+        SubmitAction::make()->color('info'),
+        ApproveAction::make()->color('success'),
+        DiscardAction::make()->color('warning'),
+        RejectAction::make()->color('danger'),
+        ActionGroup::make([
+          ViewAction::make(),
+          EditAction::make(),
+          DeleteAction::make()
+            ->before(function (DeleteAction $action, Order $record) {
+              $inv = $record->invoice()->exists();
+              $of = $record->orderFleets()->exists();
+              if ($inv || $of) {
+                Notification::make()
+                  ->danger()
+                  ->title('Failed to delete!')
+                  ->body($inv ? 'Invoice untuk order ini sudah dibuat.' : 'Order sudah dijadwalkan.')
+                  ->persistent()
+                  ->send();
+                $action->cancel();
+              }
+            }),
+        ])->visible(fn(Model $record) => $record->isApprovalCompleted())
+      ]);
   }
 
   public static function getRelations(): array

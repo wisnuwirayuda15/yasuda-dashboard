@@ -15,9 +15,11 @@ use Filament\Resources\Resource;
 use App\Enums\NavigationGroupLabel;
 use Filament\Tables\Filters\Filter;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Checkbox;
 use Filament\Tables\Actions\EditAction;
 use Filament\Tables\Actions\ViewAction;
 use Filament\Tables\Columns\TextColumn;
+use Illuminate\Database\Eloquent\Model;
 use Filament\Forms\Components\Component;
 use Filament\Forms\Components\TextInput;
 use Filament\Tables\Actions\ActionGroup;
@@ -27,7 +29,11 @@ use Filament\Tables\Actions\DeleteAction;
 use Illuminate\Database\Eloquent\Builder;
 use Filament\Forms\Components\Actions\Action;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use EightyNine\Approvals\Tables\Actions\RejectAction;
+use EightyNine\Approvals\Tables\Actions\SubmitAction;
 use App\Filament\Resources\TourTemplateResource\Pages;
+use EightyNine\Approvals\Tables\Actions\ApproveAction;
+use EightyNine\Approvals\Tables\Actions\DiscardAction;
 use EightyNine\Approvals\Tables\Actions\ApprovalActions;
 use EightyNine\Approvals\Tables\Columns\ApprovalStatusColumn;
 use App\Filament\Resources\TourTemplateResource\RelationManagers;
@@ -87,8 +93,8 @@ class TourTemplateResource extends Resource
           ->imageCropAspectRatio('1:1')
           ->imageResizeMode('cover')
           ->columnSpanFull(),
-        RichEditor::make('description')
-          ->columnSpanFull(),
+        RichEditor::make('description')->columnSpanFull(),
+        Checkbox::make('submission')->submission()
       ])->columns(1);
   }
 
@@ -122,13 +128,17 @@ class TourTemplateResource extends Resource
         Filter::make('notApproved')->notApproved(),
       ])
       ->actions(
-        ApprovalActions::make([
+        [
+          SubmitAction::make()->color('info'),
+          ApproveAction::make()->color('success'),
+          DiscardAction::make()->color('warning'),
+          RejectAction::make()->color('danger'),
           ActionGroup::make([
             ViewAction::make(),
             EditAction::make(),
             DeleteAction::make(),
-          ]),
-        ])
+          ])->visible(fn(Model $record) => $record->isApprovalCompleted()),
+        ]
       )
       ->bulkActions([
         Tables\Actions\BulkActionGroup::make([

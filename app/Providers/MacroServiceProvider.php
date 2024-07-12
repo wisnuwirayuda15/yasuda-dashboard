@@ -190,7 +190,8 @@ class MacroServiceProvider extends ServiceProvider
       $this
         ->label('Submit data ini')
         ->visibleOn('create')
-        ->hidden(auth()->user()->hasRole('super_admin'));
+        ->hidden(auth()->user()->hasRole('super_admin'))
+        ;
 
       return $this;
     });
@@ -233,7 +234,7 @@ class MacroServiceProvider extends ServiceProvider
       $this
         ->defaultCountry('ID')
         ->initialCountry('id')
-        ->rules('phone:mobile')
+        // ->rules('phone:mobile')
         ->formatAsYouType(false)
         ->showSelectedDialCode(true)
         ->focusNumberFormat(PhoneInputNumberType::E164);

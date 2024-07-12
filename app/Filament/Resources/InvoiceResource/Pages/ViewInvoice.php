@@ -47,7 +47,6 @@ class ViewInvoice extends ViewRecord
 
     return [
       ActionGroup::make([
-        EditAction::make(),
         DeleteAction::make(),
         Action::make('whatsapp_send')
           ->label('Kirim')
@@ -81,9 +80,10 @@ class ViewInvoice extends ViewRecord
         ->icon('tabler-pdf')
         ->url($generateInvoiceUrl, true)
         ->visible($approved),
+      EditAction::make()->visible($approved),
       Action::make('not_approved')
         ->disabled()
-        ->label('Invoice not aprroved')
+        ->label('Not Aprroved')
         ->color('danger')
         ->icon('heroicon-s-x-circle')
         ->hidden($approved),

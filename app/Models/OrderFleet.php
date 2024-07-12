@@ -21,10 +21,13 @@ class OrderFleet extends ApprovableModel
   {
     $date = $this->trip_date;
 
-    $order = $this->order()->exists();
+    $order = $this->order;
+
+    $inv = $order?->invoice;
 
     return match (true) {
-      $order => OrderFleetStatus::BOOKED->getLabel(),
+      (bool) $inv => OrderFleetStatus::ORDERED->getLabel(),
+      (bool) $order => OrderFleetStatus::BOOKED->getLabel(),
       $date->isToday() => OrderFleetStatus::ON_TRIP->getLabel(),
       $date->isPast() => OrderFleetStatus::FINISHED->getLabel(),
       default => OrderFleetStatus::READY->getLabel(),
@@ -40,6 +43,16 @@ class OrderFleet extends ApprovableModel
       $date->isPast() => 0,
       default => today()->diffInDays($date),
     };
+  }
+
+  public function isOrdered(): bool
+  {
+    return $this->getStatus() === OrderFleetStatus::ORDERED->getLabel();
+  }
+
+  public function isFinished(): bool
+  {
+    return (bool) $this->order?->invoice?->tourReport;
   }
 
   /**

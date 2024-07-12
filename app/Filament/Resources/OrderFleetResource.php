@@ -2,7 +2,6 @@
 
 namespace App\Filament\Resources;
 
-use App\Filament\Resources\OrderFleetResource\Widgets\OrderFleetCalendarWidget;
 use Closure;
 use Carbon\Carbon;
 use Filament\Forms;
@@ -11,6 +10,7 @@ use App\Models\Fleet;
 use App\Models\Order;
 use Filament\Forms\Get;
 use Filament\Forms\Set;
+use Livewire\Component;
 use App\Enums\FleetSeat;
 use App\Models\Employee;
 use Filament\Forms\Form;
@@ -29,6 +29,7 @@ use Filament\Forms\Components\Group;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Section;
 use Filament\Support\Enums\ActionSize;
+use Filament\Forms\Components\Checkbox;
 use Filament\Tables\Actions\BulkAction;
 use Filament\Tables\Actions\EditAction;
 use Filament\Tables\Actions\ViewAction;
@@ -55,8 +56,8 @@ use EightyNine\Approvals\Tables\Actions\DiscardAction;
 use EightyNine\Approvals\Tables\Actions\ApprovalActions;
 use EightyNine\Approvals\Tables\Columns\ApprovalStatusColumn;
 use App\Filament\Resources\OrderFleetResource\RelationManagers;
-use Livewire\Component;
 use Malzariey\FilamentDaterangepickerFilter\Filters\DateRangeFilter;
+use App\Filament\Resources\OrderFleetResource\Widgets\OrderFleetCalendarWidget;
 
 class OrderFleetResource extends Resource
 {
@@ -93,6 +94,7 @@ class OrderFleetResource extends Resource
         ->disabled(fn(?OrderFleet $record) => $record?->order()->exists())
         ->helperText(fn(?OrderFleet $record) => $record?->order()->exists() ? 'Order already added' : null)
         ->columnSpan(fn(string $operation) => in_array($operation, ['create', 'view']) ? 'full' : null),
+      Checkbox::make('submission')->submission()
       // Section::make('Pembayaran Armada')
       //   ->schema([
       //     ToggleButtons::make('payment_status')
@@ -170,6 +172,7 @@ class OrderFleetResource extends Resource
           ->badge()
           ->state(fn(OrderFleet $record): string => $record->getStatus())
           ->color(fn(string $state) => match ($state) {
+            OrderFleetStatus::ORDERED->getLabel() => OrderFleetStatus::ORDERED->getColor(),
             OrderFleetStatus::BOOKED->getLabel() => OrderFleetStatus::BOOKED->getColor(),
             OrderFleetStatus::ON_TRIP->getLabel() => OrderFleetStatus::ON_TRIP->getColor(),
             OrderFleetStatus::FINISHED->getLabel() => OrderFleetStatus::FINISHED->getColor(),
@@ -228,24 +231,21 @@ class OrderFleetResource extends Resource
           ->color('success')
       ])
       ->actions([
-        ActionGroup::make([
-          SubmitAction::make(),
-          ApproveAction::make(),
-          DiscardAction::make(),
-          RejectAction::make(),
-        ])->label(__('filament-approvals::approvals.actions.approvals'))
-          ->icon('heroicon-m-ellipsis-vertical')
-          ->size(ActionSize::Small)
-          ->color('primary')
-          ->button(),
+        SubmitAction::make()->color('info'),
+        ApproveAction::make()->color('success'),
+        DiscardAction::make()->color('warning'),
+        RejectAction::make()->color('danger'),
         ActionGroup::make([
           ViewAction::make(),
-          EditAction::make(),
-          DeleteAction::make(),
+          EditAction::make()
+            ->hidden(fn(OrderFleet $record): bool => $record->isOrdered()),
+          DeleteAction::make()
+            ->hidden(fn(OrderFleet $record): bool => $record->isOrdered()),
           ReplicateAction::make()
             ->color('warning')
             ->modal(false)
             ->excludeAttributes(['order_id', 'employee_id'])
+            ->hidden(fn(OrderFleet $record): bool => $record->isOrdered())
             ->before(function (OrderFleet $record) {
               $record->code = get_code(new OrderFleet, 'OF');
             }),
@@ -299,6 +299,7 @@ class OrderFleetResource extends Resource
       ->icon(OrderResource::getNavigationIcon())
       ->label('Select Order')
       ->color('info')
+      ->hidden(fn(OrderFleet $record): bool => $record->isOrdered())
       ->form([
         Select::make('order_id')
           ->required()
@@ -349,6 +350,16 @@ class OrderFleetResource extends Resource
 
           $action->cancel();
         }
+
+        if ($records->some(fn(OrderFleet $record) => $record->isOrdered())) {
+          Notification::make()
+            ->danger()
+            ->title('Failed')
+            ->body('Terdapat order yang sudah terbit invoicenya')
+            ->send();
+
+          $action->cancel();
+        }
       })
       ->form(fn(Collection $records) => [
         Select::make('order_id')
@@ -356,13 +367,11 @@ class OrderFleetResource extends Resource
           ->hiddenLabel()
           ->allowHtml()
           ->prefixIcon(OrderResource::getNavigationIcon())
-          ->options(
-            function () use ($records) {
-              return Order::whereDate('trip_date', $records->first()->trip_date->toDateString())->with('customer')->get()->mapWithKeys(function (Order $order) {
-                return [$order->id => view('filament.components.badges.order', ['record' => $order])->render()];
-              })->toArray();
-            }
-          )
+          ->options(function () use ($records) {
+            return Order::whereDate('trip_date', $records->first()->trip_date->toDateString())->with('customer')->get()->mapWithKeys(function (Order $order) {
+              return [$order->id => view('filament.components.badges.order', ['record' => $order])->render()];
+            })->toArray();
+          })
       ])
       ->action(function (array $data, Component $livewire, Collection $records): void {
         $codes = $records->pluck('code')->implode(', ');
@@ -386,7 +395,7 @@ class OrderFleetResource extends Resource
       ->icon('heroicon-s-trash')
       ->label('Remove Order')
       ->color('danger')
-      ->hidden(fn(OrderFleet $record): bool => blank($record->order_id))
+      ->hidden(fn(OrderFleet $record): bool => blank($record->order_id) || $record->isOrdered())
       ->action(
         function (OrderFleet $record) {
           $record->update(['order_id' => null]);
@@ -406,19 +415,27 @@ class OrderFleetResource extends Resource
       ->icon('heroicon-s-trash')
       ->label('Remove Orders')
       ->color('danger')
-      ->action(
-        function (Collection $records) {
-          $codes = $records->pluck('code')->implode(', ');
-
-          $records->each->update(['order_id' => null]);
-
+      ->action(function (Collection $records, BulkAction $action) {
+        if ($records->some(fn(OrderFleet $record) => $record->isOrdered())) {
           Notification::make()
-            ->success()
-            ->title('Success')
-            ->body("Order removed from <strong>{$codes}</strong>")
+            ->danger()
+            ->title('Failed')
+            ->body('Terdapat order yang sudah terbit invoicenya')
             ->send();
+
+          $action->cancel();
         }
-      );
+
+        $codes = $records->pluck('code')->implode(', ');
+
+        $records->each->update(['order_id' => null]);
+
+        Notification::make()
+          ->success()
+          ->title('Success')
+          ->body("Order removed from <strong>{$codes}</strong>")
+          ->send();
+      });
   }
 
   public static function getSelectTourLeaderAction(): Action
@@ -427,6 +444,7 @@ class OrderFleetResource extends Resource
       ->icon('gmdi-tour')
       ->label('Select Tour Leader')
       ->color('success')
+      ->hidden(fn(OrderFleet $record): bool => $record->isFinished())
       ->form([
         Select::make('employee_id')
           ->required()
@@ -461,17 +479,15 @@ class OrderFleetResource extends Resource
       ->icon('heroicon-s-trash')
       ->label('Remove Tour Leader')
       ->color('danger')
-      ->hidden(fn(OrderFleet $record): bool => blank($record->employee_id))
-      ->action(
-        function (OrderFleet $record) {
-          $record->update(['employee_id' => null]);
-          Notification::make()
-            ->success()
-            ->title('Success')
-            ->body("Tour leader removed from <strong>{$record->code}</strong>")
-            ->send();
-        }
-      );
+      ->hidden(fn(OrderFleet $record): bool => blank($record->employee_id) || $record->isFinished())
+      ->action(function (OrderFleet $record) {
+        $record->update(['employee_id' => null]);
+        Notification::make()
+          ->success()
+          ->title('Success')
+          ->body("Tour leader removed from <strong>{$record->code}</strong>")
+          ->send();
+      });
   }
 
   public static function getDeleteTourLeaderBulkAction(): BulkAction
@@ -481,18 +497,26 @@ class OrderFleetResource extends Resource
       ->icon('heroicon-s-trash')
       ->label('Remove Tour Leaders')
       ->color('danger')
-      ->action(
-        function (Collection $records) {
-          $codes = $records->pluck('code')->implode(', ');
-
-          $records->each->update(['employee_id' => null]);
-
+      ->action(function (Collection $records, BulkAction $action) {
+        if ($records->some(fn(OrderFleet $record) => $record->isFinished())) {
           Notification::make()
-            ->success()
-            ->title('Success')
-            ->body("Tour leader removed from <strong>{$codes}</strong>")
+            ->danger()
+            ->title('Failed')
+            ->body('Terdapat order yang sudah selesai perjalannya')
             ->send();
+
+          $action->cancel();
         }
-      );
+
+        $codes = $records->pluck('code')->implode(', ');
+
+        $records->each->update(['employee_id' => null]);
+
+        Notification::make()
+          ->success()
+          ->title('Success')
+          ->body("Tour leader removed from <strong>{$codes}</strong>")
+          ->send();
+      });
   }
 }
