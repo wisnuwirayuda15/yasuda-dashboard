@@ -88,23 +88,34 @@ class RoleResource extends Resource implements HasShieldPermissions
         TextColumn::make('name')
           ->label(__('filament-shield::filament-shield.column.name'))
           ->formatStateUsing(fn($state): string => Str::headline($state))
+          ->sortable()
           ->searchable(),
         TextColumn::make('guard_name')
           ->badge()
           ->label(__('filament-shield::filament-shield.column.guard_name')),
         TextColumn::make('users_count')
           ->badge()
+          ->sortable()
           ->label('Users')
           ->counts('users')
           ->colors(['warning']),
         TextColumn::make('permissions_count')
           ->badge()
+          ->sortable()
           ->label(__('filament-shield::filament-shield.column.permissions'))
           ->counts('permissions')
           ->colors(['success']),
+        // TextColumn::make('updated_at')
+        //   ->label(__('filament-shield::filament-shield.column.updated_at'))
+        //   ->dateTime(),
+        TextColumn::make('created_at')
+          ->dateTime()
+          ->sortable()
+          ->toggleable(isToggledHiddenByDefault: true),
         TextColumn::make('updated_at')
-          ->label(__('filament-shield::filament-shield.column.updated_at'))
-          ->dateTime(),
+          ->dateTime()
+          ->sortable()
+          ->toggleable(isToggledHiddenByDefault: true),
       ])
       ->actions([
         Tables\Actions\ActionGroup::make([
@@ -199,7 +210,7 @@ class RoleResource extends Resource implements HasShieldPermissions
   public static function getNavigationBadge(): ?string
   {
     return null;
-    
+
     // return Utils::isResourceNavigationBadgeEnabled()
     //   ? strval(static::getEloquentQuery()->count())
     //   : null;

@@ -25,9 +25,9 @@ return [
     Resources\OrderFleetResource::getSlug() => 'Ketersediaan Armada',
     Resources\ProfitLossResource::getSlug() => 'Keuntungan & Kerugian',
     Resources\RewardResource::getSlug() => 'Hadiah',
-    Resources\SalesVisitResource::getSlug() => 'Kunjungan Customer',
+    Resources\SalesVisitResource::getSlug() => 'Kunjungan Pelanggan',
     Resources\ShirtResource::getSlug() => 'Baju Wisata',
-    Resources\TourReportResource::getSlug() => 'Laporan Wisata',
+    Resources\TourReportResource::getSlug() => 'Laporan Perjalanan Wisata',
     Resources\TourTemplateResource::getSlug() => 'Template Wisata',
     Resources\UserResource::getSlug() => 'Akun User',
   ]

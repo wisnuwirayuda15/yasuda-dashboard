@@ -20,6 +20,8 @@ enum EmployeeRole: string implements HasLabel, HasColor
 
   case MARKETING_MANAGER = 'marketing_manager';
 
+  case HR = 'human_resource';
+
   case MANAGER = 'super_admin';
 
   case TOUR_LEADER = 'tour_leader';
@@ -33,6 +35,7 @@ enum EmployeeRole: string implements HasLabel, HasColor
       self::FINANCE_MANAGER => 'Finance Manager',
       self::MARKETING_STAFF => 'Sales & Marketing Staff',
       self::MARKETING_MANAGER => 'Sales & Marketing Manager',
+      self::HR => 'Human Resource',
       self::MANAGER => 'Company Manager',
       self::TOUR_LEADER => 'Tour Leader',
     };
@@ -47,9 +50,11 @@ enum EmployeeRole: string implements HasLabel, HasColor
       self::FINANCE_MANAGER => Color::Emerald,
       self::MARKETING_STAFF => Color::Pink,
       self::MARKETING_MANAGER => Color::Orange,
+      self::HR => Color::Blue,
       self::MANAGER => Color::Green,
       self::TOUR_LEADER => Color::Violet,
     };
   }
 }
+
 
