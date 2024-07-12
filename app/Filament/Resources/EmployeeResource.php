@@ -100,6 +100,7 @@ class EmployeeResource extends Resource
                   ->required()
                   ->inline()
                   ->options(EmployeeStatus::class)
+                  ->disableOptionWhen(fn (string $value, string $operation): bool => $operation === 'create' && ($value === EmployeeStatus::RESIGN->value || $value === EmployeeStatus::RETIRE->value))
                   ->loadingIndicator(),
                 ToggleButtons::make('gender')
                   ->required()
@@ -113,6 +114,7 @@ class EmployeeResource extends Resource
                   ->loadingIndicator(),
                 Select::make('role')
                   ->required()
+                  ->label('Jabatan')
                   ->options(EmployeeRole::class)
                   ->afterStateUpdated(function (Set $set, ?string $state): void {
                     if (blank($state)) {
@@ -159,6 +161,7 @@ class EmployeeResource extends Resource
         TextColumn::make('gender')
           ->badge(),
         TextColumn::make('role')
+          ->label('Jabatan')
           ->badge(),
         TextColumn::make('status')
           ->badge(),

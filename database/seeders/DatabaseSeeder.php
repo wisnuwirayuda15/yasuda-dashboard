@@ -32,6 +32,7 @@ class DatabaseSeeder extends Seeder
     $realSeeders = [
       ApprovalFlowSeeder::class,
       RegionSeeder::class,
+      EmployeeSeeder::class,
     ];
 
     $dummySeeders = [
@@ -40,7 +41,6 @@ class DatabaseSeeder extends Seeder
       DestinationSeeder::class,
       OrderSeeder::class,
       OrderFleetSeeder::class,
-      EmployeeSeeder::class,
       EventSeeder::class,
       ModelApprovalSeeder::class,
     ];
