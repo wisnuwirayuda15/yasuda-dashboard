@@ -6,10 +6,13 @@ use App\Models\ProfitLoss;
 use Filament\Support\Enums\IconPosition;
 use App\Filament\Resources\ProfitLossResource;
 use Filament\Widgets\StatsOverviewWidget\Stat;
+use BezhanSalleh\FilamentShield\Traits\HasWidgetShield;
 use Filament\Widgets\StatsOverviewWidget as BaseWidget;
 
 class ProfitLossWidget extends BaseWidget
 {
+  use HasWidgetShield;
+  
   protected static ?string $pollingInterval = null;
 
   protected static ?int $sort = -2;

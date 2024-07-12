@@ -7,10 +7,13 @@ use App\Models\OrderFleet;
 use App\Filament\Resources\FleetResource;
 use App\Filament\Resources\OrderFleetResource;
 use Filament\Widgets\StatsOverviewWidget\Stat;
+use BezhanSalleh\FilamentShield\Traits\HasWidgetShield;
 use Filament\Widgets\StatsOverviewWidget as BaseWidget;
 
 class FleetWidget extends BaseWidget
 {
+  use HasWidgetShield;
+  
   protected static ?string $pollingInterval = null;
 
   protected static ?int $sort = -1;

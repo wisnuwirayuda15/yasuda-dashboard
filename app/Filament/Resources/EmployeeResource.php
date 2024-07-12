@@ -17,6 +17,7 @@ use Filament\Resources\Resource;
 use App\Enums\NavigationGroupLabel;
 use Filament\Forms\Components\Grid;
 use Filament\Tables\Actions\Action;
+use Filament\Tables\Filters\Filter;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Section;
 use Filament\Tables\Columns\IconColumn;
@@ -86,7 +87,7 @@ class EmployeeResource extends Resource
               ->numeric()
               ->label('No. KTP')
               ->unique(ignoreRecord: true)
-              ->maxLength(255),
+              ->maxLength(16),
             PhoneInput::make('phone')
               ->unique(ignoreRecord: true)
               ->indonesian(),
@@ -100,7 +101,7 @@ class EmployeeResource extends Resource
                   ->required()
                   ->inline()
                   ->options(EmployeeStatus::class)
-                  ->disableOptionWhen(fn (string $value, string $operation): bool => $operation === 'create' && ($value === EmployeeStatus::RESIGN->value || $value === EmployeeStatus::RETIRE->value))
+                  ->disableOptionWhen(fn(string $value, string $operation): bool => $operation === 'create' && ($value === EmployeeStatus::RESIGN->value || $value === EmployeeStatus::RETIRE->value))
                   ->loadingIndicator(),
                 ToggleButtons::make('gender')
                   ->required()
@@ -190,6 +191,9 @@ class EmployeeResource extends Resource
         SelectFilter::make('status')
           ->multiple()
           ->options(EmployeeStatus::class),
+        Filter::make('has_user_account')
+          ->label('Sudah memiliki akun')
+          ->query(fn(Builder $query): Builder => $query->whereHas('employable')),
       ])
       ->actions([
         Tables\Actions\ActionGroup::make([

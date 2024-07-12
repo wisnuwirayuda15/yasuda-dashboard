@@ -4,13 +4,15 @@ namespace App\Filament\Resources\OrderFleetResource\Widgets;
 
 use App\Models\OrderFleet;
 use Filament\Widgets\Widget;
-use App\Enums\OrderFleetStatus;
 use App\Filament\Resources\OrderFleetResource;
 use Saade\FilamentFullCalendar\Data\EventData;
+use BezhanSalleh\FilamentShield\Traits\HasWidgetShield;
 use Saade\FilamentFullCalendar\Widgets\FullCalendarWidget;
 
 class OrderFleetCalendarWidget extends FullCalendarWidget
 {
+  use HasWidgetShield;
+  
   public function fetchEvents(array $fetchInfo): array
   {
     return OrderFleet::query()
