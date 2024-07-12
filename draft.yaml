@@ -88,12 +88,12 @@ models:
     destinations: json
     description: longText nullable
 
-  Company:
-    name: string default:"Yasuda Jaya Tour & Travel"
-    logo: string default:logo.png
-    email: string default:yasudajaya@gmail.com
-    phone: string default:+628123456789
-    balance: bigInteger default:0
+  # Company:
+  #   name: string default:"Yasuda Jaya Tour & Travel"
+  #   logo: string default:logo.png
+  #   email: string default:yasudajaya@gmail.com
+  #   phone: string default:+628123456789
+  #   balance: bigInteger default:0
 
   Employee:
     # user_id: foreign constrained onDelete:cascade unique nullable

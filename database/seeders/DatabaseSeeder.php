@@ -27,11 +27,14 @@ class DatabaseSeeder extends Seeder
       'password' => Hash::make(env('ADMIN_PASSWORD', '12345678')),
     ]);
 
-    Company::create();
+    // Company::create();
 
-    $this->call([
+    $realSeeders = [
       ApprovalFlowSeeder::class,
       RegionSeeder::class,
+    ];
+
+    $dummySeeders = [
       FleetSeeder::class,
       CustomerSeeder::class,
       DestinationSeeder::class,
@@ -40,6 +43,14 @@ class DatabaseSeeder extends Seeder
       EmployeeSeeder::class,
       EventSeeder::class,
       ModelApprovalSeeder::class,
-    ]);
+    ];
+
+    if ((bool) env('SEEDER_WITH_DUMMY_DATA', true)) {
+      $seeders = array_merge($realSeeders, $dummySeeders);
+    } else {
+      $seeders = $realSeeders;
+    }
+
+    $this->call($seeders);
   }
 }
