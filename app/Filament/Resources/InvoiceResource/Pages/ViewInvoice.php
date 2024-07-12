@@ -21,6 +21,8 @@ class ViewInvoice extends ViewRecord
   {
     $inv = $this->getRecord();
 
+    $user = auth()->user();
+
     $approved = $inv->isApprovalCompleted();
 
     $customer = $inv->order->customer;
@@ -34,6 +36,14 @@ class ViewInvoice extends ViewRecord
     $pnl = $inv->profitLoss()->exists();
 
     $tr = $inv->tourReport()->exists();
+
+    $canCreateShirt = $user->can('create_shirt');
+
+    $canCreateInvoice = $user->can('create_invoice');
+
+    $canCreateProfitLoss = $user->can('create_profit::loss');
+
+    $canCreateTourReport = $user->can('create_tour::report');
 
     $shirtUrl = $shirt ? ShirtResource::getUrl('view', ['record' => $inv->shirt->id]) : ShirtResource::getUrl('create', ['invoice' => $inv->code]);
 
@@ -53,22 +63,25 @@ class ViewInvoice extends ViewRecord
           ->tooltip("Kirim detail invoice kepada customer ({$customer->phone}) via Whatsapp")
           ->color('success')
           ->icon('gmdi-whatsapp-r')
+          ->visible($canCreateInvoice)
           ->url($whatsAppUrl, true),
         Action::make('shirt')
           ->label(($shirt ? 'Lihat' : 'Buat') . ' Baju Wisata')
           ->icon(ShirtResource::getNavigationIcon())
           ->color('secondary')
+          ->visible($canCreateShirt)
           ->url($shirtUrl),
         Action::make('pnl')
           ->label(($pnl ? 'Lihat' : 'Buat') . ' Analisis P&L')
           ->icon(ProfitLossResource::getNavigationIcon())
           ->color('info')
+          ->visible($canCreateProfitLoss)
           ->url($profitLossUrl),
         Action::make('tour_report')
           ->label(($tr ? 'Lihat' : 'Buat') . ' Tour Report')
           ->icon(TourReportResource::getNavigationIcon())
           ->color('warning')
-          ->visible($pnl)
+          ->visible($pnl && $canCreateTourReport)
           ->hidden($tourLeaderNotAllSet)
           ->url($tourReportUrl),
       ])->tooltip('Menu')

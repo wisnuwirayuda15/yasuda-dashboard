@@ -23,6 +23,7 @@ use Illuminate\Database\Eloquent\Model;
 use Filament\Forms\Components\Component;
 use Filament\Forms\Components\TextInput;
 use Filament\Tables\Actions\ActionGroup;
+use Filament\Tables\Columns\ImageColumn;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\RichEditor;
 use Filament\Tables\Actions\DeleteAction;
@@ -104,6 +105,7 @@ class TourTemplateResource extends Resource
 
     return $table
       ->columns([
+        ImageColumn::make('image'),
         TextColumn::make('name')
           ->searchable(),
         TextColumn::make('regency.name')

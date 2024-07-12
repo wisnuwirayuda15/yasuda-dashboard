@@ -71,7 +71,7 @@ class TourReportResource extends Resource
   public static function form(Form $form): Form
   {
     $record = $form->getRecord();
-    
+
     if (auth()->user()->employable?->role === EmployeeRole::TOUR_LEADER && $record->employee_id !== auth()->user()->employable?->id) {
       abort(403);
     }
@@ -95,8 +95,8 @@ class TourReportResource extends Resource
         static::getMainCostsSection(),
         static::getOtherCostsSection(),
         static::getSummariesSection(),
-        Checkbox::make('submission')->submission(),
-        Checkbox::make('confirmation')->confirmation()
+        // Checkbox::make('submission')->submission(),
+        Checkbox::make('confirmation')->confirmation(),
       ]);
   }
 
@@ -158,26 +158,17 @@ class TourReportResource extends Resource
           ->relationship('employee', 'name', fn(Builder $query) => $query->where('role', EmployeeRole::TOUR_LEADER->value)),
       ])
       ->actions([
-        ActionGroup::make([
-          // SubmitAction::make(),
-          ApproveAction::make(),
-          DiscardAction::make(),
-          RejectAction::make(),
-          Action::make('submit')
-            ->label('Submit')
-            ->color('primary')
-            ->icon('heroicon-m-arrow-right-circle')
-            ->requiresConfirmation()
-            ->visible(
-              fn(TourReport $record) =>
-              $record->employee?->id === auth()->user()->employable?->id && !$record->isSubmitted()
-            )
-            ->action(fn(TourReport $record) => $record->submit(auth()->user())),
-        ])->label(__('filament-approvals::approvals.actions.approvals'))
-          ->icon('heroicon-m-ellipsis-vertical')
-          ->size(ActionSize::Small)
+        ApproveAction::make(),
+        DiscardAction::make(),
+        RejectAction::make(),
+        Action::make('submit')
+          ->label('Submit')
           ->color('primary')
-          ->button(),
+          ->icon('heroicon-m-arrow-right-circle')
+          ->requiresConfirmation()
+          ->visible(fn(TourReport $record) =>
+            $record->employee?->id === auth()->user()->employable?->id && !$record->isSubmitted())
+          ->action(fn(TourReport $record) => $record->submit(auth()->user())),
         ActionGroup::make([
           ViewAction::make(),
           EditAction::make(),

@@ -57,7 +57,6 @@ class MeetingCalendarWidget extends FullCalendarWidget
         ->icon('heroicon-o-plus')
         ->color('success')
         ->tooltip('Tambah Event')
-        ->visible(fn() => auth()->user()->can('create_meeting'))
         ->mountUsing(function (Form $form, array $arguments) {
           $form->fill([
             'date' => $arguments['start'] ?? null
@@ -69,10 +68,8 @@ class MeetingCalendarWidget extends FullCalendarWidget
   protected function modalActions(): array
   {
     return [
-      ViewAction::make()
-        ->visible(fn() => auth()->user()->can(['view_meeting', 'view_any_meeting'])),
+      ViewAction::make(),
       EditAction::make()
-        ->visible(fn() => auth()->user()->can(['update_meeting']))
         ->mountUsing(function (Event $record, Form $form, array $arguments, EditAction $component) {
           if (filled($arguments)) {
             $component->modal(false);
@@ -84,7 +81,6 @@ class MeetingCalendarWidget extends FullCalendarWidget
           ]);
         }),
       DeleteAction::make()
-        ->visible(fn() => auth()->user()->can(['delete_meeting', 'delete_any_meeting', 'force_delete_meeting', 'force_delete_any_meeting']))
         ->icon('heroicon-s-trash'),
     ];
   }

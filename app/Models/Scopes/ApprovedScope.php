@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Scope;
 use Illuminate\Database\Eloquent\Builder;
+use RingleSoft\LaravelProcessApproval\Enums\ApprovalStatusEnum;
 
 class ApprovedScope implements Scope
 {
@@ -24,9 +25,9 @@ class ApprovedScope implements Scope
   {
     return $builder->whereHas('approvalStatus', function (Builder $query) use ($whereNot) {
       if ($whereNot) {
-        $query->whereNot('status', 'Approved');
+        $query->whereNot('status', ApprovalStatusEnum::APPROVED->value);
       } else {
-        $query->where('status', 'Approved');
+        $query->where('status', ApprovalStatusEnum::APPROVED->value);
       }
     });
   }

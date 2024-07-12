@@ -75,7 +75,9 @@ class DestinationResource extends Resource
         TextInput::make('high_season_price')
           ->default(0)
           ->currency(minValue: 0),
-        Checkbox::make('submission')->submission()
+        Checkbox::make('submission')
+          ->columnSpanFull()
+          ->submission()
       ]);
   }
 

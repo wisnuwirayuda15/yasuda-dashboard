@@ -5,11 +5,13 @@ namespace App\Filament\Resources;
 use Closure;
 use Carbon\Carbon;
 use Filament\Tables;
+use App\Enums\CashFlow;
 use App\Models\Invoice;
 use Filament\Forms\Get;
 use Filament\Forms\Set;
 use Livewire\Component;
 use Filament\Forms\Form;
+use App\Models\OrderFleet;
 use App\Models\ProfitLoss;
 use App\Models\TourReport;
 use Filament\Tables\Table;
@@ -45,6 +47,7 @@ use Filament\Forms\Components\Placeholder;
 use App\Filament\Exports\ProfitLossExporter;
 use Filament\Forms\Components\ToggleButtons;
 use Filament\Forms\Components\Actions\Action;
+use Filament\Tables\Actions\Action as TableAction;
 use App\Filament\Resources\ProfitLossResource\Pages;
 use EightyNine\Approvals\Tables\Actions\RejectAction;
 use EightyNine\Approvals\Tables\Actions\SubmitAction;
@@ -154,7 +157,61 @@ class ProfitLossResource extends Resource
       ])
       ->actions([
         SubmitAction::make()->color('info'),
-        ApproveAction::make()->color('success'),
+        // ApproveAction::make()->color('success'),
+        TableAction::make('approve')
+          ->icon('heroicon-m-check')
+          ->color('success')
+          ->requiresConfirmation()
+          ->visible(
+            fn(Model $record) => $record->canBeApprovedBy(auth()->user()) && $record->isSubmitted() && !$record->isApprovalCompleted() && !$record->isDiscarded()
+          )->action(function (ProfitLoss $record) {
+            $pnl = $record;
+
+            $pnl->approve(user: auth()->user());
+
+            $inv = $pnl->invoice;
+
+            $order = $inv->order;
+
+            $loyaltyPoint = $pnl->invoice->loyaltyPoint;
+
+            $customer = $inv->order->customer->name;
+
+            $mediumTotal = $order->orderFleets->filter(fn(OrderFleet $orderFleet) => $orderFleet->fleet->category->value === FleetCategory::MEDIUM->value)->count();
+            $bigTotal = $order->orderFleets->filter(fn(OrderFleet $orderFleet) => $orderFleet->fleet->category->value === FleetCategory::BIG->value)->count();
+            $legrestTotal = $order->orderFleets->filter(fn(OrderFleet $orderFleet) => $orderFleet->fleet->category->value === FleetCategory::LEGREST->value)->count();
+
+            $bonus = $mediumTotal * $pnl->medium_subs_bonus + $bigTotal * $pnl->big_subs_bonus + $legrestTotal * $pnl->legrest_subs_bonus;
+
+            if ($loyaltyPoint) {
+              $loyaltyPoint->update([
+                'amount' => $bonus,
+              ]);
+
+              Notification::make()
+                ->success()
+                ->title('Success')
+                ->body("Loyalty Point untuk <strong>{$customer}</strong> berhasil diubah!")
+                ->send();
+            } else {
+              $inv->loyaltyPoint()->create([
+                'cash_status' => CashFlow::IN->value,
+                'description' => '<p>Tambahan saldo bonus langganan</p>',
+                'amount' => $bonus,
+              ]);
+
+              Notification::make()
+                ->success()
+                ->title('Success')
+                ->body("Loyalty Point untuk <strong>{$customer}</strong> berhasil dibuat!")
+                ->send();
+            }
+
+            Notification::make()
+              ->title('Approved successfully')
+              ->success()
+              ->send();
+          }),
         DiscardAction::make()->color('warning'),
         RejectAction::make()->color('danger'),
         ActionGroup::make([
