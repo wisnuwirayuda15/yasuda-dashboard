@@ -2,9 +2,6 @@
 
 namespace App\Providers\Filament;
 
-use App\Filament\Resources\OrderFleetResource\Widgets\OrderFleetCalendarWidget;
-use App\Filament\Widgets\FleetWidget;
-use App\Filament\Widgets\ProfitLossWidget;
 use Filament\Pages;
 use Filament\Panel;
 use Filament\Widgets;
@@ -21,8 +18,10 @@ use Illuminate\Support\HtmlString;
 use App\Enums\NavigationGroupLabel;
 use Filament\Tables\Filters\Filter;
 use Filament\View\PanelsRenderHook;
+use Illuminate\Contracts\View\View;
 use Filament\Livewire\Notifications;
 use Filament\Support\Enums\MaxWidth;
+use App\Filament\Widgets\FleetWidget;
 use Filament\Actions\MountableAction;
 use Filament\Forms\Components\Select;
 use Filament\Support\Enums\Alignment;
@@ -36,6 +35,7 @@ use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\FileUpload;
 use Filament\Tables\Actions\ExportAction;
 use Illuminate\Database\Eloquent\Builder;
+use App\Filament\Widgets\ProfitLossWidget;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Support\Facades\FilamentView;
 use Filament\Tables\Enums\ActionsPosition;
@@ -72,6 +72,7 @@ use Filament\Tables\Actions\DeleteAction as TableDeleteAction;
 use Filament\Pages\Auth\EmailVerification\EmailVerificationPrompt;
 use Joaopaulolndev\FilamentCheckSslWidget\FilamentCheckSslWidgetPlugin;
 use App\Filament\Resources\MeetingResource\Widgets\MeetingCalendarWidget;
+use App\Filament\Resources\OrderFleetResource\Widgets\OrderFleetCalendarWidget;
 
 class AdminPanelProvider extends PanelProvider
 {
@@ -89,6 +90,12 @@ class AdminPanelProvider extends PanelProvider
 
         return $js;
       }
+    );
+
+    // Register roles name in navbar
+    FilamentView::registerRenderHook(
+      PanelsRenderHook::GLOBAL_SEARCH_AFTER,
+      fn(): View => view('filament.components.badges.user-role'),
     );
 
     // Sending validation notifications
@@ -111,12 +118,6 @@ class AdminPanelProvider extends PanelProvider
         ->extremePaginationLinks()
         ->defaultSort('created_at', 'desc')
         ->paginationPageOptions([5, 10, 15, 20])
-        // ->filters(
-        //   [
-        //     Filter::make('approved')->approved(),
-        //   ],
-        //   FiltersLayout::AboveContentCollapsible
-        // )
         ->persistFiltersInSession()
         ->deferFilters()
         ->filtersTriggerAction(
@@ -169,7 +170,7 @@ class AdminPanelProvider extends PanelProvider
 
     DateTimePicker::configureUsing(function (DateTimePicker $dateTimePicker): void {
       $dateTimePicker
-        ->native(false)
+        // ->native(false)
         ->prefixIcon('heroicon-s-calendar-days')
         // ->displayFormat('d mm Y • H:i')
       ;
