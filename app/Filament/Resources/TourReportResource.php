@@ -158,12 +158,12 @@ class TourReportResource extends Resource
           ->relationship('employee', 'name', fn(Builder $query) => $query->where('role', EmployeeRole::TOUR_LEADER->value)),
       ])
       ->actions([
-        ApproveAction::make(),
-        DiscardAction::make(),
-        RejectAction::make(),
+        ApproveAction::make()->color('success'),
+        DiscardAction::make()->color('warning'),
+        RejectAction::make()->color('danger'),
         Action::make('submit')
           ->label('Submit')
-          ->color('primary')
+          ->color('info')
           ->icon('heroicon-m-arrow-right-circle')
           ->requiresConfirmation()
           ->visible(fn(TourReport $record) =>
