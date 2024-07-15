@@ -29,6 +29,7 @@ use Filament\Forms\Components\Repeater;
 use Filament\Tables\Columns\TextColumn;
 use EightyNine\Approvals\ApprovalPlugin;
 use Filament\Notifications\Notification;
+use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Enums\FiltersLayout;
 use App\Filament\Resources\ShirtResource;
 use Filament\Forms\Components\DatePicker;
@@ -189,7 +190,22 @@ class AdminPanelProvider extends PanelProvider
         ->toggleable();
     });
 
-    MountableAction::configureUsing(fn(MountableAction $action) => $action->slideOver());
+    ImageColumn::configureUsing(function (ImageColumn $column) {
+      $column
+        ->alignCenter()
+        ->height(50)
+        ->width('auto')
+        ->defaultImageUrl(asset('img/placeholder/no-image.jpg'))
+        ->extraImgAttributes(fn(?string $state) => [
+          'class' => 'rounded',
+          'loading' => 'lazy',
+          'title' => blank($state) ? 'No image' : null
+        ], true);
+    });
+
+    MountableAction::configureUsing(function (MountableAction $action) {
+      $action->slideOver();
+    });
 
     // TableDeleteAction::configureUsing(fn(TableDeleteAction $action) => $action->slideOver(false));
 

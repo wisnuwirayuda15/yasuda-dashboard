@@ -52,9 +52,9 @@ class Customer extends Model
   {
     $points = LoyaltyPoint::whereHas('invoice.order.customer', function (Builder $query) {
       $query->where('id', $this->id);
-    })->get()->sum('amount');
+    })->sum('amount');
 
-    $rewards = $this->rewards()->get()->sum('amount');
+    $rewards = $this->rewards()->sum('amount');
 
     $balance = (float) $points - (float) $rewards;
 

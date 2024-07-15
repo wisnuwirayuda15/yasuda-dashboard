@@ -57,6 +57,8 @@ class TourTemplateResource extends Resource
 
   public static function form(Form $form): Form
   {
+    $des = Destination::query();
+
     return $form
       ->schema([
         TextInput::make('name')
@@ -67,9 +69,9 @@ class TourTemplateResource extends Resource
           ->hintAction(
             Action::make('generate_name')
               ->disabled(fn(Get $get) => blank($get('regency_id')) || blank($get('destinations')))
-              ->action(function (Get $get, Set $set, TextInput $component) {
-                $regency = Regency::findOrFail($get('regency_id'));
-                $destinations = Destination::findOrFail($get('destinations'));
+              ->action(function (Get $get, Set $set, TextInput $component) use ($des) {
+                $regency = Regency::find($get('regency_id'));
+                $destinations = $des->find($get('destinations'));
                 if (blank($regency) || blank($destinations)) {
                   $set($component, null);
                 } else {
@@ -81,7 +83,7 @@ class TourTemplateResource extends Resource
           ->required()
           ->live(true)
           ->multiple()
-          ->options(Destination::pluck('name', 'id')),
+          ->options($des->pluck('name', 'id')),
         Select::make('regency_id')
           ->required()
           ->live(true)
@@ -101,12 +103,13 @@ class TourTemplateResource extends Resource
 
   public static function table(Table $table): Table
   {
-    $destination = Destination::all();
+    $des = Destination::all();
 
     return $table
       ->columns([
         ImageColumn::make('image'),
         TextColumn::make('name')
+          ->limit(40)
           ->searchable(),
         TextColumn::make('regency.name')
           ->searchable()
@@ -114,7 +117,17 @@ class TourTemplateResource extends Resource
         TextColumn::make('destinations')
           ->badge()
           ->searchable()
-          ->formatStateUsing(fn(string $state): string => $destination->find($state)->name),
+          ->formatStateUsing(fn(string $state): string => $des->find($state)?->name),
+        TextColumn::make('weekday_prices')
+          ->money('IDR')
+          ->state(fn(TourTemplate $record): float => $des->find($record->destinations)?->sum('weekday_price')),
+        TextColumn::make('weekend_prices')
+          ->money('IDR')
+          ->state(fn(TourTemplate $record): float => $des->find($record->destinations)?->sum('weekend_price')),
+        TextColumn::make('high_season_prices')
+          ->money('IDR')
+          ->state(fn(TourTemplate $record): float => $des->find($record->destinations)?->sum('high_season_price'))
+          ->toggleable(isToggledHiddenByDefault: true),
         TextColumn::make('created_at')
           ->dateTime()
           ->sortable()

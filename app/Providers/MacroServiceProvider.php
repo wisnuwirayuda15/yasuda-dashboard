@@ -207,7 +207,7 @@ class MacroServiceProvider extends ServiceProvider
             ->modalHeading('Are you sure?')
             ->modalDescription('All existing items will be removed.')
             ->tooltip('Remove all items')
-            ->visible(fn(?array $state) => count($state) > 1)
+            ->visible(fn(?array $state, string $operation) => $operation !== 'view' && count($state) > 1)
             ->action(fn(Set $set) => $set($this, [])),
         );
 

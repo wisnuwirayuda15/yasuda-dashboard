@@ -77,6 +77,7 @@ class CustomerResource extends Resource
       ->columns([
         TextColumn::make('code')
           ->badge()
+          ->sortable()
           ->searchable(),
         TextColumn::make('name')
           ->sortable()
@@ -92,21 +93,26 @@ class CustomerResource extends Resource
           ->searchable()
           ->toggleable(isToggledHiddenByDefault: true),
         TextColumn::make('regency.name')
+          ->sortable()
           ->searchable(),
         TextColumn::make('district.name')
+          ->sortable()
           ->searchable(),
         TextColumn::make('headmaster')
+          ->sortable()
           ->searchable(),
         TextColumn::make('operator')
+          ->sortable()
           ->searchable(),
         PhoneColumn::make('phone')
           ->searchable(),
         TextColumn::make('email')
+          ->sortable()
           ->searchable(),
         TextColumn::make('balance')
           ->label('Saldo')
-          ->state(fn(Customer $record) => $record->getBalance())
-          ->money('IDR'),
+          ->money('IDR')
+          ->state(fn(Customer $record) => $record->getBalance()),
         TextColumn::make('lat')
           ->toggleable(isToggledHiddenByDefault: true),
         TextColumn::make('lng')
