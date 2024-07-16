@@ -83,9 +83,9 @@ class CustomerResource extends Resource
         TextColumn::make('name')
           ->sortable()
           ->searchable(),
-        TextColumn::make('category')
-          ->badge()
-          ->searchable(),
+        // TextColumn::make('category')
+        //   ->badge()
+        //   ->searchable(),
         TextColumn::make('status')
           ->badge()
           ->tooltip('Ubah status')
@@ -128,9 +128,12 @@ class CustomerResource extends Resource
           ->toggleable(isToggledHiddenByDefault: true),
       ])
       ->filters([
-        SelectFilter::make('category')
+        // SelectFilter::make('category')
+        //   ->multiple()
+        //   ->options(CustomerCategory::class),
+        SelectFilter::make('status')
           ->multiple()
-          ->options(CustomerCategory::class),
+          ->options(CustomerStatus::class),
       ])
       ->headerActions([
         ExportAction::make()

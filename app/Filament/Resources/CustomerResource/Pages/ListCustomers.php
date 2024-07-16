@@ -32,11 +32,11 @@ class ListCustomers extends ListRecords
     $this->dispatch(\App\Enums\JavascriptEvent::SCROLL_TO_TOP->value);
   }
 
-  public function getTabs(): array
-  {
-    $array = [
-      'all' => Tab::make()->icon('fluentui-grid-dots-28-o'),
-    ];
+  // public function getTabs(): array
+  // {
+  //   $array = [
+  //     'all' => Tab::make()->icon('fluentui-grid-dots-28-o'),
+  //   ];
 
     // foreach (static::$categories::cases() as $category) {
     //   if (Customer::query()->where('category', $category->value)->exists()) {
@@ -46,14 +46,14 @@ class ListCustomers extends ListRecords
     //   }
     // }
 
-    foreach (static::$status::cases() as $status) {
-      if (Customer::query()->where('status', $status->value)->exists()) {
-        $array[$status->value] = Tab::make($status->getLabel())
-          ->icon($status->getIcon())
-          ->modifyQueryUsing(fn(Builder $query) => $query->where('status', $status->value));
-      }
-    }
+  //   foreach (static::$status::cases() as $status) {
+  //     if (Customer::query()->where('status', $status->value)->exists()) {
+  //       $array[$status->value] = Tab::make($status->getLabel())
+  //         ->icon($status->getIcon())
+  //         ->modifyQueryUsing(fn(Builder $query) => $query->where('status', $status->value));
+  //     }
+  //   }
 
-    return $array;
-  }
+  //   return $array;
+  // }
 }
