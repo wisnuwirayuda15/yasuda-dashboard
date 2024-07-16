@@ -246,7 +246,7 @@ class AdminPanelProvider extends PanelProvider
       ->passwordReset()
       ->emailVerification()
       ->requiresEmailVerification()
-      // ->darkMode(false)
+      ->darkMode(false)
       ->font('Poppins')
       ->viteTheme('resources/css/filament/admin/theme.css')
       ->favicon(asset('favicon-white.svg'))
