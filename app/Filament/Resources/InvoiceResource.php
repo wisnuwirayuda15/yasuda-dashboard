@@ -104,6 +104,7 @@ class InvoiceResource extends Resource
       ->columns([
         TextColumn::make('code')
           ->badge()
+          ->sortable()
           ->searchable(),
         TextColumn::make('order.customer.name')
           ->numeric()

@@ -28,7 +28,7 @@ return [
     Resources\SalesVisitResource::getSlug() => 'Kunjungan Pelanggan',
     Resources\ShirtResource::getSlug() => 'Baju Wisata',
     Resources\TourReportResource::getSlug() => 'Laporan Perjalanan Wisata',
-    Resources\TourTemplateResource::getSlug() => 'Template Wisata',
+    Resources\TourTemplateResource::getSlug() => 'Paket Wisata',
     Resources\UserResource::getSlug() => 'Akun User',
   ]
 ];

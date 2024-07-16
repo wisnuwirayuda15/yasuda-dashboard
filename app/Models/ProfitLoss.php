@@ -2,11 +2,14 @@
 
 namespace App\Models;
 
+use App\Enums\CashFlow;
+use App\Enums\FleetCategory;
 use App\Models\Scopes\ApprovedScope;
 use Illuminate\Database\Eloquent\Model;
+use Filament\Notifications\Notification;
+use Illuminate\Database\Eloquent\Collection;
 use EightyNine\Approvals\Models\ApprovableModel;
 use Illuminate\Database\Eloquent\Attributes\ScopedBy;
-use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
@@ -18,7 +21,10 @@ class ProfitLoss extends ApprovableModel
 
   public static function getAllProfitLossCollectionForCurrentMonth(): Collection
   {
-    return self::whereBetween('created_at', [now()->startOfMonth(), now()->endOfMonth()])
+    return self::whereBetween('created_at', [
+      now()->startOfMonth(),
+      now()->endOfMonth()
+    ])
       ->with('invoice.tourReport')
       ->get();
   }
@@ -41,18 +47,21 @@ class ProfitLoss extends ApprovableModel
     return $totalNetSales;
   }
 
-  public static function getAverageIncomeForCurrentMonth(): float
+  public static function getTotalIncomeForCurrentMonth(): float
   {
     $profitLosses = self::getAllProfitLossCollectionForCurrentMonth();
 
-    $validIncomes = $profitLosses->map(function (self $profitLoss) {
+    $validIncomes = $profitLosses->sum(function (self $profitLoss) {
       return $profitLoss->calculateIncome();
-    })->filter()->values();
+    });
 
-    $totalIncome = $validIncomes->sum();
-    $count = $validIncomes->count();
+    return $validIncomes;
 
-    return $count > 0 ? $totalIncome / $count : 0;
+    // $totalIncome = $validIncomes->sum();
+
+    // $count = $validIncomes->count();
+
+    // return $count > 0 ? $totalIncome / $count : 0;
   }
 
   public static function getIncomeArrayForCurrentMonth(): array
@@ -64,7 +73,7 @@ class ProfitLoss extends ApprovableModel
     })->filter()->values()->toArray();
   }
 
-  public static function getAverageNetSalesForCurrentMonth(): float
+  public static function getTotalNetSalesForCurrentMonth(): float
   {
     $profitLosses = self::getAllProfitLossCollectionForCurrentMonth();
 
@@ -72,9 +81,11 @@ class ProfitLoss extends ApprovableModel
       return $profitLoss->calculateNetSales();
     });
 
-    $count = $profitLosses->count();
+    return $totalNetSales;
 
-    return $count > 0 ? $totalNetSales / $count : 0;
+    // $count = $profitLosses->count();
+
+    // return $count > 0 ? $totalNetSales / $count : 0;
   }
 
   public static function getNetSalesArrayForCurrentMonth(): array
@@ -84,6 +95,63 @@ class ProfitLoss extends ApprovableModel
     return $profitLosses->map(function (self $profitLoss) {
       return $profitLoss->calculateNetSales();
     })->toArray();
+  }
+
+  public function createOrUpdateLoyaltyPoint(): Model|bool
+  {
+    $pnl = $this;
+
+    if (!$pnl->isApprovalCompleted()) {
+      Notification::make()
+        ->danger()
+        ->title('Failed')
+        ->body("Profit & Loss belum disetujui!")
+        ->send();
+
+      return false;
+    }
+
+    $inv = $pnl->invoice;
+
+    $order = $inv->order;
+
+    $loyaltyPoint = $pnl->invoice->loyaltyPoint;
+
+    $customer = $inv->order->customer->name;
+
+    $mediumTotal = $order->orderFleets->filter(fn(OrderFleet $orderFleet) => $orderFleet->fleet->category->value === FleetCategory::MEDIUM->value)->count();
+    $bigTotal = $order->orderFleets->filter(fn(OrderFleet $orderFleet) => $orderFleet->fleet->category->value === FleetCategory::BIG->value)->count();
+    $legrestTotal = $order->orderFleets->filter(fn(OrderFleet $orderFleet) => $orderFleet->fleet->category->value === FleetCategory::LEGREST->value)->count();
+
+    $bonus = $mediumTotal * $pnl->medium_subs_bonus +
+      $bigTotal * $pnl->big_subs_bonus +
+      $legrestTotal * $pnl->legrest_subs_bonus;
+
+    if ($loyaltyPoint) {
+      $model = $loyaltyPoint->update([
+        'amount' => $bonus,
+      ]);
+
+      Notification::make()
+        ->success()
+        ->title('Success')
+        ->body("Loyalty Point untuk <strong>{$customer}</strong> berhasil diubah!")
+        ->send();
+    } else {
+      $model = $inv->loyaltyPoint()->create([
+        'cash_status' => CashFlow::IN->value,
+        'description' => '<p>Tambahan saldo bonus langganan</p>',
+        'amount' => $bonus,
+      ]);
+
+      Notification::make()
+        ->success()
+        ->title('Success')
+        ->body("Loyalty Point untuk <strong>{$customer}</strong> berhasil dibuat!")
+        ->send();
+    }
+
+    return $model;
   }
 
   /**

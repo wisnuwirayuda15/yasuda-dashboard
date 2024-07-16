@@ -209,23 +209,23 @@ class AdminPanelProvider extends PanelProvider
 
     // TableDeleteAction::configureUsing(fn(TableDeleteAction $action) => $action->slideOver(false));
 
-    LanguageSwitch::configureUsing(function (LanguageSwitch $switch): void {
-      $hook = match (CustomPlatform::detect()) {
-        CustomPlatform::Windows, CustomPlatform::Mac, CustomPlatform::Linux => PanelsRenderHook::GLOBAL_SEARCH_AFTER,
-        CustomPlatform::Mobile => PanelsRenderHook::SIDEBAR_NAV_END,
-        default => PanelsRenderHook::GLOBAL_SEARCH_AFTER,
-      };
+    // LanguageSwitch::configureUsing(function (LanguageSwitch $switch): void {
+    //   $hook = match (CustomPlatform::detect()) {
+    //     CustomPlatform::Windows, CustomPlatform::Mac, CustomPlatform::Linux => PanelsRenderHook::GLOBAL_SEARCH_AFTER,
+    //     CustomPlatform::Mobile => PanelsRenderHook::SIDEBAR_NAV_END,
+    //     default => PanelsRenderHook::GLOBAL_SEARCH_AFTER,
+    //   };
 
-      $switch
-        ->locales(['en', 'id'])
-        ->visible(outsidePanels: true)
-        ->circular()
-        ->flags([
-          'en' => asset('img/flags/en-circular.svg'),
-          'id' => asset('img/flags/id-circular.svg'),
-        ])
-        ->renderHook($hook);
-    });
+    //   $switch
+    //     ->locales(['en', 'id'])
+    //     ->visible(outsidePanels: true)
+    //     ->circular()
+    //     ->flags([
+    //       'en' => asset('img/flags/en-circular.svg'),
+    //       'id' => asset('img/flags/id-circular.svg'),
+    //     ])
+    //     ->renderHook($hook);
+    // });
 
     // Notification alignment
     // Notifications::alignment(Alignment::Center);
@@ -246,6 +246,7 @@ class AdminPanelProvider extends PanelProvider
       ->passwordReset()
       ->emailVerification()
       ->requiresEmailVerification()
+      // ->darkMode(false)
       ->font('Poppins')
       ->viteTheme('resources/css/filament/admin/theme.css')
       ->favicon(asset('favicon-white.svg'))
@@ -275,8 +276,8 @@ class AdminPanelProvider extends PanelProvider
         MeetingCalendarWidget::class,
       ])
       ->colors([
-        'primary' => Color::Rose,
-        'secondary' => Color::Indigo,
+        'primary' => '#d82431',
+        'secondary' => '#64266e',
         'danger' => Color::Red,
         'gray' => Color::Zinc,
         'info' => Color::Sky,

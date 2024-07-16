@@ -28,7 +28,7 @@ class CreateTourReport extends CreateRecord
       Notification::make()
         ->danger()
         ->title('Ooppsss...')
-        ->body('Profit & Loss not yet approved!')
+        ->body('Profit & Loss belum disetujui!')
         ->send();
 
       redirect(InvoiceResource::getUrl('view', ['record' => $inv->id]));
@@ -39,7 +39,7 @@ class CreateTourReport extends CreateRecord
     $tr = TourReport::withoutGlobalScopes()->where('invoice_id', $inv->id)->first();
 
     // All order fleets must have tour leader before creating tour report
-    $tourLeaderNotAllSet = $inv->order->whereHas('orderFleets', function (Builder $query) {
+    $tourLeaderNotAllSet = $inv->order()->whereHas('orderFleets', function (Builder $query) {
       $query->whereNull('employee_id');
     })->exists();
 
@@ -58,7 +58,7 @@ class CreateTourReport extends CreateRecord
   {
     $inv = Invoice::findOrFail($data['invoice_id']);
 
-    $tourLeaderNotAllSet = $inv->order->whereHas('orderFleets', function (Builder $query) {
+    $tourLeaderNotAllSet = $inv->order()->whereHas('orderFleets', function (Builder $query) {
       $query->whereNull('employee_id');
     })->exists();
 

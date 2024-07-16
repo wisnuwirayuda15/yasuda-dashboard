@@ -145,6 +145,7 @@ class EmployeeResource extends Resource
           ->alignCenter(),
         TextColumn::make('code')
           ->badge()
+          ->sortable()
           ->searchable(),
         TextColumn::make('name')
           ->sortable()

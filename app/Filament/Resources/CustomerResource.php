@@ -15,6 +15,7 @@ use Filament\Resources\Resource;
 use Dotswan\MapPicker\Fields\Map;
 use App\Enums\NavigationGroupLabel;
 use Filament\Tables\Actions\Action;
+use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Fieldset;
@@ -176,15 +177,17 @@ class CustomerResource extends Resource
         TextInput::make('address')
           ->required()
           ->maxLength(255),
-        ToggleButtons::make('category')
-          ->required()
-          ->inline()
-          ->disabledOn('edit')
-          ->helperText("Category can't be edited.")
-          ->options(CustomerCategory::class)
-          ->default(CustomerCategory::TK->value)
-          ->afterStateUpdated(fn(Set $set, string $state) => $set('code', get_code(new Customer, $state)))
-          ->loadingIndicator(),
+        // Hidden::make('category')
+        //   ->default(CustomerCategory::TK->value),
+        // ToggleButtons::make('category')
+        //   ->required()
+        //   ->inline()
+        //   ->disabledOn('edit')
+        //   ->helperText("Category can't be edited.")
+        //   ->options(CustomerCategory::class)
+        //   ->default(CustomerCategory::TK->value)
+        //   ->afterStateUpdated(fn(Set $set, string $state) => $set('code', get_code(new Customer, $state)))
+        //   ->loadingIndicator(),
         ToggleButtons::make('status')
           ->required()
           ->inline()

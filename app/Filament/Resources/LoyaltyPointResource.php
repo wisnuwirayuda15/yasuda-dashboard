@@ -65,8 +65,14 @@ class LoyaltyPointResource extends Resource
   {
     return $table
       ->columns([
+        TextColumn::make('invoice.code')
+          ->badge()
+          ->sortable()
+          ->searchable(),
         TextColumn::make('invoice.order.customer.code')
           ->badge()
+          ->sortable()
+          ->color('secondary')
           ->searchable(),
         TextColumn::make('invoice.order.customer.name')
           ->searchable(),
@@ -74,9 +80,6 @@ class LoyaltyPointResource extends Resource
         //   ->html(),
         // TextColumn::make('cash_status')
         //   ->badge(),
-        TextColumn::make('invoice.code')
-          ->badge()
-          ->sortable(),
         TextColumn::make('invoice.order.trip_date')
           ->label('Tanggal Pelaksanaan')
           ->formatStateUsing(fn(Carbon $state): string => $state->translatedFormat('d/m/Y')),

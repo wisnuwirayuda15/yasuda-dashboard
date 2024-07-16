@@ -131,6 +131,7 @@ class OrderResource extends Resource
             CheckboxList::make('order_fleet_ids')
               ->hiddenLabel()
               ->columns(2)
+              ->searchable()
               ->options(function (Get $get) {
                 return OrderFleet::whereDate('trip_date', $get('trip_date'))
                   ->doesntHave('order')

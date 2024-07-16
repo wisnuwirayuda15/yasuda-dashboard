@@ -28,9 +28,12 @@ class FleetWidget extends BaseWidget
     return [
       Stat::make('Mitra Armada', Fleet::count())
         ->icon(FleetResource::getNavigationIcon())
+        ->url(FleetResource::getUrl())
         ->description('Mitra armada yang bekerja sama dengan Yasuda Jaya Tour.'),
+
       Stat::make('Ketersediaan Armada', OrderFleet::count())
         ->icon(OrderFleetResource::getNavigationIcon())
+        ->url(OrderFleetResource::getUrl())
         ->description('Jadwal keberangkatan wisata.'),
     ];
   }

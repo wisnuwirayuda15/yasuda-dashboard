@@ -25,9 +25,9 @@ class ApprovalFlowResource extends Resource
 {
   protected static ?string $model = ProcessApprovalFlow::class;
 
-  protected static ?string $modelLabel = 'Approval Flow';
+  protected static ?string $modelLabel = 'Alur Persetujuan';
 
-  protected static ?string $pluralModelLabel = 'Approval Flows';
+  protected static ?string $pluralModelLabel = 'Alur Persetujuan';
 
   public static function getNavigationIcon(): ?string
   {

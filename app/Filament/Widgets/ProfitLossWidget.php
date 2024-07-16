@@ -3,8 +3,10 @@
 namespace App\Filament\Widgets;
 
 use App\Models\ProfitLoss;
+use Illuminate\Support\HtmlString;
 use Filament\Support\Enums\IconPosition;
 use App\Filament\Resources\ProfitLossResource;
+use App\Filament\Resources\TourReportResource;
 use Filament\Widgets\StatsOverviewWidget\Stat;
 use BezhanSalleh\FilamentShield\Traits\HasWidgetShield;
 use Filament\Widgets\StatsOverviewWidget as BaseWidget;
@@ -12,7 +14,7 @@ use Filament\Widgets\StatsOverviewWidget as BaseWidget;
 class ProfitLossWidget extends BaseWidget
 {
   use HasWidgetShield;
-  
+
   protected static ?string $pollingInterval = null;
 
   protected static ?int $sort = -2;
@@ -24,17 +26,26 @@ class ProfitLossWidget extends BaseWidget
 
   protected function getStats(): array
   {
+    $month = today()->translatedFormat('F Y');
+
+    $icon = ProfitLossResource::getNavigationIcon();
+
+    $iconPosition = IconPosition::Before;
+
     return [
-      Stat::make('Average Net Sales (' . today()->translatedFormat('F Y') . ')', idr(ProfitLoss::getAverageNetSalesForCurrentMonth()))
-        ->description('Berdasarkan laporan Profit & Loss')
-        ->descriptionIcon(ProfitLossResource::getNavigationIcon(), IconPosition::Before)
+      Stat::make("Total Penjualan ($month)", idr(ProfitLoss::getTotalNetSalesForCurrentMonth()))
+        ->color('warning')
         ->chart(ProfitLoss::getNetSalesArrayForCurrentMonth())
-        ->color('warning'),
-      Stat::make('Average Income (' . today()->translatedFormat('F Y') . ')', idr(ProfitLoss::getAverageIncomeForCurrentMonth()))
-        ->description('Berdasarkan laporan Profit & Loss')
-        ->descriptionIcon(ProfitLossResource::getNavigationIcon(), IconPosition::Before)
+        ->url(ProfitLossResource::getUrl())
+        ->descriptionIcon($icon, $iconPosition)
+        ->description(new HtmlString('Berdasarkan laporan <strong>Profit & Loss</strong>')),
+
+      Stat::make("Total Pendapatan ($month)", idr(ProfitLoss::getTotalIncomeForCurrentMonth()))
+        ->color('success')
         ->chart(ProfitLoss::getIncomeArrayForCurrentMonth())
-        ->color('success'),
+        ->url(TourReportResource::getUrl())
+        ->descriptionIcon($icon, $iconPosition)
+        ->description(new HtmlString('Berdasarkan laporan <strong>Profit & Loss</strong> dan <strong>Tour Report</strong>')),
     ];
   }
 }

@@ -58,51 +58,17 @@ class ViewProfitLoss extends ViewRecord
           ->color($loyaltyPoint ? 'warning' : 'success')
           ->modal(false)
           ->visible(fn() => $approved)
-          ->action(function (Action $action) use ($loyaltyPoint, $approved, $pnl) {
-            if (!$approved) {
+          ->action(function (Action $action) use ($pnl) {
+            $lp = $pnl->createOrUpdateLoyaltyPoint();
+            
+            if (!$lp) {
               Notification::make()
                 ->danger()
                 ->title('Failed')
-                ->body("Profit & Loss not yet approved!")
+                ->body("Profit & Loss belum disetujui!")
                 ->send();
 
               $action->cancel();
-            }
-
-            $inv = $pnl->invoice;
-
-            $order = $inv->order;
-
-            $customer = $inv->order->customer->name;
-
-            $mediumTotal = $order->orderFleets->filter(fn(OrderFleet $orderFleet) => $orderFleet->fleet->category->value === FleetCategory::MEDIUM->value)->count();
-            $bigTotal = $order->orderFleets->filter(fn(OrderFleet $orderFleet) => $orderFleet->fleet->category->value === FleetCategory::BIG->value)->count();
-            $legrestTotal = $order->orderFleets->filter(fn(OrderFleet $orderFleet) => $orderFleet->fleet->category->value === FleetCategory::LEGREST->value)->count();
-
-            $bonus = $mediumTotal * $pnl->medium_subs_bonus + $bigTotal * $pnl->big_subs_bonus + $legrestTotal * $pnl->legrest_subs_bonus;
-
-            if ($loyaltyPoint) {
-              $loyaltyPoint->update([
-                'amount' => $bonus,
-              ]);
-
-              Notification::make()
-                ->success()
-                ->title('Success')
-                ->body("Loyalty Point untuk <strong>{$customer}</strong> berhasil diubah!")
-                ->send();
-            } else {
-              $inv->loyaltyPoint()->create([
-                'cash_status' => CashFlow::IN->value,
-                'description' => '<p>Tambahan saldo bonus langganan</p>',
-                'amount' => $bonus,
-              ]);
-
-              Notification::make()
-                ->success()
-                ->title('Success')
-                ->body("Loyalty Point untuk <strong>{$customer}</strong> berhasil dibuat!")
-                ->send();
             }
 
             redirect(LoyaltyPointResource::getUrl('index'));
