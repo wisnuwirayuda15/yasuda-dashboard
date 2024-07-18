@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources;
 
+use Closure;
 use Carbon\Carbon;
 use Filament\Tables;
 use App\Models\Order;
@@ -91,7 +92,15 @@ class InvoiceResource extends Resource
           static::getPaymentDetailSection(),
           RichEditor::make('notes')->label('Special Notes'),
           Checkbox::make('submission')->submission(),
-          Checkbox::make('confirmation')->confirmation()
+          Checkbox::make('confirmation')
+            ->rules([
+              fn(Get $get): Closure => function (string $attribute, $value, Closure $fail) use ($get) {
+                if ($get('empty_seat') < 0) {
+                  $fail('Jumlah kursi tidak mencukupi, silahkan pilih armada lain atau kurangi jumlah pelanggan.');
+                }
+              },
+            ])
+            ->confirmation()
         ])
           ->columnSpanFull()
           ->visible(fn(Get $get) => $get('order_id')),
@@ -113,6 +122,11 @@ class InvoiceResource extends Resource
           ->label('Tanggal')
           ->formatStateUsing(fn(Carbon $state): string => $state->translatedFormat('d/m/Y'))
           ->sortable(),
+        IconColumn::make('shirts')
+          ->label('Baju Wisata')
+          ->state(fn(Invoice $record): bool => $record->shirt()->exists())
+          ->boolean()
+          ->alignCenter(),
         IconColumn::make('profitLoss')
           ->label('Profit & Loss')
           ->state(fn(Invoice $record): bool => $record->profitLoss()->exists())
@@ -555,13 +569,13 @@ class InvoiceResource extends Resource
               $kursi = $seat['price'] - $seat['cashback'];
               $charge = 0.5 * $get('empty_seat') * $kursi;
               $set('seat_charge', $charge);
-              if ($get('empty_seat') < 0) {
-                Notification::make()
-                  ->title('Jumlah kursi tidak mencukupi')
-                  ->body('Silahkan pilih armada lain atau kurangi jumlah pelanggan.')
-                  ->danger()
-                  ->send();
-              }
+              // if ($get('empty_seat') < 0) {
+              //   Notification::make()
+              //     ->title('Jumlah kursi tidak mencukupi')
+              //     ->body('Silahkan pilih armada lain atau kurangi jumlah pelanggan.')
+              //     ->danger()
+              //     ->send();
+              // }
               return idr($charge);
             }
           ),

@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources;
 
+use Carbon\Carbon;
 use Filament\Forms;
 use App\Models\User;
 use Filament\Tables;
@@ -33,6 +34,7 @@ use Filament\Forms\Components\ToggleButtons;
 use Ysfkaya\FilamentPhoneInput\Forms\PhoneInput;
 use App\Filament\Resources\EmployeeResource\Pages;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Filament\Forms\Components\Actions\Action as FormAction;
 use App\Filament\Resources\EmployeeResource\RelationManagers;
 
 class EmployeeResource extends Resource
@@ -110,13 +112,30 @@ class EmployeeResource extends Resource
                 DatePicker::make('exit_date')
                   ->required()
                   ->label('Tanggal Keluar')
-                  ->minDate(fn(Get $get) => $get('join_date'))
+                  ->hintAction(FormAction::make('set_exit_date_to_today')
+                    ->label('Hari ini')
+                    ->icon('gmdi-date-range-tt')
+                    ->action(fn(Set $set, DatePicker $component) => $set($component, today())))
+                  ->minDate(fn(Get $get) => Carbon::parse($get('join_date'))->addDay())
                   ->visible(fn(Get $get): bool => $get('status') === EmployeeStatus::RESIGN->value || $get('status') === EmployeeStatus::RETIRE->value)
                   ->loadingIndicator(),
                 Select::make('role')
                   ->required()
                   ->label('Jabatan')
                   ->options(EmployeeRole::class)
+                  ->disableOptionWhen(function (string $value, ?string $state, string $operation): bool {
+                    if ($operation === 'edit') {
+                      $tourLeaderRole = EmployeeRole::TOUR_LEADER->value;
+                      $tourLeaderValue = $value === $tourLeaderRole;
+                      $isTourLeader = $state === $tourLeaderRole;
+                      if ($isTourLeader) {
+                        return !$tourLeaderValue;
+                      } else {
+                        return $tourLeaderValue;
+                      }
+                    }
+                    return false;
+                  })
                   ->afterStateUpdated(function (Set $set, ?string $state): void {
                     if (blank($state)) {
                       return;

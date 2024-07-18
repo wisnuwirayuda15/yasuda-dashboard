@@ -76,6 +76,7 @@ class OrderResource extends Resource
           ->code(get_code(new Order, 'OR')),
         Select::make('customer_id')
           ->required()
+          ->columnSpan(fn (string $operation) => $operation === 'edit' ? 'full' : null)
           ->relationship('customer', 'name', fn(Builder $query) => $query->whereNot('status', CustomerStatus::CANDIDATE->value)->orderBy('created_at', 'desc'))
           ->prefixIcon(fn() => CustomerResource::getNavigationIcon()),
         Select::make('destinations')
@@ -84,11 +85,13 @@ class OrderResource extends Resource
           ->columnSpanFull()
           ->options(Destination::pluck('name', 'id'))
           ->hintAction(Action::make('select_tour_template')
-            ->label('Template')
-            ->icon('tabler-playlist-add')
+            ->label(TourTemplateResource::getModelLabel())
+            ->icon(TourTemplateResource::getNavigationIcon())
+            ->hidden(fn (string $operation) => $operation === 'view')
             ->form([
               Select::make('tour_template')
                 ->required()
+                ->hiddenLabel()
                 ->options(TourTemplate::pluck('name', 'id')),
             ])
             ->action(function (array $data, Set $set) {
@@ -99,7 +102,9 @@ class OrderResource extends Resource
         Select::make('regency_id')
           ->required()
           ->relationship('regency', 'name')
-          ->columnSpan(fn(string $operation) => in_array($operation, ['create', 'view']) ? 'full' : null),
+          // ->columnSpan(fn(string $operation) => in_array($operation, ['create', 'view']) ? 'full' : null)
+          ->columnSpanFull()
+          ,
         Group::make([
           Toggle::make('change_date')
             ->live()

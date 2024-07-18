@@ -20,6 +20,7 @@ use Filament\Support\Colors\Color;
 use App\Enums\NavigationGroupLabel;
 use Filament\Forms\Components\Tabs;
 use Filament\Forms\Components\Group;
+use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Select;
 use Illuminate\Support\Facades\Route;
 use Filament\Forms\Components\Section;
@@ -29,6 +30,7 @@ use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Tabs\Tab;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Forms\Components\TextInput;
+use Filament\Notifications\Notification;
 use Illuminate\Database\Eloquent\Builder;
 use Filament\Forms\Components\ColorPicker;
 use Filament\Forms\Components\Placeholder;
@@ -36,7 +38,6 @@ use Filament\Forms\Components\Actions\Action;
 use App\Filament\Resources\ShirtResource\Pages;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use App\Filament\Resources\ShirtResource\RelationManagers;
-use Filament\Forms\Components\Hidden;
 
 class ShirtResource extends Resource
 {
@@ -75,13 +76,20 @@ class ShirtResource extends Resource
       static::$invoice = $record->invoice;
     }
 
-    return $form
-      ->schema([
-        static::getGeneralInformationSection(),
-        static::getShirtTabs(),
-        static::getTotalSection(),
-        Checkbox::make('confirmation')->confirmation()
-      ]);
+    return $form->schema([
+      static::getGeneralInformationSection(),
+      static::getShirtTabs(),
+      static::getTotalSection(),
+      Checkbox::make('confirmation')
+        ->rules([
+          fn(Get $get): Closure => function (string $attribute, $value, Closure $fail) use ($get) {
+            if ($get('total') > $get('total_customer')) {
+              $fail('Jumlah baju melebihi jumlah customer.');
+            }
+          },
+        ])
+        ->confirmation()
+    ]);
   }
 
   public static function table(Table $table): Table
@@ -167,9 +175,14 @@ class ShirtResource extends Resource
               static::getCustomerPlaceholder('Tambahan Orang'),
               static::getCustomerPlaceholder('Pembina'),
               Placeholder::make('total_customer')
+                ->label('Total Customer :')
                 ->inlineLabel()
                 ->columnSpanFull()
-                ->content(fn() => static::$totalShirt),
+                ->content(function (Set $set, Placeholder $component) {
+                  $total = static::$totalShirt;
+                  $set($component, $total);
+                  return view('filament.components.badges.default', ['text' => $total]);
+                }),
             ])
         ])->hidden(fn(Get $get) => blank($get('invoice_id')))
       ]);
@@ -191,10 +204,11 @@ class ShirtResource extends Resource
   public static function getTotalSection(): Section
   {
     return Section::make('Total')
-      ->columns(2)
+      // ->columns(2)
       ->schema([
         Placeholder::make('child_total')
           ->label('Baju Anak')
+          ->inlineLabel()
           ->content(function (Get $get, Set $set, Placeholder $component) {
             $total = array_sum(array_map(fn($total) => $total['qty'], $get('child'))) ?: 0;
             $set($component, $total);
@@ -202,6 +216,7 @@ class ShirtResource extends Resource
           }),
         Placeholder::make('adult_total')
           ->label('Baju Dewasa')
+          ->inlineLabel()
           ->content(function (Get $get, Set $set, Placeholder $component) {
             $total = array_sum(array_map(fn($total) => $total['qty'], $get('adult'))) ?: 0;
             $set($component, $total);
@@ -209,6 +224,7 @@ class ShirtResource extends Resource
           }),
         Placeholder::make('male_teacher_total')
           ->label('Baju Guru Laki-laki')
+          ->inlineLabel()
           ->content(function (Get $get, Set $set, Placeholder $component) {
             $total = array_sum(array_map(fn($total) => $total['qty'], $get('male_teacher'))) ?: 0;
             $set($component, $total);
@@ -216,6 +232,7 @@ class ShirtResource extends Resource
           }),
         Placeholder::make('female_teacher_total')
           ->label('Baju Guru Perempuan')
+          ->inlineLabel()
           ->content(function (Get $get, Set $set, Placeholder $component) {
             $total = array_sum(array_map(fn($total) => $total['qty'], $get('female_teacher'))) ?: 0;
             $set($component, $total);
@@ -224,10 +241,19 @@ class ShirtResource extends Resource
         Placeholder::make('total')
           ->label('Seluruh Baju Wisata')
           ->dehydrated()
+          ->inlineLabel()
           ->content(function (Get $get, Set $set, Placeholder $component) {
             $total = $get('child_total') + $get('adult_total') + $get('male_teacher_total') + $get('female_teacher_total');
             $set($component, $total);
-            return $total;
+            // if ($get('total') > $get('total_customer')) {
+            //   Notification::make()
+            //     ->title('Failed')
+            //     ->body('Jumlah baju melebihi jumlah customer, silahkan kurangi jumlah baju.')
+            //     ->persistent()
+            //     ->danger()
+            //     ->send();
+            // }
+            return view('filament.components.badges.default', ['text' => $total]);
           }),
       ]);
   }

@@ -37,6 +37,8 @@ class ViewInvoice extends ViewRecord
 
     $tr = $inv->tourReport()->exists();
 
+    $access = ['create_invoice', 'update_invoice', 'delete_invoice', 'delete_any_invoice'];
+
     $canCreateShirt = $user->can('create_shirt');
 
     $canCreateInvoice = $user->can('create_invoice');
@@ -92,6 +94,7 @@ class ViewInvoice extends ViewRecord
         ->color('danger')
         ->icon('tabler-pdf')
         ->url($generateInvoiceUrl, true)
+        ->hidden(fn () => !auth()->user()->can($access))
         ->visible($approved),
       EditAction::make()->visible($approved),
       Action::make('not_approved')
