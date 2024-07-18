@@ -159,14 +159,17 @@ class ShirtResource extends Resource
           Placeholder::make('invoice_code')
             ->label('Invoice :')
             ->inlineLabel()
+            ->extraAttributes(['class' => 'font-bold'])
             ->content(fn() => static::$invoice->code),
           Placeholder::make('customer_name')
             ->label('Customer :')
             ->inlineLabel()
+            ->extraAttributes(['class' => 'font-bold'])
             ->content(fn() => static::$invoice->order->customer->name),
           Placeholder::make('trip_date')
             ->label('Tanggal :')
             ->inlineLabel()
+            ->extraAttributes(['class' => 'font-bold'])
             ->content(fn() => static::$invoice->order->trip_date->translatedFormat('d F Y')),
           Fieldset::make('Jumlah Orang')
             ->schema([
