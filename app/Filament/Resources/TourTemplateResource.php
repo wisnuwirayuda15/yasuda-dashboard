@@ -57,21 +57,19 @@ class TourTemplateResource extends Resource
 
   public static function form(Form $form): Form
   {
-    $des = Destination::query();
-
     return $form
       ->schema([
         TextInput::make('name')
           ->required()
           ->live(true)
-          ->helperText('You can generate name based on selected regency and destinations.')
+          ->helperText('Anda dapat mengenerate nama berdasarkan regensi dan destinasi yang dipilih.')
           ->maxLength(255)
           ->hintAction(
             Action::make('generate_name')
               ->disabled(fn(Get $get) => blank($get('regency_id')) || blank($get('destinations')))
-              ->action(function (Get $get, Set $set, TextInput $component) use ($des) {
+              ->action(function (Get $get, Set $set, TextInput $component) {
                 $regency = Regency::find($get('regency_id'));
-                $destinations = $des->find($get('destinations'));
+                $destinations = Destination::find($get('destinations'));
                 if (blank($regency) || blank($destinations)) {
                   $set($component, null);
                 } else {
@@ -83,7 +81,7 @@ class TourTemplateResource extends Resource
           ->required()
           ->live(true)
           ->multiple()
-          ->options($des->pluck('name', 'id')),
+          ->options(Destination::pluck('name', 'id')),
         Select::make('regency_id')
           ->required()
           ->live(true)

@@ -6,80 +6,78 @@
 
   $abilities = ['create_invoice', 'update_invoice', 'delete_invoice', 'delete_any_invoice'];
 
-  if (auth()->user()->can($abilities)) {
-      // Main Costs
-      $inv = isset($getRecord) ? $getRecord() : $invoice;
-      $order = $inv->order;
-      $lembaga = $order->customer->name;
-      $date = $order->trip_date;
-      $formattedDate = $date->translatedFormat('d F Y');
-      $mainCosts = $inv->main_costs;
-      $getMainCostQty = fn(string $slug): float => collect($mainCosts)->firstWhere('slug', $slug)['qty'] ?? 0;
-      $program = $getMainCostQty('program');
-      $anak = $getMainCostQty('ibu-anak-pangku');
-      $tambahan = $getMainCostQty('tambahan-orang');
-      $special = $getMainCostQty('special-rate');
-      $beliKursi = collect($mainCosts)->firstWhere('slug', 'beli-kursi');
-      $destinations = $order->regency->name . ' (' . Destination::find($order->destinations)->implode('name', ' + ') . ')';
-      $totalQty = array_sum(array_map(fn($cost) => $cost['qty'], $mainCosts)) ?: 0;
-      $totalPrices = array_sum(array_map(fn($cost) => $cost['qty'] * $cost['price'], $mainCosts)) ?: 0;
-      $totalCashbacks = array_sum(array_map(fn($cost) => $cost['qty'] * $cost['cashback'], $mainCosts)) ?: 0;
-      $totalNetTransactions = $totalPrices - $totalCashbacks;
+  // Main Costs
+  $inv = isset($getRecord) ? $getRecord() : $invoice;
+  $order = $inv->order;
+  $lembaga = $order->customer->name;
+  $date = $order->trip_date;
+  $formattedDate = $date->translatedFormat('d F Y');
+  $mainCosts = $inv->main_costs;
+  $getMainCostQty = fn(string $slug): float => collect($mainCosts)->firstWhere('slug', $slug)['qty'] ?? 0;
+  $program = $getMainCostQty('program');
+  $anak = $getMainCostQty('ibu-anak-pangku');
+  $tambahan = $getMainCostQty('tambahan-orang');
+  $special = $getMainCostQty('special-rate');
+  $beliKursi = collect($mainCosts)->firstWhere('slug', 'beli-kursi');
+  $destinations = $order->regency->name . ' (' . Destination::find($order->destinations)->implode('name', ' + ') . ')';
+  $totalQty = array_sum(array_map(fn($cost) => $cost['qty'], $mainCosts)) ?: 0;
+  $totalPrices = array_sum(array_map(fn($cost) => $cost['qty'] * $cost['price'], $mainCosts)) ?: 0;
+  $totalCashbacks = array_sum(array_map(fn($cost) => $cost['qty'] * $cost['cashback'], $mainCosts)) ?: 0;
+  $totalNetTransactions = $totalPrices - $totalCashbacks;
 
-      // Shirts
-      $kaosPaket = $program + $anak;
-      $kaosDiserahkan = $inv->submitted_shirt;
-      $qtyKaosAnak = $kaosDiserahkan - $kaosPaket;
-      $qtyKaosGuru = $inv->teacher_shirt_qty;
-      $qtyKaosDewasa = $inv->adult_shirt_qty;
-      $priceKaosAnak = $inv->child_shirt_price;
-      $priceKaosGuru = $inv->teacher_shirt_price;
-      $priceKaosDewasa = $inv->adult_shirt_price;
-      $totalPriceKaosAnak = $qtyKaosAnak * $priceKaosAnak;
-      $totalPriceKaosGuru = $qtyKaosGuru * $priceKaosGuru;
-      $totalPriceKaosDewasa = $qtyKaosDewasa * $priceKaosDewasa;
-      $totalPriceKaos = $totalPriceKaosAnak + $totalPriceKaosGuru + $totalPriceKaosDewasa;
+  // Shirts
+  $kaosPaket = $program + $anak;
+  $kaosDiserahkan = $inv->submitted_shirt;
+  $qtyKaosAnak = $kaosDiserahkan - $kaosPaket;
+  $qtyKaosGuru = $inv->teacher_shirt_qty;
+  $qtyKaosDewasa = $inv->adult_shirt_qty;
+  $priceKaosAnak = $inv->child_shirt_price;
+  $priceKaosGuru = $inv->teacher_shirt_price;
+  $priceKaosDewasa = $inv->adult_shirt_price;
+  $totalPriceKaosAnak = $qtyKaosAnak * $priceKaosAnak;
+  $totalPriceKaosGuru = $qtyKaosGuru * $priceKaosGuru;
+  $totalPriceKaosDewasa = $qtyKaosDewasa * $priceKaosDewasa;
+  $totalPriceKaos = $totalPriceKaosAnak + $totalPriceKaosGuru + $totalPriceKaosDewasa;
 
-      // Seat Charge
-      [$totalSeat, $mediumSeat, $bigSeat, $legrestSeat] = [0, 0, 0, 0];
-      [$mediumSet, $bigSet, $legrestSet] = [[], [], []];
-      foreach ($order->orderFleets as $orderFleet) {
-          $fleet = $orderFleet->fleet;
-          $totalSeat += $fleet->seat_set->value;
-          switch ($fleet->category->value) {
-              case FleetCategory::MEDIUM->value:
-                  $mediumSet[] = $fleet->seat_set->value;
-                  $mediumSeat++;
-                  break;
-              case FleetCategory::BIG->value:
-                  $bigSet[] = $fleet->seat_set->value;
-                  $bigSeat++;
-                  break;
-              case FleetCategory::LEGREST->value:
-                  $legrestSet[] = $fleet->seat_set->value;
-                  $legrestSeat++;
-                  break;
-          }
+  // Seat Charge
+  [$totalSeat, $mediumSeat, $bigSeat, $legrestSeat] = [0, 0, 0, 0];
+  [$mediumSet, $bigSet, $legrestSet] = [[], [], []];
+  foreach ($order->orderFleets as $orderFleet) {
+      $fleet = $orderFleet->fleet;
+      $totalSeat += $fleet->seat_set->value;
+      switch ($fleet->category->value) {
+          case FleetCategory::MEDIUM->value:
+              $mediumSet[] = $fleet->seat_set->value;
+              $mediumSeat++;
+              break;
+          case FleetCategory::BIG->value:
+              $bigSet[] = $fleet->seat_set->value;
+              $bigSeat++;
+              break;
+          case FleetCategory::LEGREST->value:
+              $legrestSet[] = $fleet->seat_set->value;
+              $legrestSeat++;
+              break;
       }
-      $adjustedSeat = $inv->adjusted_seat;
-      $emptySeat = $totalSeat - $totalQty - $adjustedSeat;
-      $priceBeliKursi = $beliKursi['price'] - $beliKursi['cashback'];
-      $seatCharge = 0.5 * $emptySeat * $priceBeliKursi;
-
-      // Card Details
-      $totalMasuk = $program * 2 + $anak * 2 + $tambahan + $special;
-      $totalMakanFoto = $program + $anak + $tambahan + $special;
-
-      // Other Information
-      $code = $inv->code;
-      $notes = $inv->notes;
-      $otherCost = $inv->other_cost;
-      $downPayments = $inv->down_payments;
-      $totalTransactions = $totalNetTransactions + $seatCharge + $totalPriceKaos + $otherCost;
-      $totalDp = array_sum(array_map(fn($dp) => $dp['amount'], $downPayments)) ?: 0;
-      $kekurangan = $totalTransactions - $totalDp;
-      $status = $kekurangan == 0 ? InvoiceStatus::PAID_OFF->getLabel() : ($kekurangan > 0 ? InvoiceStatus::UNDER_PAYMENT->getLabel() : InvoiceStatus::OVER_PAYMENT->getLabel());
   }
+  $adjustedSeat = $inv->adjusted_seat;
+  $emptySeat = $totalSeat - $totalQty - $adjustedSeat;
+  $priceBeliKursi = $beliKursi['price'] - $beliKursi['cashback'];
+  $seatCharge = 0.5 * $emptySeat * $priceBeliKursi;
+
+  // Card Details
+  $totalMasuk = $program * 2 + $anak * 2 + $tambahan + $special;
+  $totalMakanFoto = $program + $anak + $tambahan + $special;
+
+  // Other Information
+  $code = $inv->code;
+  $notes = $inv->notes;
+  $otherCost = $inv->other_cost;
+  $downPayments = $inv->down_payments;
+  $totalTransactions = $totalNetTransactions + $seatCharge + $totalPriceKaos + $otherCost;
+  $totalDp = array_sum(array_map(fn($dp) => $dp['amount'], $downPayments)) ?: 0;
+  $kekurangan = $totalTransactions - $totalDp;
+  $status = $kekurangan == 0 ? InvoiceStatus::PAID_OFF->getLabel() : ($kekurangan > 0 ? InvoiceStatus::UNDER_PAYMENT->getLabel() : InvoiceStatus::OVER_PAYMENT->getLabel());
 @endphp
 
 <x-dynamic-component :component="$getEntryWrapperView()" :entry="$entry">

@@ -117,6 +117,7 @@ class InvoiceResource extends Resource
           ->searchable(),
         TextColumn::make('order.customer.name')
           ->numeric()
+          ->searchable()
           ->sortable(),
         TextColumn::make('order.trip_date')
           ->label('Tanggal')
