@@ -19,7 +19,7 @@ class ManageTourTemplates extends ManageRecords
         ->using(function (array $data): Model {
           $model = static::getModel()::create($data);
           
-          instant_approval($data, $model);
+          instant_approval($model, $data);
       
           return $model;
         })

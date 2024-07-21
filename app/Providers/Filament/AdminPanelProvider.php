@@ -121,6 +121,7 @@ class AdminPanelProvider extends PanelProvider
         ->paginationPageOptions([5, 10, 15, 20])
         ->persistFiltersInSession()
         ->deferFilters()
+        ->selectCurrentPageOnly()
         ->filtersTriggerAction(
           fn(TableAction $action) => $action
             ->label('Filter')

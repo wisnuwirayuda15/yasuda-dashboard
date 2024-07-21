@@ -16,7 +16,7 @@ class CreateFleet extends CreateRecord
   {
     $model = static::getModel()::create($data);
 
-    instant_approval($data, $model);
+    instant_approval($model, $data);
 
     return $model;
   }

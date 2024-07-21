@@ -34,6 +34,7 @@ use Filament\Tables\Actions\BulkAction;
 use Filament\Tables\Actions\EditAction;
 use Filament\Tables\Actions\ViewAction;
 use Filament\Tables\Columns\TextColumn;
+use Illuminate\Database\Eloquent\Model;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
 use Filament\Tables\Actions\ActionGroup;
@@ -42,6 +43,8 @@ use Filament\Forms\Components\DatePicker;
 use Filament\Tables\Actions\DeleteAction;
 use Filament\Tables\Actions\ExportAction;
 use Illuminate\Database\Eloquent\Builder;
+use App\Filament\Actions\BulkSubmitAction;
+use App\Filament\Actions\BulkApproveAction;
 use App\Filament\Exports\OrderFleetExporter;
 use Filament\Forms\Components\ToggleButtons;
 use Filament\Tables\Actions\BulkActionGroup;
@@ -245,10 +248,16 @@ class OrderFleetResource extends Resource
             ->color('warning')
             ->modal(false)
             ->excludeAttributes(['order_id', 'employee_id'])
-            ->hidden(fn(OrderFleet $record): bool => $record->isOrdered())
+            // ->hidden(fn(OrderFleet $record): bool => $record->isOrdered())
+            ->hidden()
             ->before(function (OrderFleet $record) {
               $record->code = get_code(new OrderFleet, 'OF');
-            }),
+            })
+          // ->after(function (OrderFleet $replica): void {
+          //   //INFO: not working
+          //   instant_approval($replica);
+          // })
+          ,
           ActionGroup::make([
             static::getSelectOrderAction(),
             static::getSelectTourLeaderAction(),
@@ -268,6 +277,8 @@ class OrderFleetResource extends Resource
       ])
       ->bulkActions([
         BulkActionGroup::make([
+          BulkSubmitAction::make(),
+          BulkApproveAction::make(),
           static::getSelectOrderBulkAction(),
           static::getDeleteOrderBulkAction(),
           static::getDeleteTourLeaderBulkAction(),

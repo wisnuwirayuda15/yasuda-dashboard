@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Number;
 use Illuminate\Database\Eloquent\Model;
+use Filament\Notifications\Notification;
 use Haruncpi\LaravelIdGenerator\IdGenerator;
 use EightyNine\Approvals\Models\ApprovableModel;
 
@@ -199,25 +200,41 @@ if (!function_exists('instant_approval')) {
    * A function for instant approval based on certain conditions.
    *
    * @param array $data The data array to be processed.
-   * @param string|Model $model The model instance to be approved.
-   * @param string $name The name of the submission (default is 'submission').
+   * @param string|Model|ApprovableModel $model The model instance to be approved.
+   * @param string $fieldName The name of the field (default is 'submission').
    * @return void
    */
-  function instant_approval(array $data, string|Model $model, string $name = 'submission'): void
-  {
-    if ($model instanceof ApprovableModel && !$model->isApprovalCompleted()) {
-      $user = auth()->user();
+  function instant_approval(
+    string|ApprovableModel $model,
+    array $data = [],
+    string $fieldName = 'submission'
+  ): void {
+    if (env('INSTANT_APPROVAL', true)) {
+      if ($model instanceof ApprovableModel) {
+        if (!$model->isApprovalCompleted()) {
+          $user = auth()->user();
 
-      $shouldSubmit = isset($data[$name]) && $data[$name] === true;
+          $superAdmin = $user->hasRole('super_admin');
 
-      if ($shouldSubmit || $user->hasRole('super_admin')) {
-        if (!$model->isSubmitted()) {
-          $model->submit(user: $user);
+          $shouldSubmit = $superAdmin || (isset($data[$fieldName]) && $data[$fieldName] === true);
+
+          if ($shouldSubmit) {
+            if (!$model->isSubmitted()) {
+              $model->submit(user: $user);
+            }
+
+            if ($superAdmin) {
+              $model::withoutGlobalScopes()->find($model->id)->approve(user: $user);
+            }
+          }
         }
-
-        if ($user->hasRole('super_admin')) {
-          $model::withoutGlobalScopes()->find($model->id)->approve(user: $user);
-        }
+      } else {
+        Notification::make()
+          ->warning()
+          ->title('Approval failed')
+          ->body('The model is not an instance of <strong>ApprovableModel</strong>')
+          ->persistent()
+          ->send();
       }
     }
   }

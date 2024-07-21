@@ -18,12 +18,12 @@ class CreateOrder extends CreateRecord
     $model = static::getModel()::create($data);
 
     if (filled($data['order_fleet_ids'])) {
-      $orderFleets = OrderFleet::findOrFail($data['order_fleet_ids']);
+      $orderFleets = OrderFleet::find($data['order_fleet_ids']);
 
       $orderFleets->each->update(['order_id' => $model->id]);
     }
 
-    instant_approval($data, $model);
+    instant_approval($model, $data);
 
     return $model;
   }
