@@ -42,4 +42,16 @@ class Destination extends ApprovableModel
     'high_season_price' => 'integer',
     'type' => DestinationType::class,
   ];
+
+  public static function getOptionsWithPrice(): array
+  {
+    return self::query()
+      ->select('name', 'id', 'weekday_price', 'weekend_price')
+      ->get()
+      ->mapWithKeys(function (self $destination) {
+        $price = today()->isWeekday() ? $destination->weekday_price : $destination->weekend_price;
+        return [$destination->id => "{$destination->name} • " . idr($price)];
+      })
+      ->toArray();
+  }
 }

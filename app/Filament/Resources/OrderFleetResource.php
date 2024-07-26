@@ -43,8 +43,8 @@ use Filament\Forms\Components\DatePicker;
 use Filament\Tables\Actions\DeleteAction;
 use Filament\Tables\Actions\ExportAction;
 use Illuminate\Database\Eloquent\Builder;
-use App\Filament\Actions\BulkSubmitAction;
-use App\Filament\Actions\BulkApproveAction;
+use App\Filament\Actions\SubmitBulkAction;
+use App\Filament\Actions\ApproveBulkAction;
 use App\Filament\Exports\OrderFleetExporter;
 use Filament\Forms\Components\ToggleButtons;
 use Filament\Tables\Actions\BulkActionGroup;
@@ -142,6 +142,7 @@ class OrderFleetResource extends Resource
         TextColumn::make('order.customer.name')
           ->sortable()
           ->alignCenter()
+          ->searchable()
           ->placeholder('No customer')
           ->tooltip(fn(OrderFleet $record) => ($record->order_id ? 'Change' : 'Select') . ' order')
           ->action(static::getSelectOrderAction()),
@@ -154,8 +155,7 @@ class OrderFleetResource extends Resource
           ->tooltip(fn(OrderFleet $record) => ($record->employee_id ? 'Change' : 'Select') . ' tour leader')
           ->action(static::getSelectTourLeaderAction()),
         TextColumn::make('trip_date')
-          ->date()
-          ->formatStateUsing(fn(Carbon $state): string => $state->translatedFormat('d/m/Y')),
+          ->date('d/m/Y'),
         TextColumn::make('remaining_day')
           ->badge()
           ->alignCenter()
@@ -163,26 +163,15 @@ class OrderFleetResource extends Resource
           ->sortable(query: function (Builder $query, string $direction): Builder {
             return $query->orderBy('trip_date', $direction);
           })
-          ->color(fn(string $state) => match ($state) {
-            OrderFleetStatus::ON_TRIP->getLabel() => OrderFleetStatus::ON_TRIP->getColor(),
-            default => match (true) {
-                $state <= 7 => 'danger',
-                $state <= 30 => 'warning',
-                default => 'success',
-              },
-          }),
+          ->color(fn(OrderFleet $record): array|string => $record->getRemainingDayColor()),
         TextColumn::make('status')
           ->badge()
           ->state(fn(OrderFleet $record): string => $record->getStatus())
-          ->color(fn(string $state) => match ($state) {
-            OrderFleetStatus::ORDERED->getLabel() => OrderFleetStatus::ORDERED->getColor(),
-            OrderFleetStatus::BOOKED->getLabel() => OrderFleetStatus::BOOKED->getColor(),
-            OrderFleetStatus::ON_TRIP->getLabel() => OrderFleetStatus::ON_TRIP->getColor(),
-            OrderFleetStatus::FINISHED->getLabel() => OrderFleetStatus::FINISHED->getColor(),
-            default => OrderFleetStatus::READY->getColor(),
-          }),
+          ->color(fn(OrderFleet $record): array|string => $record->getStatusColor()),
         TextColumn::make('fleet.name')
-          ->label('Mitra Armada'),
+          ->label('Mitra Armada')
+          ->sortable()
+          ->searchable(),
         TextColumn::make('fleet.category')
           ->label('Jenis')
           ->badge(),
@@ -241,23 +230,22 @@ class OrderFleetResource extends Resource
         ActionGroup::make([
           ViewAction::make(),
           EditAction::make()
-            ->hidden(fn(OrderFleet $record): bool => $record->isOrdered()),
+            ->hidden(fn(OrderFleet $record): bool => $record->isOrdered() || $record->isCanceled()),
           DeleteAction::make()
-            ->hidden(fn(OrderFleet $record): bool => $record->isOrdered()),
+            ->hidden(fn(OrderFleet $record): bool => $record->isOrdered() || $record->isCanceled()),
           ReplicateAction::make()
             ->color('warning')
             ->modal(false)
             ->excludeAttributes(['order_id', 'employee_id'])
-            // ->hidden(fn(OrderFleet $record): bool => $record->isOrdered())
             ->hidden()
+            // ->hidden(fn(OrderFleet $record): bool => $record->isOrdered())
+            // ->after(function (OrderFleet $replica): void {
+            //   //INFO: not working
+            //   instant_approval($replica);
+            // })
             ->before(function (OrderFleet $record) {
               $record->code = get_code(new OrderFleet, 'OF');
-            })
-          // ->after(function (OrderFleet $replica): void {
-          //   //INFO: not working
-          //   instant_approval($replica);
-          // })
-          ,
+            }),
           ActionGroup::make([
             static::getSelectOrderAction(),
             static::getSelectTourLeaderAction(),
@@ -275,14 +263,12 @@ class OrderFleetResource extends Resource
             return (bool) $approved;
           })
       ])
-      ->bulkActions([
-        BulkActionGroup::make([
-          BulkSubmitAction::make(),
-          BulkApproveAction::make(),
-          static::getSelectOrderBulkAction(),
-          static::getDeleteOrderBulkAction(),
-          static::getDeleteTourLeaderBulkAction(),
-        ]),
+      ->groupedBulkActions([
+        SubmitBulkAction::make(),
+        ApproveBulkAction::make(),
+        static::getSelectOrderBulkAction(),
+        static::getDeleteOrderBulkAction(),
+        static::getDeleteTourLeaderBulkAction(),
       ])
     ;
   }
@@ -310,7 +296,7 @@ class OrderFleetResource extends Resource
       ->icon(OrderResource::getNavigationIcon())
       ->label('Select Order')
       ->color('info')
-      ->hidden(fn(OrderFleet $record): bool => $record->isOrdered())
+      ->hidden(fn(OrderFleet $record): bool => $record->isOrdered() || $record->isCanceled())
       ->form([
         Select::make('order_id')
           ->required()
@@ -322,7 +308,7 @@ class OrderFleetResource extends Resource
           ->getOptionLabelFromRecordUsing(fn(Order $record) => view('filament.components.badges.order', compact('record')))
           ->rules([
             fn(OrderFleet $record): Closure => function (string $attribute, $value, Closure $fail) use ($record) {
-              $order = Order::findOrFail($value);
+              $order = Order::find($value);
               if (!$order->trip_date->isSameDay($record->trip_date)) {
                 $fail('Order trip date must be the same as the order fleet trip date');
               }
@@ -455,7 +441,7 @@ class OrderFleetResource extends Resource
       ->icon('gmdi-tour')
       ->label('Select Tour Leader')
       ->color('success')
-      ->hidden(fn(OrderFleet $record): bool => $record->isFinished())
+      ->hidden(fn(OrderFleet $record): bool => $record->isFinished() || $record->isCanceled())
       ->form([
         Select::make('employee_id')
           ->required()

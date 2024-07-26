@@ -81,7 +81,17 @@ class TourTemplateResource extends Resource
           ->required()
           ->live(true)
           ->multiple()
-          ->options(Destination::pluck('name', 'id')),
+          ->options(Destination::getOptionsWithPrice())
+          ->helperText(function (array $state) {
+            $week = today()->isWeekday() ? 'weekday' : 'weekend';
+            $price = Destination::find($state)->sum("{$week}_price");
+            return "Total Harga: " . idr($price);
+          })
+          ->hint(function (array $state) {
+            $today = today();
+            $week = $today->isWeekday() ? 'Weekday' : 'Weekend';
+            return $today->translatedFormat('l, d F Y') . " ($week)";
+          }),
         Select::make('regency_id')
           ->required()
           ->live(true)

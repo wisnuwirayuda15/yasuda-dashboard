@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
 use App\Enums\OrderFleetStatus;
 use App\Enums\FleetPaymentStatus;
 use App\Models\Scopes\ApprovedScope;
@@ -19,14 +20,20 @@ class OrderFleet extends ApprovableModel
 
   public function getStatus(): string
   {
+    /** @var Carbon */
     $date = $this->trip_date;
 
+    /** @var Order */
     $order = $this->order;
 
+    /** @var ?Invoice */
     $inv = $order?->invoice;
+
+    $tr = $this->employee_id;
 
     return match (true) {
       (bool) $inv => OrderFleetStatus::ORDERED->getLabel(),
+      $date->isPast() && ((bool) !$order || (bool) !$tr) => OrderFleetStatus::CANCELED->getLabel(),
       (bool) $order => OrderFleetStatus::BOOKED->getLabel(),
       $date->isToday() => OrderFleetStatus::ON_TRIP->getLabel(),
       $date->isPast() => OrderFleetStatus::FINISHED->getLabel(),
@@ -34,20 +41,51 @@ class OrderFleet extends ApprovableModel
     };
   }
 
+  public function getStatusColor(): array|string
+  {
+    return match ($this->getStatus()) {
+      OrderFleetStatus::CANCELED->getLabel() => OrderFleetStatus::CANCELED->getColor(),
+      OrderFleetStatus::ORDERED->getLabel() => OrderFleetStatus::ORDERED->getColor(),
+      OrderFleetStatus::BOOKED->getLabel() => OrderFleetStatus::BOOKED->getColor(),
+      OrderFleetStatus::ON_TRIP->getLabel() => OrderFleetStatus::ON_TRIP->getColor(),
+      OrderFleetStatus::FINISHED->getLabel() => OrderFleetStatus::FINISHED->getColor(),
+      default => OrderFleetStatus::READY->getColor(),
+    };
+  }
+
   public function getRemainingDay(): int
   {
+     /** @var Carbon */
     $date = $this->trip_date;
 
     return match (true) {
-      $date->isToday() ||
-      $date->isPast() => 0,
+      $date->isToday() || $date->isPast() => 0,
       default => today()->diffInDays($date),
+    };
+  }
+
+  public function getRemainingDayColor(): array|string
+  {
+    $day = $this->getRemainingDay();
+
+    return match ($day) {
+      OrderFleetStatus::ON_TRIP->getLabel() => OrderFleetStatus::ON_TRIP->getColor(),
+      default => match (true) {
+          $day <= 7 => 'danger',
+          $day <= 30 => 'warning',
+          default => 'success',
+        },
     };
   }
 
   public function isOrdered(): bool
   {
     return $this->getStatus() === OrderFleetStatus::ORDERED->getLabel();
+  }
+
+  public function isCanceled(): bool
+  {
+    return $this->getStatus() === OrderFleetStatus::CANCELED->getLabel();
   }
 
   public function isFinished(): bool

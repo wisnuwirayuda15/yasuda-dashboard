@@ -277,8 +277,8 @@ class AdminPanelProvider extends PanelProvider
         MeetingCalendarWidget::class,
       ])
       ->colors([
-        'primary' => '#d82431',
-        'secondary' => '#64266e',
+        'primary' => Color::hex('#d82431'),
+        'secondary' => Color::hex('#64266e'),
         'danger' => Color::Red,
         'gray' => Color::Zinc,
         'info' => Color::Sky,
@@ -329,7 +329,7 @@ class AdminPanelProvider extends PanelProvider
         QuickCreatePlugin::make()
           ->slideOver()
           ->sortBy('navigation')
-          ->hidden(fn() => blank(auth()->user()->email_verified_at))
+          ->hidden(fn() => !auth()->user()->hasVerifiedEmail())
           // ->rounded(fn(): bool => match (CustomPlatform::detect()) {
           //   CustomPlatform::Windows, CustomPlatform::Mac, CustomPlatform::Linux => true,
           //   CustomPlatform::Mobile => false,

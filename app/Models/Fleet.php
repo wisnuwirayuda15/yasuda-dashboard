@@ -6,6 +6,7 @@ use App\Enums\FleetSeat;
 use App\Enums\FleetCategory;
 use App\Models\Scopes\ApprovedScope;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Collection;
 use EightyNine\Approvals\Models\ApprovableModel;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Attributes\ScopedBy;
@@ -49,9 +50,9 @@ class Fleet extends ApprovableModel
       ->select('category', 'id', 'name', 'seat_set')
       ->get()
       ->groupBy('category')
-      ->mapWithKeys(function ($fleets, $category) {
+      ->mapWithKeys(function (Collection $fleets, string $category) {
         return [
-          ucwords($category) . " Bus" => $fleets->mapWithKeys(function (Fleet $fleet) {
+          ucwords($category) . " Bus" => $fleets->mapWithKeys(function (self $fleet) {
             return [$fleet->id => "{$fleet->name} • {$fleet->seat_set->getLabel()}"];
           })->toArray()
         ];

@@ -29,8 +29,8 @@ class AppServiceProvider extends ServiceProvider
     }
 
     // Indonesian locale and timezone
-    Carbon::setlocale('id');
-    Number::useLocale('id');
+    Carbon::setlocale(env('APP_LOCALE', 'id'));
+    Number::useLocale(env('APP_LOCALE', 'id'));
 
 
     // Model::unguard();

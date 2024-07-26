@@ -15,6 +15,7 @@ use Filament\Resources\Resource;
 use Dotswan\MapPicker\Fields\Map;
 use App\Enums\NavigationGroupLabel;
 use Filament\Tables\Actions\Action;
+use Filament\Tables\Filters\Filter;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Section;
@@ -134,6 +135,9 @@ class CustomerResource extends Resource
         SelectFilter::make('status')
           ->multiple()
           ->options(CustomerStatus::class),
+        Filter::make('has_loyalty_point')
+          ->label('Memiliki poin loyalty')
+          ->query(fn(Builder $query): Builder => $query->whereHas('orders.invoice.loyaltyPoint')),
       ])
       ->headerActions([
         ExportAction::make()

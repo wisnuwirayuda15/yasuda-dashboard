@@ -7,11 +7,11 @@ use Illuminate\Database\Eloquent\Model;
 use Filament\Notifications\Notification;
 use Illuminate\Database\Eloquent\Collection;
 
-class BulkSubmitAction extends BulkAction
+class ApproveBulkAction extends BulkAction
 {
   public static function getDefaultName(): ?string
   {
-    return 'Submit Semua';
+    return 'Approve Semua';
   }
 
   protected function setUp(): void
@@ -21,17 +21,19 @@ class BulkSubmitAction extends BulkAction
     $this
       ->requiresConfirmation()
       ->deselectRecordsAfterCompletion()
-      ->icon('heroicon-m-arrow-right-circle')
+      ->icon('heroicon-m-check')
       ->label($this->getName())
-      ->color('info')
-      ->action(function (Collection $records, BulkAction $action) {
+      ->color('success')
+      ->before(function (Collection $records, BulkAction $action) {
         $user = auth()->user();
 
-        $notSubmitable = $records->some(fn(Model $record) =>
-          $record->isSubmitted() ||
-          $record->approvalStatus->creator_id !== $user->id);
+        $notApprovable = $records->some(fn(Model $record) =>
+          !$record->canBeApprovedBy($user) ||
+          !$record->isSubmitted() ||
+          $record->isApprovalCompleted() ||
+          $record->isDiscarded());
 
-        if ($notSubmitable) {
+        if ($notApprovable) {
           Notification::make()
             ->danger()
             ->title('Failed')
@@ -40,13 +42,16 @@ class BulkSubmitAction extends BulkAction
 
           $action->cancel();
         }
+      })
+      ->action(function (Collection $records, BulkAction $action) {
+        $user = auth()->user();
 
-        $records->each->submit(user: $user);
+        $records->each->approve(user: $user);
 
         Notification::make()
           ->success()
           ->title('Success')
-          ->body('Semua record berhasil disubmit')
+          ->body('Semua record berhasil diapprove')
           ->send();
       });
   }

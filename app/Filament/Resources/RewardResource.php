@@ -21,6 +21,7 @@ use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\RichEditor;
+use Illuminate\Database\Eloquent\Builder;
 use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\ToggleButtons;
 use App\Filament\Resources\RewardResource\Pages;
@@ -71,9 +72,10 @@ class RewardResource extends Resource
         ->required()
         ->live()
         ->allowHtml()
-        ->relationship('customer', 'name'),
+        ->relationship('customer', 'name', fn (Builder $query) => $query->whereHas('orders.invoice.loyaltyPoint')),
       TextInput::make('amount')
         ->required()
+        ->default(0)
         ->rules([
           fn(Get $get): Closure => function (string $attribute, float $value, Closure $fail) use ($get) {
             if ($value > (float) $get('balance')) {
