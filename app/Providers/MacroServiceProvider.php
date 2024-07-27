@@ -190,8 +190,7 @@ class MacroServiceProvider extends ServiceProvider
       $this
         ->label('Submit data ini')
         ->visibleOn('create')
-        ->hidden(auth()->user()->hasRole('super_admin'))
-        ;
+        ->hidden(auth()->user()->hasRole('super_admin'));
 
       return $this;
     });

@@ -232,7 +232,7 @@ class OrderFleetResource extends Resource
           EditAction::make()
             ->hidden(fn(OrderFleet $record): bool => $record->isOrdered() || $record->isCanceled()),
           DeleteAction::make()
-            ->hidden(fn(OrderFleet $record): bool => $record->isOrdered() || $record->isCanceled()),
+            ->hidden(fn(OrderFleet $record): bool => $record->isOrdered()),
           ReplicateAction::make()
             ->color('warning')
             ->modal(false)

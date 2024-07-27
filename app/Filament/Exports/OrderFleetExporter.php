@@ -45,14 +45,14 @@ class OrderFleetExporter extends Exporter
       ExportColumn::make('trip_month')
         ->label('Bulan')
         ->state(fn(OrderFleet $record): string => $record->trip_date->translatedFormat('F')),
-      ExportColumn::make('payment_status')
-        ->label('Status Pembayaran')
-        ->formatStateUsing(fn(FleetPaymentStatus $state) => $state->getLabel()),
-      ExportColumn::make('payment_date')
-        ->label('Tgl. Bayar')
-        ->formatStateUsing(fn(?Carbon $state): ?string => $state ? $state->translatedFormat('d/m/Y') : null),
-      ExportColumn::make('payment_amount')
-        ->label('Jumlah Bayar'),
+      // ExportColumn::make('payment_status')
+      //   ->label('Status Pembayaran')
+      //   ->formatStateUsing(fn(FleetPaymentStatus $state) => $state->getLabel()),
+      // ExportColumn::make('payment_date')
+      //   ->label('Tgl. Bayar')
+      //   ->formatStateUsing(fn(?Carbon $state): ?string => $state ? $state->translatedFormat('d/m/Y') : null),
+      // ExportColumn::make('payment_amount')
+      //   ->label('Jumlah Bayar'),
       ExportColumn::make('created_at'),
       ExportColumn::make('updated_at'),
     ];

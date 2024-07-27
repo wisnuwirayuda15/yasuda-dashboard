@@ -14,6 +14,7 @@ use App\Models\TourTemplate;
 use Filament\Resources\Resource;
 use App\Enums\NavigationGroupLabel;
 use Filament\Tables\Filters\Filter;
+use Filament\Forms\Components\Group;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Checkbox;
 use Filament\Tables\Actions\EditAction;
@@ -28,6 +29,7 @@ use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\RichEditor;
 use Filament\Tables\Actions\DeleteAction;
 use Illuminate\Database\Eloquent\Builder;
+use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\Actions\Action;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use EightyNine\Approvals\Tables\Actions\RejectAction;
@@ -62,10 +64,13 @@ class TourTemplateResource extends Resource
         TextInput::make('name')
           ->required()
           ->live(true)
-          ->helperText('Anda dapat mengenerate nama berdasarkan regensi dan destinasi yang dipilih.')
+          ->helperText(fn(string $operation) => $operation !== 'view' ? 'Anda dapat mengenerate nama berdasarkan regensi dan destinasi yang dipilih.' : null)
           ->maxLength(255)
           ->hintAction(
             Action::make('generate_name')
+              ->label('Generate')
+              ->hidden(fn(string $operation) => $operation === 'view')
+              ->icon('gmdi-text-fields-o')
               ->disabled(fn(Get $get) => blank($get('regency_id')) || blank($get('destinations')))
               ->action(function (Get $get, Set $set, TextInput $component) {
                 $regency = Regency::find($get('regency_id'));
@@ -77,21 +82,31 @@ class TourTemplateResource extends Resource
                 }
               })
           ),
+        Group::make()
+          ->columns(2)
+          ->visible(fn(Get $get) => filled($get('destinations')))
+          ->schema([
+            Placeholder::make('weekday_price')
+              ->label('Total Harga Weekday')
+              ->content(function (Get $get, Set $set, Placeholder $component) {
+                $price = Destination::find($get('destinations'))->sum('weekday_price');
+                $set($component, $price);
+                return view('filament.components.badges.default', ['text' => idr($price), 'color' => 'success', 'big' => true]);
+              }),
+            Placeholder::make('weekend_price')
+              ->label('Total Harga Weekday')
+              ->content(function (Get $get, Set $set, Placeholder $component) {
+                $price = Destination::find($get('destinations'))->sum('weekend_price');
+                $set($component, $price);
+                return view('filament.components.badges.default', ['text' => idr($price), 'color' => 'warning', 'big' => true]);
+              }),
+          ]),
         Select::make('destinations')
           ->required()
           ->live(true)
           ->multiple()
-          ->options(Destination::getOptionsWithPrice())
-          ->helperText(function (array $state) {
-            $week = today()->isWeekday() ? 'weekday' : 'weekend';
-            $price = Destination::find($state)->sum("{$week}_price");
-            return "Total Harga: " . idr($price);
-          })
-          ->hint(function (array $state) {
-            $today = today();
-            $week = $today->isWeekday() ? 'Weekday' : 'Weekend';
-            return $today->translatedFormat('l, d F Y') . " ($week)";
-          }),
+          ->allowHtml()
+          ->options(Destination::getOptionsWithPrice()),
         Select::make('regency_id')
           ->required()
           ->live(true)

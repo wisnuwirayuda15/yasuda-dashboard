@@ -49,8 +49,17 @@ class Destination extends ApprovableModel
       ->select('name', 'id', 'weekday_price', 'weekend_price')
       ->get()
       ->mapWithKeys(function (self $destination) {
-        $price = today()->isWeekday() ? $destination->weekday_price : $destination->weekend_price;
-        return [$destination->id => "{$destination->name} • " . idr($price)];
+        $weekdayPrice = idr($destination->weekday_price);
+        $weekendPrice = idr($destination->weekend_price);
+        $name = strtoupper($destination->name);
+        // return [
+        //   $destination->id =>
+        //     view('filament.components.badges.default', ['text' => $destination->name, 'color' => 'success']) .
+        //     "Weekday: {$weekdayPrice} • Weekend: {$weekendPrice}"
+        // ];
+        return [
+          $destination->id => "{$name} • Weekday: {$weekdayPrice} • Weekend: {$weekendPrice}"
+        ];
       })
       ->toArray();
   }

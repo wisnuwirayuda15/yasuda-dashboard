@@ -72,9 +72,9 @@ class DestinationResource extends Resource
           ->required()
           ->default(0)
           ->currency(minValue: 0),
-        TextInput::make('high_season_price')
-          ->default(0)
-          ->currency(minValue: 0),
+        // TextInput::make('high_season_price')
+        //   ->default(0)
+        //   ->currency(minValue: 0),
         Checkbox::make('submission')
           ->columnSpanFull()
           ->submission()
@@ -102,10 +102,10 @@ class DestinationResource extends Resource
           ->numeric()
           ->sortable()
           ->money('IDR'),
-        TextColumn::make('high_season_price')
-          ->numeric()
-          ->sortable()
-          ->money('IDR'),
+        // TextColumn::make('high_season_price')
+        //   ->numeric()
+        //   ->sortable()
+        //   ->money('IDR'),
         TextColumn::make('created_at')
           ->dateTime()
           ->sortable()
