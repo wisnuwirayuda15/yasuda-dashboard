@@ -3,16 +3,8 @@
 namespace Database\Seeders;
 
 use App\Models\User;
-use App\Models\Fleet;
-use App\Models\Order;
-use App\Models\Company;
-use App\Models\OrderFleet;
-use App\Models\Destination;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Route;
-
-// use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 
 class DatabaseSeeder extends Seeder
 {
@@ -27,15 +19,22 @@ class DatabaseSeeder extends Seeder
       'password' => Hash::make(env('ADMIN_PASSWORD', '12345678')),
     ]);
 
-    // Company::create();
+    $this->call($this->getSeeders());
+  }
 
-    $realSeeders = [
+  protected function getSeeders(): array
+  {
+    $real = [
       ApprovalFlowSeeder::class,
+      RegionDatabaseSeeder::class,
       EmployeeSeeder::class,
-      RegionSeeder::class,
     ];
 
-    $dummySeeders = [
+    // if ((bool) env('REGION_SEEDER', false)) {
+    //   $real[] = RegionSeeder::class;
+    // }
+
+    $dummy = [
       FleetSeeder::class,
       CustomerSeeder::class,
       DestinationSeeder::class,
@@ -45,12 +44,9 @@ class DatabaseSeeder extends Seeder
       ModelApprovalSeeder::class,
     ];
 
-    if ((bool) env('SEEDER_WITH_DUMMY_DATA', false)) {
-      $seeders = array_merge($realSeeders, $dummySeeders);
-    } else {
-      $seeders = $realSeeders;
-    }
-
-    $this->call($seeders);
+    return (bool) env('SEEDER_WITH_DUMMY_DATA', true)
+      ? array_merge($real, $dummy)
+      : $real;
   }
 }
+
