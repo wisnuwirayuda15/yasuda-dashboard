@@ -30,5 +30,6 @@ return [
     Resources\TourReportResource::getSlug() => 'Laporan Perjalanan Wisata',
     Resources\TourTemplateResource::getSlug() => 'Paket Wisata',
     Resources\UserResource::getSlug() => 'Akun User',
+    'pulse' => 'Analisis Website'
   ]
 ];

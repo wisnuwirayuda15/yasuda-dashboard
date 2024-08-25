@@ -30,5 +30,6 @@ return [
     Resources\TourReportResource::getSlug() => 'Tour Report',
     Resources\TourTemplateResource::getSlug() => 'Tour Template',
     Resources\UserResource::getSlug() => 'User Account',
+    'pulse' => 'Website Analytics'
   ]
 ];

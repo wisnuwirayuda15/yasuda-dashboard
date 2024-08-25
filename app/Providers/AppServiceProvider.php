@@ -3,8 +3,11 @@
 namespace App\Providers;
 
 use Carbon\Carbon;
+use App\Models\User;
 use Illuminate\Support\Number;
+use Laravel\Pulse\Facades\Pulse;
 use Illuminate\Support\Facades\URL;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\ServiceProvider;
 
@@ -32,6 +35,15 @@ class AppServiceProvider extends ServiceProvider
     Carbon::setlocale(env('APP_LOCALE', 'id'));
     Number::useLocale(env('APP_LOCALE', 'id'));
 
+    Gate::define('viewPulse', function (User $user) {
+      return $user->isSuperAdmin();
+    });
+
+    Pulse::user(fn(User $user) => [
+      'name' => $user->getFilamentName(),
+      'extra' => $user->email,
+      'avatar' => $user->getFilamentAvatarUrl(),
+    ]);
 
     // Model::unguard();
 

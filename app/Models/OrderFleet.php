@@ -33,9 +33,9 @@ class OrderFleet extends ApprovableModel
 
     return match (true) {
       (bool) $inv => OrderFleetStatus::ORDERED->getLabel(),
+      $date->isToday() => OrderFleetStatus::ON_TRIP->getLabel(),
       $date->isPast() && ((bool) !$order || (bool) !$tr) => OrderFleetStatus::CANCELED->getLabel(),
       (bool) $order => OrderFleetStatus::BOOKED->getLabel(),
-      $date->isToday() => OrderFleetStatus::ON_TRIP->getLabel(),
       $date->isPast() => OrderFleetStatus::FINISHED->getLabel(),
       default => OrderFleetStatus::READY->getLabel(),
     };
@@ -104,9 +104,9 @@ class OrderFleet extends ApprovableModel
     'employee_id',
     'fleet_id',
     'trip_date',
-    // 'payment_status',
-    // 'payment_date',
-    // 'payment_amount',
+    'payment_status',
+    'payment_date',
+    'payment_amount',
   ];
 
   /**

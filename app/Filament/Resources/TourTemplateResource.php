@@ -17,10 +17,12 @@ use Filament\Tables\Filters\Filter;
 use Filament\Forms\Components\Group;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Checkbox;
+use Filament\Forms\Components\Fieldset;
 use Filament\Tables\Actions\EditAction;
 use Filament\Tables\Actions\ViewAction;
 use Filament\Tables\Columns\TextColumn;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Storage;
 use Filament\Forms\Components\Component;
 use Filament\Forms\Components\TextInput;
 use Filament\Tables\Actions\ActionGroup;
@@ -38,6 +40,7 @@ use App\Filament\Resources\TourTemplateResource\Pages;
 use EightyNine\Approvals\Tables\Actions\ApproveAction;
 use EightyNine\Approvals\Tables\Actions\DiscardAction;
 use EightyNine\Approvals\Tables\Actions\ApprovalActions;
+use Hugomyb\FilamentMediaAction\Tables\Actions\MediaAction;
 use EightyNine\Approvals\Tables\Columns\ApprovalStatusColumn;
 use App\Filament\Resources\TourTemplateResource\RelationManagers;
 
@@ -82,23 +85,30 @@ class TourTemplateResource extends Resource
                 }
               })
           ),
-        Group::make()
-          ->columns(2)
+        Fieldset::make('Total Harga')
+          ->columns(3)
           ->visible(fn(Get $get) => filled($get('destinations')))
           ->schema([
             Placeholder::make('weekday_price')
-              ->label('Total Harga Weekday')
+              ->label('Weekday')
               ->content(function (Get $get, Set $set, Placeholder $component) {
                 $price = Destination::find($get('destinations'))->sum('weekday_price');
                 $set($component, $price);
                 return view('filament.components.badges.default', ['text' => idr($price), 'color' => 'success', 'big' => true]);
               }),
             Placeholder::make('weekend_price')
-              ->label('Total Harga Weekday')
+              ->label('Weekend')
               ->content(function (Get $get, Set $set, Placeholder $component) {
                 $price = Destination::find($get('destinations'))->sum('weekend_price');
                 $set($component, $price);
                 return view('filament.components.badges.default', ['text' => idr($price), 'color' => 'warning', 'big' => true]);
+              }),
+            Placeholder::make('high_season_price')
+              ->label('High Season')
+              ->content(function (Get $get, Set $set, Placeholder $component) {
+                $price = Destination::find($get('destinations'))->sum('high_season_price');
+                $set($component, $price);
+                return view('filament.components.badges.default', ['text' => idr($price), 'color' => 'danger', 'big' => true]);
               }),
           ]),
         Select::make('destinations')
@@ -106,11 +116,13 @@ class TourTemplateResource extends Resource
           ->live(true)
           ->multiple()
           ->allowHtml()
+          ->minItems(2)
           ->options(Destination::getOptionsWithPrice()),
-        Select::make('regency_id')
-          ->required()
-          ->live(true)
-          ->relationship('regency', 'name'),
+        // Select::make('regency_id')
+        //   ->required()
+        //   ->live(true)
+        //   ->relationship('regency', 'name'),
+        RegionSelects(false),
         FileUpload::make('image')
           ->image()
           ->imageEditor()
@@ -130,7 +142,8 @@ class TourTemplateResource extends Resource
 
     return $table
       ->columns([
-        ImageColumn::make('image'),
+        ImageColumn::make('image')
+          ->preview(),
         TextColumn::make('name')
           ->limit(40)
           ->searchable(),

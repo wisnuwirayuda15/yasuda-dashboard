@@ -46,11 +46,12 @@ class Destination extends ApprovableModel
   public static function getOptionsWithPrice(): array
   {
     return self::query()
-      ->select('name', 'id', 'weekday_price', 'weekend_price')
+      ->select('name', 'id', 'weekday_price', 'weekend_price', 'high_season_price')
       ->get()
       ->mapWithKeys(function (self $destination) {
         $weekdayPrice = idr($destination->weekday_price);
         $weekendPrice = idr($destination->weekend_price);
+        $highSeasonPrice = idr($destination->high_season_price);
         $name = strtoupper($destination->name);
         // return [
         //   $destination->id =>
@@ -58,7 +59,7 @@ class Destination extends ApprovableModel
         //     "Weekday: {$weekdayPrice} • Weekend: {$weekendPrice}"
         // ];
         return [
-          $destination->id => "{$name} • Weekday: {$weekdayPrice} • Weekend: {$weekendPrice}"
+          $destination->id => "{$name} • Weekday: {$weekdayPrice} • Weekend: {$weekendPrice} • High Season: {$highSeasonPrice}"
         ];
       })
       ->toArray();

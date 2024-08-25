@@ -680,6 +680,7 @@ class ProfitLossResource extends Resource
       ->schema([
         Repeater::make('destinations_cost')
           ->hiddenLabel()
+          ->live()
           ->columns(3)
           ->deletable(false)
           ->addable(false)
@@ -697,7 +698,7 @@ class ProfitLossResource extends Resource
             Placeholder::make('price')
               ->label('Harga')
               ->extraAttributes(['class' => 'font-semibold'])
-              ->helperText(static::$invoice->order->trip_date->isWeekday() ? 'Harga Weekday' : 'Harga Weekend')
+              ->helperText(static::$invoice->order->trip_date->isWeekday() ? 'Weekday' : 'Weekend')
               ->content(fn(Get $get) => idr($get('price'))),
             Placeholder::make('total')
               ->label('Total')
@@ -728,7 +729,7 @@ class ProfitLossResource extends Resource
       ]);
   }
 
-  public static function getDestinationsCostItems(): array
+  public static function getDestinationsCostItems(bool $highSeason = false): array
   {
     $inv = static::$invoice;
 
@@ -743,7 +744,7 @@ class ProfitLossResource extends Resource
     $pembina = $getMainCostQty('pembina');
 
     foreach ($destinations as $des) {
-      $price = $inv->order->trip_date->isWeekday() ? $des->weekday_price : ($des->weekend_price ?? 0);
+      $price = $highSeason ? $des->high_season_price : ($inv->order->trip_date->isWeekday() ? $des->weekday_price : ($des->weekend_price ?? 0));
 
       $qty = match ($des->type) {
         DestinationType::SISWA_ONLY => $anak,

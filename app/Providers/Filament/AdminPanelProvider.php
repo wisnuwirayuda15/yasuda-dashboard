@@ -26,6 +26,7 @@ use Filament\Actions\MountableAction;
 use Filament\Forms\Components\Select;
 use Filament\Support\Enums\Alignment;
 use Filament\Forms\Components\Repeater;
+use Filament\Navigation\NavigationItem;
 use Filament\Tables\Columns\TextColumn;
 use EightyNine\Approvals\ApprovalPlugin;
 use Filament\Notifications\Notification;
@@ -49,6 +50,7 @@ use App\Filament\Resources\ProfitLossResource;
 use App\Filament\Resources\TourReportResource;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Session\Middleware\StartSession;
+use App\Filament\Resources\LoyaltyPointResource;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Awcodes\FilamentQuickCreate\QuickCreatePlugin;
 use Filament\Tables\Actions\Action as TableAction;
@@ -120,19 +122,16 @@ class AdminPanelProvider extends PanelProvider
         ->defaultSort('created_at', 'desc')
         ->paginationPageOptions([5, 10, 15, 20])
         ->persistFiltersInSession()
+        ->persistSortInSession()
         ->deferFilters()
         ->selectCurrentPageOnly()
-        ->filtersTriggerAction(
-          fn(TableAction $action) => $action
-            ->label('Filter')
-            ->button()
-        )
-        ->filtersApplyAction(
-          fn(TableAction $action) => $action
-            ->label('Apply')
-            ->color('success')
-            ->icon('fas-check')
-        )
+        ->filtersTriggerAction(fn(TableAction $action) => $action
+          ->label('Filter')
+          ->button())
+        ->filtersApplyAction(fn(TableAction $action) => $action
+          ->label('Apply')
+          ->color('success')
+          ->icon('fas-check'))
         ->actions([
           TableActionGroup::make([
             TableViewAction::make(),
@@ -210,23 +209,23 @@ class AdminPanelProvider extends PanelProvider
 
     // TableDeleteAction::configureUsing(fn(TableDeleteAction $action) => $action->slideOver(false));
 
-    // LanguageSwitch::configureUsing(function (LanguageSwitch $switch): void {
-    //   $hook = match (CustomPlatform::detect()) {
-    //     CustomPlatform::Windows, CustomPlatform::Mac, CustomPlatform::Linux => PanelsRenderHook::GLOBAL_SEARCH_AFTER,
-    //     CustomPlatform::Mobile => PanelsRenderHook::SIDEBAR_NAV_END,
-    //     default => PanelsRenderHook::GLOBAL_SEARCH_AFTER,
-    //   };
+    LanguageSwitch::configureUsing(function (LanguageSwitch $switch): void {
+      $hook = match (CustomPlatform::detect()) {
+        CustomPlatform::Windows, CustomPlatform::Mac, CustomPlatform::Linux => PanelsRenderHook::GLOBAL_SEARCH_AFTER,
+        CustomPlatform::Mobile => PanelsRenderHook::SIDEBAR_NAV_END,
+        default => PanelsRenderHook::GLOBAL_SEARCH_AFTER,
+      };
 
-    //   $switch
-    //     ->locales(['en', 'id'])
-    //     ->visible(outsidePanels: true)
-    //     ->circular()
-    //     ->flags([
-    //       'en' => asset('img/flags/en-circular.svg'),
-    //       'id' => asset('img/flags/id-circular.svg'),
-    //     ])
-    //     ->renderHook($hook);
-    // });
+      $switch
+        ->circular()
+        ->locales(['en', 'id'])
+        ->visible(outsidePanels: true)
+        ->renderHook($hook)
+        ->flags([
+          'en' => asset('img/flags/en-circular.svg'),
+          'id' => asset('img/flags/id-circular.svg'),
+        ]);
+    });
 
     // Notification alignment
     // Notifications::alignment(Alignment::Center);
@@ -247,7 +246,6 @@ class AdminPanelProvider extends PanelProvider
       ->passwordReset()
       ->emailVerification()
       ->requiresEmailVerification()
-      ->darkMode(false)
       ->font('Poppins')
       ->viteTheme('resources/css/filament/admin/theme.css')
       ->favicon(asset('favicon-white.svg'))
@@ -269,12 +267,22 @@ class AdminPanelProvider extends PanelProvider
       ->discoverResources(app_path('Filament/Resources'), 'App\\Filament\\Resources')
       ->discoverPages(app_path('Filament/Pages'), 'App\\Filament\\Pages')
       ->discoverWidgets(app_path('Filament/Widgets'), 'App\\Filament\\Widgets')
+      ->navigationItems([
+        NavigationItem::make(__('navigation.label.pulse'))
+          ->group(NavigationGroupLabel::SETTING->getLabel())
+          ->url('/' . config('pulse.path'), true)
+          ->icon('gmdi-graphic-eq-r')
+          ->sort(9),
+      ])
       ->widgets([
         Widgets\AccountWidget::class,
           // Widgets\FilamentInfoWidget::class,
           // VersionsWidget::class,
         OrderFleetCalendarWidget::class,
         MeetingCalendarWidget::class,
+      ])
+      ->resources([
+        config('filament-logger.activity_resource')
       ])
       ->colors([
         'primary' => Color::hex('#d82431'),
@@ -348,7 +356,9 @@ class AdminPanelProvider extends PanelProvider
           ->excludes([
             ProfitLossResource::class,
             TourReportResource::class,
+            LoyaltyPointResource::class,
             ShirtResource::class,
+            config('filament-logger.activity_resource')
           ]),
       ]);
   }

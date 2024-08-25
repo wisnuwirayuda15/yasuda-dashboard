@@ -39,8 +39,9 @@ class RegionSeeder extends Seeder
 
 
 
-    $provinces = Province::where('code', '33')->get(); // Jawa Tengah
-    $cmd->warn("Mendapatkan data kabupaten dari semua provinsi...");
+    // $provinces = Province::where('code', '33')->get(); // Jawa Tengah
+    $provinces = Province::all(); // Jawa Tengah
+    $cmd->warn("Mendapatkan data kabupaten/kota dari semua provinsi...");
     $output->progressStart(count($provinces));
     foreach ($provinces as $province) {
       $response = Http::get("https://wilayah.id/api/regencies/{$province->code}.json");
@@ -63,7 +64,7 @@ class RegionSeeder extends Seeder
 
 
     $regencies = Regency::all();
-    $cmd->warn("Mendapatkan data kecamatan dari semua provinsi...");
+    $cmd->warn("Mendapatkan data kecamatan dari semua kabupaten/kota...");
     $output->progressStart(count($regencies));
     foreach ($regencies as $regency) {
       $response = Http::get("https://wilayah.id/api/districts/{$regency->code}.json");

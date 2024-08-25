@@ -1,7 +1,15 @@
 <?php
 
+use App\Models\Regency;
+use Filament\Forms\Get;
+use Filament\Forms\Set;
+use App\Models\District;
+use App\Models\Province;
 use Illuminate\Support\Number;
+use Filament\Forms\Components\Group;
+use Filament\Forms\Components\Select;
 use Illuminate\Database\Eloquent\Model;
+use Filament\Forms\Components\Component;
 use Filament\Notifications\Notification;
 use Haruncpi\LaravelIdGenerator\IdGenerator;
 use EightyNine\Approvals\Models\ApprovableModel;
@@ -195,6 +203,47 @@ if (!function_exists('enum_map')) {
   }
 }
 
+if (!function_exists('RegionSelects')) {
+  function RegionSelects(bool $distritcs = true): Component
+  {
+    return
+      Group::make([
+        Select::make('province_id')
+          ->live()
+          ->required()
+          ->label('Provinsi')
+          ->options(Province::pluck('name', 'id'))
+          ->placeholder('Pilih provinsi')
+          ->formatStateUsing(function (Get $get) {
+            $regency = Regency::find($get('regency_id'));
+            return $regency ? $regency->province_id : null;
+          })
+          ->afterStateUpdated(function (Set $set) {
+            $set('regency_id', null);
+            $set('district_id', null);
+          }),
+        Select::make('regency_id')
+          ->live()
+          ->required()
+          ->label('Kabupaten / Kota')
+          ->disabled(fn(Get $get) => !$get('province_id'))
+          ->placeholder('Pilih kabupaten / kota')
+          ->options(fn(Get $get) => Regency::where('province_id', $get('province_id'))->pluck('name', 'id'))
+          ->afterStateUpdated(fn(Set $set) => $set('district_id', null)),
+        Select::make('district_id')
+          ->live()
+          ->required()
+          ->visible($distritcs)
+          ->label('Kecamatan')
+          ->disabled(fn(Get $get) => !$get('regency_id'))
+          ->placeholder('Pilih kecamatan')
+          ->options(fn(Get $get) => District::where('regency_id', $get('regency_id'))->pluck('name', 'id'))
+      ])
+        ->columnSpanFull()
+        ->columns($distritcs ? 3 : 2);
+  }
+}
+
 if (!function_exists('instant_approval')) {
   /**
    * A function for instant approval based on certain conditions.
@@ -214,7 +263,7 @@ if (!function_exists('instant_approval')) {
         if (!$model->isApprovalCompleted()) {
           $user = auth()->user();
 
-          $superAdmin = $user->hasRole('super_admin');
+          $superAdmin = $user->isSuperAdmin();
 
           $shouldSubmit = $superAdmin || (isset($data[$fieldName]) && $data[$fieldName] === true);
 

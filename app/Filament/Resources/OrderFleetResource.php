@@ -97,35 +97,36 @@ class OrderFleetResource extends Resource
         ->disabled(fn(?OrderFleet $record) => $record?->order()->exists())
         ->helperText(fn(?OrderFleet $record) => $record?->order()->exists() ? 'Order already added' : null)
         ->columnSpan(fn(string $operation) => in_array($operation, ['create', 'view']) ? 'full' : null),
-      Checkbox::make('submission')->submission()
-      // Section::make('Pembayaran Armada')
-      //   ->schema([
-      //     ToggleButtons::make('payment_status')
-      //       ->required()
-      //       ->label('Status')
-      //       ->inline()
-      //       ->options(FleetPaymentStatus::class)
-      //       ->default(FleetPaymentStatus::NON_DP->value)
-      //       ->afterStateUpdated(function (Get $get, Set $set) {
-      //         if ($get('payment_status') === FleetPaymentStatus::NON_DP->value) {
-      //           $set('payment_date', null);
-      //           $set('payment_amount', null);
-      //         }
-      //       })
-      //       ->loadingIndicator(),
-      //     Group::make()
-      //       ->hidden(fn(Get $get) => $get('payment_status') === FleetPaymentStatus::NON_DP->value)
-      //       ->columnSpan(2)
-      //       ->schema([
-      //         DatePicker::make('payment_date')
-      //           ->required()
-      //           ->label('Tgl. Bayar'),
-      //         TextInput::make('payment_amount')
-      //           ->required()
-      //           ->label('Jumlah Bayar')
-      //           ->currency(minValue: 1)
-      //       ])
-      //   ]),
+      Section::make('Pembayaran Armada')
+        ->schema([
+          ToggleButtons::make('payment_status')
+            ->required()
+            ->label('Status')
+            ->inline()
+            ->options(FleetPaymentStatus::class)
+            ->default(FleetPaymentStatus::NON_DP->value)
+            ->afterStateUpdated(function (Get $get, Set $set) {
+              if ($get('payment_status') === FleetPaymentStatus::NON_DP->value) {
+                $set('payment_date', null);
+                $set('payment_amount', null);
+              }
+            })
+            ->loadingIndicator(),
+          Group::make()
+            ->hidden(fn(Get $get) => $get('payment_status') === FleetPaymentStatus::NON_DP->value)
+            ->columnSpan(2)
+            ->columns(2)
+            ->schema([
+              DatePicker::make('payment_date')
+                ->required()
+                ->label('Tgl. Bayar'),
+              TextInput::make('payment_amount')
+                ->required()
+                ->label('Jumlah Bayar')
+                ->currency(minValue: 1)
+            ])
+        ]),
+      Checkbox::make('submission')->submission(),
     ]);
   }
 
@@ -133,7 +134,6 @@ class OrderFleetResource extends Resource
   {
     return $table
       ->defaultSort('remaining_day')
-      ->persistSortInSession()
       ->columns([
         TextColumn::make('code')
           ->badge()
@@ -181,18 +181,18 @@ class OrderFleetResource extends Resource
           ->state(fn(OrderFleet $record): string => $record->trip_date->translatedFormat('l')),
         TextColumn::make('trip_month')
           ->state(fn(OrderFleet $record): string => $record->trip_date->translatedFormat('F')),
-        // TextColumn::make('payment_status')
-        //   ->badge()
-        //   ->searchable(),
-        // TextColumn::make('payment_date')
-        //   ->date()
-        //   ->formatStateUsing(fn(Carbon $state): string => $state->translatedFormat('d/m/Y'))
-        //   ->placeholder('Unpaid')
-        //   ->sortable(),
-        // TextColumn::make('payment_amount')
-        //   ->money('IDR')
-        //   ->placeholder(idr(0))
-        //   ->sortable(),
+        TextColumn::make('payment_status')
+          ->badge()
+          ->searchable(),
+        TextColumn::make('payment_date')
+          ->date()
+          ->formatStateUsing(fn(Carbon $state): string => $state->translatedFormat('d/m/Y'))
+          ->placeholder('Unpaid')
+          ->sortable(),
+        TextColumn::make('payment_amount')
+          ->money('IDR')
+          ->placeholder(idr(0))
+          ->sortable(),
         TextColumn::make('created_at')
           ->dateTime()
           ->sortable()
@@ -237,12 +237,11 @@ class OrderFleetResource extends Resource
             ->color('warning')
             ->modal(false)
             ->excludeAttributes(['order_id', 'employee_id'])
-            ->hidden()
-            // ->hidden(fn(OrderFleet $record): bool => $record->isOrdered())
-            // ->after(function (OrderFleet $replica): void {
-            //   //INFO: not working
-            //   instant_approval($replica);
-            // })
+            ->hidden(fn(OrderFleet $record): bool => $record->isOrdered() || $record->isCanceled())
+            ->after(function (OrderFleet $replica): void {
+              //INFO: not working
+              instant_approval($replica);
+            })
             ->before(function (OrderFleet $record) {
               $record->code = get_code(new OrderFleet, 'OF');
             }),

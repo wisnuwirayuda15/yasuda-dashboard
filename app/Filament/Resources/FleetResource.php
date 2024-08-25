@@ -21,6 +21,7 @@ use Filament\Tables\Actions\EditAction;
 use Filament\Tables\Actions\ViewAction;
 use Filament\Tables\Columns\TextColumn;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Storage;
 use Filament\Forms\Components\TextInput;
 use Filament\Tables\Actions\ActionGroup;
 use Filament\Tables\Columns\ImageColumn;
@@ -40,6 +41,7 @@ use EightyNine\Approvals\Tables\Actions\ApproveAction;
 use EightyNine\Approvals\Tables\Actions\DiscardAction;
 use EightyNine\Approvals\Tables\Actions\ApprovalActions;
 use App\Filament\Resources\FleetResource\RelationManagers;
+use Hugomyb\FilamentMediaAction\Tables\Actions\MediaAction;
 use EightyNine\Approvals\Tables\Columns\ApprovalStatusColumn;
 
 class FleetResource extends Resource
@@ -119,7 +121,8 @@ class FleetResource extends Resource
   {
     return $table
       ->columns([
-        ImageColumn::make('image'),
+        ImageColumn::make('image')
+          ->preview(),
         TextColumn::make('name')
           ->searchable(),
         TextColumn::make('seat_set')

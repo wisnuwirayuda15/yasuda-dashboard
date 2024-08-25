@@ -31,8 +31,8 @@ class DatabaseSeeder extends Seeder
 
     $realSeeders = [
       ApprovalFlowSeeder::class,
-      RegionSeeder::class,
       EmployeeSeeder::class,
+      RegionSeeder::class,
     ];
 
     $dummySeeders = [
@@ -45,7 +45,7 @@ class DatabaseSeeder extends Seeder
       ModelApprovalSeeder::class,
     ];
 
-    if ((bool) env('SEEDER_WITH_DUMMY_DATA', true)) {
+    if ((bool) env('SEEDER_WITH_DUMMY_DATA', false)) {
       $seeders = array_merge($realSeeders, $dummySeeders);
     } else {
       $seeders = $realSeeders;

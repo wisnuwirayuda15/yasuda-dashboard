@@ -155,7 +155,8 @@ class EmployeeResource extends Resource
     return $table
       ->columns([
         ImageColumn::make('photo')
-          ->circular(),
+          ->circular()
+          ->preview(),
         IconColumn::make('is_user_assigned')
           ->label('Is User Assigned')
           ->state(fn(Employee $record) => $record->employable()->exists())

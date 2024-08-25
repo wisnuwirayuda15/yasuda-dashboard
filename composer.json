@@ -30,14 +30,17 @@
         "codeat3/blade-maki-icons": "^1.8",
         "codeat3/blade-phosphor-icons": "^2.2",
         "codeat3/blade-unicons": "^1.8",
+        "dotswan/filament-laravel-pulse": "^1.1",
         "dotswan/filament-map-picker": "^1.0",
         "eightynine/filament-approvals": "^3.1",
         "filament/filament": "^3.2",
         "flowframe/laravel-trend": "^0.2.0",
         "guzzlehttp/guzzle": "^7.2",
         "haruncpi/laravel-id-generator": "^1.1",
+        "hugomyb/filament-media-action": "*",
         "jeffgreco13/filament-breezy": "^2.2",
         "laravel/framework": "^10.10",
+        "laravel/pulse": "^1.2",
         "laravel/sanctum": "^3.3",
         "laravel/tinker": "^2.8",
         "mallardduck/blade-boxicons": "^2.4",
@@ -50,7 +53,8 @@
         "saade/blade-iconsax": "^1.2",
         "saade/filament-fullcalendar": "^3.2",
         "spatie/laravel-pdf": "^1.5",
-        "ysfkaya/filament-phone-input": "^2.3"
+        "ysfkaya/filament-phone-input": "^2.3",
+        "z3d0x/filament-logger": "^0.7.2"
     },
     "require-dev": {
         "barryvdh/laravel-debugbar": "^3.12",

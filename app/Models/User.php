@@ -19,6 +19,11 @@ class User extends Authenticatable implements HasAvatar, HasName, FilamentUser, 
 {
   use HasRoles, HasApiTokens, HasFactory, Notifiable, TwoFactorAuthenticatable;
 
+  public function getFilamentName(): string
+  {
+    return $this->employable?->name ?? $this->name;
+  }
+
   public function getFilamentAvatarUrl(): ?string
   {
     // return $this->avatar_url ? Storage::url($this->avatar_url) : null;
@@ -44,16 +49,16 @@ class User extends Authenticatable implements HasAvatar, HasName, FilamentUser, 
     // abort(403, 'Your account is not activated, contact your admin for futher information');
   }
 
-  public function getFilamentName(): string
-  {
-    return $this->employable?->name ?? $this->name;
-  }
-
   public function unverify()
   {
     $this->email_verified_at = null;
 
     $this->save();
+  }
+
+  public function isSuperAdmin(): bool
+  {
+    return $this->hasRole('super_admin') || $this->email === env('ADMIN_EMAIL', 'yasudajayatour@gmail.com');
   }
 
   /**

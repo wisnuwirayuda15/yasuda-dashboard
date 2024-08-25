@@ -2,11 +2,14 @@
 
 namespace App\Filament\Resources;
 
+use App\Models\Regency;
+use Filament\Forms\Components\Group;
 use Filament\Tables;
 use Filament\Forms\Get;
 use Filament\Forms\Set;
 use App\Models\Customer;
 use App\Models\District;
+use App\Models\Province;
 use Filament\Forms\Form;
 use Filament\Tables\Table;
 use App\Enums\CustomerStatus;
@@ -207,33 +210,40 @@ class CustomerResource extends Resource
   {
     return Section::make('Location Information')
       ->schema([
-        Select::make('regency_id')
-          ->label('Kabupaten / Kota')
-          ->required()
-          ->live()
-          ->relationship('regency', 'name')
-          ->afterStateUpdated(fn(Set $set) => $set('district_id', null)),
-        Select::make('district_id')
-          ->label('Kecamatan')
-          ->required()
-          ->live()
-          ->relationship('district', 'name', fn(Get $get, Builder $query) => $query->where('regency_id', $get('regency_id'))),
-        TextInput::make('lat')
-          ->numeric()
-        // ->maxLength(255)
-        ,
-        TextInput::make('lng')
-          ->numeric()
-        // ->maxLength(255)
-        ,
+        // Select::make('regency_id')
+        //   ->label('Kabupaten / Kota')
+        //   ->required()
+        //   ->live()
+        //   ->relationship('regency', 'name')
+        //   ->afterStateUpdated(fn(Set $set) => $set('district_id', null)),
+        // Select::make('district_id')
+        //   ->label('Kecamatan')
+        //   ->required()
+        //   ->live()
+        //   ->relationship('district', 'name', fn(Get $get, Builder $query) => $query->where('regency_id', $get('regency_id'))),
+        RegionSelects(),
+        Group::make([
+          TextInput::make('lat')
+            ->numeric()
+            ->readOnly(),
+          TextInput::make('lng')
+            ->numeric()
+            ->readOnly(),
+        ])->columns(2),
         Map::make('location')
-          ->afterStateUpdated(function (Set $set, ?array $state) {
-            $set('lat', $state['lat']);
-            $set('lng', $state['lng']);
+          ->afterStateUpdated(function (Set $set, ?array $state, string $operation) {
+            if ($operation !== 'view') {
+              $set('lat', $state['lat']);
+              $set('lng', $state['lng']);
+            }
           })
-          ->hiddenOn('view')
+          ->afterStateHydrated(fn($state, ?Customer $record, Set $set, Map $component) => $set($component, ['lat' => $record?->lat, 'lng' => $record?->lng]))
+          ->extraStyles([
+            'min-height: 50vh',
+            'border-radius: 7px'
+          ])
+          // ->hiddenOn('view')
           ->columnSpanFull()
-          ->extraAttributes(['class' => 'rounded-md'])
           ->liveLocation()
           ->showMyLocationButton(),
       ]);

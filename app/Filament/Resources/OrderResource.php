@@ -99,12 +99,12 @@ class OrderResource extends Resource
               $set('regency_id', $tourTemplate['regency_id']);
               $set('destinations', $tourTemplate['destinations']);
             })),
-        Select::make('regency_id')
-          ->required()
-          ->relationship('regency', 'name')
-          // ->columnSpan(fn(string $operation) => in_array($operation, ['create', 'view']) ? 'full' : null)
-          ->columnSpanFull()
-          ,
+        // Select::make('regency_id')
+        //   ->required()
+        //   ->relationship('regency', 'name')
+        //   // ->columnSpan(fn(string $operation) => in_array($operation, ['create', 'view']) ? 'full' : null)
+        //   ->columnSpanFull(),
+        RegionSelects(false),
         Group::make([
           Toggle::make('change_date')
             ->live()

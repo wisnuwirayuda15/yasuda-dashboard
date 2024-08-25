@@ -3,7 +3,6 @@
 namespace App\Providers;
 
 use Closure;
-use Filament\Forms\Components\Repeater;
 use Filament\Forms\Set;
 use Illuminate\Support\HtmlString;
 use Filament\Tables\Filters\Filter;
@@ -13,15 +12,19 @@ use Illuminate\Support\Facades\Hash;
 use Filament\Actions\MountableAction;
 use Illuminate\Support\Facades\Blade;
 use Filament\Forms\Components\Checkbox;
+use Filament\Forms\Components\Repeater;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\ServiceProvider;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
+use Filament\Tables\Columns\ImageColumn;
 use Illuminate\Database\Eloquent\Builder;
 use Rawilk\FilamentPasswordInput\Password;
 use Filament\Forms\Components\Actions\Action;
 use Ysfkaya\FilamentPhoneInput\Forms\PhoneInput;
 use Ysfkaya\FilamentPhoneInput\PhoneInputNumberType;
+use Hugomyb\FilamentMediaAction\Tables\Actions\MediaAction;
 use Filament\Tables\Actions\DeleteAction as TableDeleteAction;
 
 class MacroServiceProvider extends ServiceProvider
@@ -177,6 +180,23 @@ class MacroServiceProvider extends ServiceProvider
       return $this;
     });
 
+    ImageColumn::macro('preview', function (): static {
+      $image = $this->name;
+
+      $this
+        ->tooltip(fn(Model $record) => blank($record->$image) ? 'No image' : 'Preview image')
+        ->action(MediaAction::make('image_preview')
+          ->hidden(fn(Model $record) => blank($record->$image))
+          ->modalWidth('full')
+          ->label('Image Preview')
+          ->media(fn(Model $record) =>
+            str_starts_with($record->$image, 'http')
+            ? $record->$image
+            : Storage::url($record->$image)));
+
+      return $this;
+    });
+
     Checkbox::macro('confirmation', function (): static {
       $this
         ->required()
@@ -190,7 +210,7 @@ class MacroServiceProvider extends ServiceProvider
       $this
         ->label('Submit data ini')
         ->visibleOn('create')
-        ->hidden(auth()->user()->hasRole('super_admin'));
+        ->hidden(auth()->user()->isSuperAdmin());
 
       return $this;
     });

@@ -164,8 +164,9 @@ class UserResource extends Resource
         TextColumn::make('email')
           ->icon('gmdi-mail')
           ->sortable()
-          ->description(fn(User $record) => $record->email_verified_at ? 'Verified at ' . $record->email_verified_at : 'Not verified')
-          ->searchable(),
+          ->searchable()
+          ->color(fn(User $record) => $record->hasVerifiedEmail() ? 'success' : 'danger')
+          ->description(fn(User $record) => $record->hasVerifiedEmail() ? 'Verified at ' . $record->email_verified_at : 'Not verified'),
         TextColumn::make('roles.name')
           ->badge()
           ->placeholder('Not assigned')
@@ -239,7 +240,7 @@ class UserResource extends Resource
           Notification::make()
             ->danger()
             ->title('Nu uhh...')
-            ->body("Are you trying to delete your self!?")
+            ->body('Are you trying to delete your self!?')
             ->send();
           $action->cancel();
         }
