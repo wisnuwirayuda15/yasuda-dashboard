@@ -224,11 +224,25 @@ class CustomerResource extends Resource
         RegionSelects(),
         Group::make([
           TextInput::make('lat')
+            ->live(true)
             ->numeric()
-            ->readOnly(),
+          // ->afterStateUpdated(function (?array $state, Set $set) {
+          //   $set('location', [
+          //     'lat' => $state['lat'],
+          //     'lng' => $state['lng']
+          //   ]);
+          // })
+          ,
           TextInput::make('lng')
+            ->live(true)
             ->numeric()
-            ->readOnly(),
+          // ->afterStateUpdated(function (?array $state, Set $set) {
+          //   $set('location', [
+          //     'lat' => $state['lat'],
+          //     'lng' => $state['lng']
+          //   ]);
+          // })
+          ,
         ])->columns(2),
         Map::make('location')
           ->afterStateUpdated(function (Set $set, ?array $state, string $operation) {
@@ -237,12 +251,16 @@ class CustomerResource extends Resource
               $set('lng', $state['lng']);
             }
           })
-          ->afterStateHydrated(fn($state, ?Customer $record, Set $set, Map $component) => $set($component, ['lat' => $record?->lat, 'lng' => $record?->lng]))
+          ->afterStateHydrated(function ($state, ?Customer $record, Set $set, Map $component) {
+            $set($component, [
+              'lat' => $record?->lat,
+              'lng' => $record?->lng
+            ]);
+          })
           ->extraStyles([
             'min-height: 50vh',
             'border-radius: 7px'
           ])
-          // ->hiddenOn('view')
           ->columnSpanFull()
           ->liveLocation()
           ->showMyLocationButton(),

@@ -12,6 +12,7 @@ use Filament\PanelProvider;
 use App\Enums\CustomPlatform;
 use App\Enums\JavascriptEvent;
 use App\Filament\Pages\Dashboard;
+use App\Settings\GeneralSettings;
 use App\Filament\Pages\Auth\Login;
 use Filament\Support\Colors\Color;
 use Illuminate\Support\HtmlString;
@@ -48,6 +49,7 @@ use Filament\Forms\Components\DateTimePicker;
 use Filament\Support\Enums\VerticalAlignment;
 use App\Filament\Resources\ProfitLossResource;
 use App\Filament\Resources\TourReportResource;
+use Filament\FontProviders\GoogleFontProvider;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Session\Middleware\StartSession;
 use App\Filament\Resources\LoyaltyPointResource;
@@ -117,6 +119,7 @@ class AdminPanelProvider extends PanelProvider
     // Components global settings
     Table::configureUsing(function (Table $table): void {
       $table
+        ->striped(fn(GeneralSettings $settings) => $settings->table_striped)
         ->modifyQueryUsing(fn(Builder $query) => $query->withoutGlobalScopes())
         ->extremePaginationLinks()
         ->defaultSort('created_at', 'desc')
@@ -132,13 +135,23 @@ class AdminPanelProvider extends PanelProvider
           ->label('Apply')
           ->color('success')
           ->icon('fas-check'))
-        ->actions([
-          TableActionGroup::make([
-            TableViewAction::make(),
-            TableEditAction::make(),
-            TableDeleteAction::make(),
-          ]),
-        ], ActionsPosition::BeforeColumns);
+        ->actions(
+          [
+            TableActionGroup::make([
+              TableViewAction::make(),
+              TableEditAction::make(),
+              TableDeleteAction::make(),
+            ])
+          ],
+          fn(GeneralSettings $settings) => match ($settings->table_actionPosition) {
+            ActionsPosition::AfterCells->name => ActionsPosition::AfterCells,
+            ActionsPosition::AfterColumns->name => ActionsPosition::AfterColumns,
+            ActionsPosition::AfterContent->name => ActionsPosition::AfterContent,
+            ActionsPosition::BeforeCells->name => ActionsPosition::BeforeCells,
+            ActionsPosition::BeforeColumns->name => ActionsPosition::BeforeColumns,
+            default => ActionsPosition::BeforeCells
+          }
+        );
     });
 
     Select::configureUsing(function (Select $select): void {
@@ -234,34 +247,36 @@ class AdminPanelProvider extends PanelProvider
 
   public function panel(Panel $panel): Panel
   {
-    $spa = (bool) env('SPA', false);
+    $settings = new GeneralSettings();
 
     return $panel
       ->default()
       ->id('admin')
-      ->spa($spa)
-      ->unsavedChangesAlerts(!$spa)
+      ->topNavigation(fn(GeneralSettings $settings) => $settings->site_navigation)
+      ->spa(fn(GeneralSettings $settings) => $settings->site_spa)
+      // ->unsavedChangesAlerts(fn(GeneralSettings $settings) => !$settings->site_spa)
       ->path(env('APP_PATH', 'dashboard'))
       ->login(Login::class)
       ->passwordReset()
       ->emailVerification()
       ->requiresEmailVerification()
-      ->font('Poppins')
+      ->font($settings->site_font, provider: GoogleFontProvider::class)
       ->viteTheme('resources/css/filament/admin/theme.css')
       ->favicon(asset('favicon-white.svg'))
+      ->brandName(fn(GeneralSettings $settings) => $settings->site_name)
       ->brandLogo(asset('/img/logos/logo-light.svg'))
       ->darkModeBrandLogo(asset('/img/logos/logo-dark.svg'))
-      ->brandLogoHeight('35px')
+      ->brandLogoHeight(fn(GeneralSettings $settings) => $settings->site_logoHeight . 'px')
       ->sidebarCollapsibleOnDesktop()
-      ->maxContentWidth(MaxWidth::Full)
+      ->maxContentWidth($settings->site_maxContentWidth)
       ->databaseNotifications()
-      // ->globalSearchKeyBindings(['command+k', 'ctrl+k'])
-      // ->globalSearchFieldSuffix(fn(): ?string => match (CustomPlatform::detect()) {
-      //   CustomPlatform::Windows, CustomPlatform::Linux => 'CTRL+K',
-      //   CustomPlatform::Mac => '⌘K',
-      //   CustomPlatform::Mobile => null,
-      //   default => null,
-      // })
+      ->globalSearchKeyBindings(['command+k', 'ctrl+k'])
+      ->globalSearchFieldSuffix(fn(): ?string => match (CustomPlatform::detect()) {
+        CustomPlatform::Windows, CustomPlatform::Linux => 'CTRL+K',
+        CustomPlatform::Mac => '⌘K',
+        CustomPlatform::Mobile => null,
+        default => null,
+      })
       ->readOnlyRelationManagersOnResourceViewPagesByDefault(false)
       ->pages([])
       ->discoverResources(app_path('Filament/Resources'), 'App\\Filament\\Resources')
@@ -269,6 +284,7 @@ class AdminPanelProvider extends PanelProvider
       ->discoverWidgets(app_path('Filament/Widgets'), 'App\\Filament\\Widgets')
       ->navigationItems([
         NavigationItem::make(__('navigation.label.pulse'))
+          ->visible(fn() => config('pulse.enabled') && auth()->user()->isSuperAdmin())
           ->group(NavigationGroupLabel::SETTING->getLabel())
           ->url('/' . config('pulse.path'), true)
           ->icon('gmdi-graphic-eq-r')
@@ -284,15 +300,24 @@ class AdminPanelProvider extends PanelProvider
       ->resources([
         config('filament-logger.activity_resource')
       ])
-      ->colors([
-        'primary' => Color::hex('#d82431'),
-        'secondary' => Color::hex('#64266e'),
-        'danger' => Color::Red,
+      ->colors(fn(GeneralSettings $settings) => [
+        'primary' => Color::rgb($settings->color_primary),
+        'secondary' => Color::rgb($settings->color_secondary),
         'gray' => Color::Zinc,
+        'danger' => Color::Red,
         'info' => Color::Sky,
         'success' => Color::Green,
         'warning' => Color::Yellow,
       ])
+      // ->colors([
+      //   'primary' => Color::hex('#d82431'),
+      //   'secondary' => Color::hex('#64266e'),
+      //   'gray' => Color::Zinc,
+      //   'danger' => Color::Red,
+      //   'info' => Color::Sky,
+      //   'success' => Color::Green,
+      //   'warning' => Color::Yellow,
+      // ])
       ->middleware([
         EncryptCookies::class,
         AddQueuedCookiesToResponse::class,
