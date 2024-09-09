@@ -16,7 +16,7 @@ enum CustomerStatus: string implements HasLabel, HasColor, HasIcon
   {
     return match ($this) {
       self::CANDIDATE => 'Calon Customer',
-      self::NEW => 'New Customer',
+      self::NEW => 'Potensial',
       self::SUBSCRIBER => 'Berlangganan',
     };
   }
