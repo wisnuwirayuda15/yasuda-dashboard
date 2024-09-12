@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use Filament\Forms;
 use Filament\Tables;
 use App\Models\Order;
+use App\Models\Regency;
 use Filament\Forms\Get;
 use Filament\Forms\Set;
 use Filament\Forms\Form;
@@ -96,13 +97,15 @@ class OrderResource extends Resource
             ])
             ->action(function (array $data, Set $set) {
               $tourTemplate = TourTemplate::find($data)->toArray()[0];
+              $regency = Regency::find($tourTemplate['regency_id']);
+              $set('province_id', $regency->province_id);
               $set('regency_id', $tourTemplate['regency_id']);
               $set('destinations', $tourTemplate['destinations']);
             })),
         // Select::make('regency_id')
         //   ->required()
         //   ->relationship('regency', 'name')
-        //   // ->columnSpan(fn(string $operation) => in_array($operation, ['create', 'view']) ? 'full' : null)
+        //   ->columnSpan(fn(string $operation) => in_array($operation, ['create', 'view']) ? 'full' : null)
         //   ->columnSpanFull(),
         RegionSelects(false),
         Group::make([
