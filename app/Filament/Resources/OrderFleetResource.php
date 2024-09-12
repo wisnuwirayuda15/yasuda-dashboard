@@ -295,7 +295,7 @@ class OrderFleetResource extends Resource
       ->icon(OrderResource::getNavigationIcon())
       ->label('Select Order')
       ->color('info')
-      ->hidden(fn(OrderFleet $record): bool => $record->isOrdered() || $record->isCanceled())
+      // ->hidden(fn(OrderFleet $record): bool => $record->isOrdered() || $record->isCanceled())
       ->form([
         Select::make('order_id')
           ->required()
@@ -440,7 +440,7 @@ class OrderFleetResource extends Resource
       ->icon('gmdi-tour')
       ->label('Select Tour Leader')
       ->color('success')
-      ->hidden(fn(OrderFleet $record): bool => $record->isFinished() || $record->isCanceled())
+      // ->hidden(fn(OrderFleet $record): bool => $record->isFinished() || $record->isCanceled())
       ->form([
         Select::make('employee_id')
           ->required()

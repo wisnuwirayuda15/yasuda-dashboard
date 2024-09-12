@@ -31,12 +31,14 @@ class OrderFleet extends ApprovableModel
 
     $tr = $this->employee_id;
 
+    $empty = (bool) !$order || (bool) !$tr;
+
     return match (true) {
       (bool) $inv => OrderFleetStatus::ORDERED->getLabel(),
-      $date->isToday() => OrderFleetStatus::ON_TRIP->getLabel(),
-      $date->isPast() && ((bool) !$order || (bool) !$tr) => OrderFleetStatus::CANCELED->getLabel(),
+      $date->isPast() && $empty => OrderFleetStatus::CANCELED->getLabel(),
+      $date->isPast() && !$empty => OrderFleetStatus::FINISHED->getLabel(),
+      $date->isToday() && (bool) $order && (bool) $tr  => OrderFleetStatus::ON_TRIP->getLabel(),
       (bool) $order => OrderFleetStatus::BOOKED->getLabel(),
-      $date->isPast() => OrderFleetStatus::FINISHED->getLabel(),
       default => OrderFleetStatus::READY->getLabel(),
     };
   }
