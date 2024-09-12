@@ -93,7 +93,7 @@ class OrderFleetResource extends Resource
         ->required()
         ->live(true)
         ->default(today())
-        ->minDate(today())
+        // ->minDate(today())
         ->disabled(fn(?OrderFleet $record) => $record?->order()->exists())
         ->helperText(fn(?OrderFleet $record) => $record?->order()->exists() ? 'Order already added' : null)
         ->columnSpan(fn(string $operation) => in_array($operation, ['create', 'view']) ? 'full' : null),

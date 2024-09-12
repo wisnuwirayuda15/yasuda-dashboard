@@ -117,7 +117,7 @@ class OrderResource extends Resource
           DatePicker::make('trip_date')
             ->required()
             ->default(today())
-            ->minDate(today())
+            // ->minDate(today())
             ->disabled(fn(Get $get, string $operation) => $operation === 'create' ? false : !$get('change_date'))
             ->columnSpan(fn(string $operation) => in_array($operation, ['create', 'view']) ? 'full' : null)
             ->helperText(function (?string $state) {
