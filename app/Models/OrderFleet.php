@@ -120,9 +120,9 @@ class OrderFleet extends ApprovableModel
     'employee_id' => 'integer',
     'fleet_id' => 'integer',
     'trip_date' => 'datetime',
-    // 'payment_date' => 'datetime',
-    // 'payment_amount' => 'integer',
-    // 'payment_status' => FleetPaymentStatus::class,
+    'payment_date' => 'datetime',
+    'payment_amount' => 'integer',
+    'payment_status' => FleetPaymentStatus::class,
   ];
 
   public function order(): BelongsTo
