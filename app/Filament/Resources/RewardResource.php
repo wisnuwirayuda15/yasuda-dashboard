@@ -2,7 +2,6 @@
 
 namespace App\Filament\Resources;
 
-use Closure;
 use Carbon\Carbon;
 use Filament\Forms;
 use Filament\Tables;
@@ -18,14 +17,12 @@ use App\Enums\NavigationGroupLabel;
 use Filament\Forms\Components\Select;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Forms\Components\TextInput;
-use Filament\Notifications\Notification;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\RichEditor;
 use Illuminate\Database\Eloquent\Builder;
 use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\ToggleButtons;
 use App\Filament\Resources\RewardResource\Pages;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
 use App\Filament\Resources\RewardResource\RelationManagers;
 
 class RewardResource extends Resource
@@ -56,34 +53,38 @@ class RewardResource extends Resource
             $balance += $form->getRecord()?->amount ?? 0;
           }
           $set($component, $balance);
-          $color = $balance === 0 ? 'warning' : ($balance < 0 ? 'danger' : 'success');
+          $color = match (true) {
+            $balance === 0 => 'warning',
+            $balance < 0 => 'danger',
+            default => 'success',
+          };
           return view('filament.components.badges.default', ['text' => idr($balance), 'color' => $color, 'big' => true]);
         }),
       Placeholder::make('final_balance')
         ->label('Saldo Akhir')
         ->hiddenOn('view')
         ->content(function (Get $get, Set $set, Placeholder $component) {
-          $balance = $get('balance') - $get('amount');
+          $balance = $get('balance');
+          if (is_numeric($get('amount'))) {
+            $balance -= $get('amount');
+          }
           $set($component, $balance);
-          $color = $balance === 0 ? 'warning' : ($balance < 0 ? 'danger' : 'success');
+          $color = match (true) {
+            $balance === 0 => 'warning',
+            $balance < 0 => 'danger',
+            default => 'success',
+          };
           return view('filament.components.badges.default', ['text' => idr($balance), 'color' => $color, 'big' => true]);
         }),
       Select::make('customer_id')
         ->required()
         ->live()
         ->allowHtml()
-        ->relationship('customer', 'name', fn (Builder $query) => $query->whereHas('orders.invoice.loyaltyPoint')),
+        ->relationship('customer', 'name', fn(Builder $query) => $query->whereHas('orders.invoice.loyaltyPoint')),
       TextInput::make('amount')
         ->required()
         ->default(0)
-        ->rules([
-          fn(Get $get): Closure => function (string $attribute, float $value, Closure $fail) use ($get) {
-            if ($value > (float) $get('balance')) {
-              $fail('Saldo tidak mencukupi.');
-            }
-          },
-        ])
-        ->currency(minValue: 1),
+        ->currency(minValue: false, minusValidation: false),
       DatePicker::make('date')
         ->default(today())
         ->required(),
@@ -115,12 +116,14 @@ class RewardResource extends Resource
         TextColumn::make('description')
           ->searchable()
           ->html()
+          ->placeholder('No description')
           ->limit(100),
-        // TextColumn::make('cash_status'),
+        TextColumn::make('cash_status')
+          ->badge(),
         TextColumn::make('date')
           ->sortable()
-          ->label('Tanggal Pelaksanaan')
-          ->formatStateUsing(fn(Carbon $state): string => $state->translatedFormat('d/m/Y')),
+          ->label('Tanggal')
+          ->date('d/m/Y'),
         TextColumn::make('amount')
           ->money('IDR')
           ->sortable(),

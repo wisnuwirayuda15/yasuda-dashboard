@@ -114,31 +114,38 @@ class MacroServiceProvider extends ServiceProvider
       return $this;
     });
 
-    TextInput::macro('currency', function (int|Closure $minValue = 0, string|Closure|null $prefix = 'Rp'): static {
+    TextInput::macro('currency', function (int|bool|Closure $minValue = 0, string|Closure|null $prefix = 'Rp', bool $minusValidation = true): static {
       $this
         ->live(true)
         ->numeric()
-        ->minValue($minValue)
-        ->prefix($prefix)
-        ->afterStateUpdated(function ($state, Set $set, TextInput $component) {
-          $value = (float) $state;
-          $value < 0 ? $set($component, 0) : $set($component, $value);
-        })
-        ->extraInputAttributes([
-          'x-data' => '{
+        ->prefix($prefix);
+
+      if (is_numeric($minValue)) {
+        $this->minValue($minValue);
+      }
+
+      if ($minusValidation) {
+        $this
+          ->afterStateUpdated(function ($state, Set $set, TextInput $component) {
+            $value = (float) $state;
+            $value < 0 ? $set($component, 0) : $set($component, $value);
+          })
+          ->extraInputAttributes([
+            'x-data' => '{
               value: $el.value,
               validate() {
-                  if (isNaN(this.value) || !this.value || this.value < 0) {
-                      this.value = 0;
-                  } else if (this.value > 0) {
-                      this.value = this.value.replace(/^0+/, "");
-                  }
+                if (isNaN(this.value) || !this.value || this.value < 0) {
+                  this.value = 0;
+                } else if (this.value > 0) {
+                  this.value = this.value.replace(/^0+/, "");
+                }
                   $el.value = this.value;
-              }
-          }',
-          'x-model' => 'value',
-          'x-on:input' => 'validate()'
-        ]);
+                }
+              }',
+            'x-model' => 'value',
+            'x-on:input' => 'validate()'
+          ]);
+      }
 
       return $this;
     });
@@ -180,7 +187,7 @@ class MacroServiceProvider extends ServiceProvider
       return $this;
     });
 
-    ImageColumn::macro('preview', function (): static {
+    ImageColumn::macro('preview', function (string $label = 'Image Preview'): static {
       $image = $this->name;
 
       $this
@@ -188,7 +195,7 @@ class MacroServiceProvider extends ServiceProvider
         ->action(MediaAction::make('image_preview')
           ->hidden(fn(Model $record) => blank($record->$image))
           ->modalWidth('full')
-          ->label('Image Preview')
+          ->label($label)
           ->media(fn(Model $record) =>
             str_starts_with($record->$image, 'http')
             ? $record->$image

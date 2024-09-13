@@ -162,7 +162,7 @@ if (!function_exists('idr')) {
   function idr(int|float|null $number, bool $asRupiah = true): string
   {
     if (blank($number)) {
-      return '-';
+      return 'Rp -';
     }
 
     $currencyString = Number::currency($number, 'IDR', $asRupiah ? 'id' : null);
