@@ -82,7 +82,7 @@ class LoyaltyPointResource extends Resource
         //   ->badge(),
         TextColumn::make('invoice.order.trip_date')
           ->label('Tanggal Pelaksanaan')
-          ->formatStateUsing(fn(Carbon $state): string => $state->translatedFormat('d/m/Y')),
+          ->date('d/m/Y'),
         TextColumn::make('medium_bus_total')
           ->label('Medium Bus')
           ->numeric()

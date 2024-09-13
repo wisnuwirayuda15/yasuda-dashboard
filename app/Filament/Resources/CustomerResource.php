@@ -2,9 +2,8 @@
 
 namespace App\Filament\Resources;
 
-use App\Models\Regency;
-use Filament\Forms\Components\Group;
 use Filament\Tables;
+use App\Models\Regency;
 use Filament\Forms\Get;
 use Filament\Forms\Set;
 use App\Models\Customer;
@@ -19,6 +18,7 @@ use Dotswan\MapPicker\Fields\Map;
 use App\Enums\NavigationGroupLabel;
 use Filament\Tables\Actions\Action;
 use Filament\Tables\Filters\Filter;
+use Filament\Forms\Components\Group;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Section;
@@ -28,9 +28,11 @@ use Illuminate\Database\Eloquent\Model;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
 use Filament\Tables\Actions\ExportAction;
+use Filament\Tables\Actions\ImportAction;
 use Filament\Tables\Filters\SelectFilter;
 use Illuminate\Database\Eloquent\Builder;
 use App\Filament\Exports\CustomerExporter;
+use App\Filament\Imports\CustomerImporter;
 use Filament\Forms\Components\ToggleButtons;
 use Ysfkaya\FilamentPhoneInput\Forms\PhoneInput;
 use App\Filament\Resources\CustomerResource\Pages;
@@ -43,7 +45,7 @@ class CustomerResource extends Resource
 
   protected static ?string $navigationIcon = 'fas-users';
 
-  // protected static ?string $recordTitleAttribute = 'name';
+  protected static ?string $recordTitleAttribute = 'name';
 
   protected static ?int $navigationSort = -10;
 
@@ -87,9 +89,9 @@ class CustomerResource extends Resource
         TextColumn::make('name')
           ->sortable()
           ->searchable(),
-        // TextColumn::make('category')
-        //   ->badge()
-        //   ->searchable(),
+        TextColumn::make('category')
+          ->badge()
+          ->searchable(),
         TextColumn::make('status')
           ->badge()
           ->tooltip('Ubah status')
@@ -112,6 +114,7 @@ class CustomerResource extends Resource
         PhoneColumn::make('phone')
           ->searchable(),
         TextColumn::make('email')
+          ->label('Keterangan Kontak')
           ->sortable()
           ->searchable(),
         TextColumn::make('balance')
@@ -132,9 +135,9 @@ class CustomerResource extends Resource
           ->toggleable(isToggledHiddenByDefault: true),
       ])
       ->filters([
-        // SelectFilter::make('category')
-        //   ->multiple()
-        //   ->options(CustomerCategory::class),
+        SelectFilter::make('category')
+          ->multiple()
+          ->options(CustomerCategory::class),
         SelectFilter::make('status')
           ->multiple()
           ->options(CustomerStatus::class),
@@ -143,6 +146,10 @@ class CustomerResource extends Resource
           ->query(fn(Builder $query): Builder => $query->whereHas('orders.invoice.loyaltyPoint')),
       ])
       ->headerActions([
+        ImportAction::make()
+          ->importer(CustomerImporter::class)
+          ->label('Import')
+          ->color('warning'),
         ExportAction::make()
           ->hidden(fn(): bool => static::getModel()::count() === 0)
           ->exporter(CustomerExporter::class)
@@ -187,17 +194,15 @@ class CustomerResource extends Resource
         TextInput::make('address')
           ->required()
           ->maxLength(255),
-        // Hidden::make('category')
-        //   ->default(CustomerCategory::TK->value),
-        // ToggleButtons::make('category')
-        //   ->required()
-        //   ->inline()
-        //   ->disabledOn('edit')
-        //   ->helperText("Category can't be edited.")
-        //   ->options(CustomerCategory::class)
-        //   ->default(CustomerCategory::TK->value)
-        //   ->afterStateUpdated(fn(Set $set, string $state) => $set('code', get_code(new Customer, $state)))
-        //   ->loadingIndicator(),
+        ToggleButtons::make('category')
+          ->required()
+          ->inline()
+          ->disabledOn('edit')
+          ->helperText("Category can't be edited.")
+          ->options(CustomerCategory::class)
+          ->default(CustomerCategory::TK->value)
+          ->afterStateUpdated(fn(Set $set, string $state) => $set('code', get_code(new Customer, $state)))
+          ->loadingIndicator(),
         ToggleButtons::make('status')
           ->required()
           ->inline()
@@ -210,39 +215,14 @@ class CustomerResource extends Resource
   {
     return Section::make('Location Information')
       ->schema([
-        // Select::make('regency_id')
-        //   ->label('Kabupaten / Kota')
-        //   ->required()
-        //   ->live()
-        //   ->relationship('regency', 'name')
-        //   ->afterStateUpdated(fn(Set $set) => $set('district_id', null)),
-        // Select::make('district_id')
-        //   ->label('Kecamatan')
-        //   ->required()
-        //   ->live()
-        //   ->relationship('district', 'name', fn(Get $get, Builder $query) => $query->where('regency_id', $get('regency_id'))),
         RegionSelects(),
         Group::make([
           TextInput::make('lat')
             ->live(true)
-            ->numeric()
-          // ->afterStateUpdated(function (?array $state, Set $set) {
-          //   $set('location', [
-          //     'lat' => $state['lat'],
-          //     'lng' => $state['lng']
-          //   ]);
-          // })
-          ,
+            ->numeric(),
           TextInput::make('lng')
             ->live(true)
-            ->numeric()
-          // ->afterStateUpdated(function (?array $state, Set $set) {
-          //   $set('location', [
-          //     'lat' => $state['lat'],
-          //     'lng' => $state['lng']
-          //   ]);
-          // })
-          ,
+            ->numeric(),
         ])->columns(2),
         Map::make('location')
           ->afterStateUpdated(function (Set $set, ?array $state, string $operation) {
@@ -281,6 +261,8 @@ class CustomerResource extends Resource
           ->required()
           ->indonesian(),
         TextInput::make('email')
+          ->label('Keterangan Kontak')
+          ->placeholder('email@example.com')
           ->email()
           ->maxLength(255),
       ]);

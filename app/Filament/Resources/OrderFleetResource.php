@@ -185,8 +185,7 @@ class OrderFleetResource extends Resource
           ->badge()
           ->searchable(),
         TextColumn::make('payment_date')
-          ->date()
-          ->formatStateUsing(fn(Carbon $state): string => $state->translatedFormat('d/m/Y'))
+          ->date('d/m/Y')
           ->placeholder('Unpaid')
           ->sortable(),
         TextColumn::make('payment_amount')

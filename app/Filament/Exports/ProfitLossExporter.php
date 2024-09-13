@@ -31,7 +31,7 @@ class ProfitLossExporter extends Exporter
         ->state(fn(ProfitLoss $record): ?float => $record->calculateNetSales() ?? null),
       ExportColumn::make('invoice.order.trip_date')
         ->label('Tanggal')
-        ->formatStateUsing(fn(Carbon $state): string => $state->translatedFormat('d/m/Y')),
+        ->date('d/m/Y'),
       ExportColumn::make('created_at'),
       ExportColumn::make('updated_at'),
     ];

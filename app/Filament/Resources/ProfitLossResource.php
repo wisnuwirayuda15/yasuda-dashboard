@@ -132,7 +132,7 @@ class ProfitLossResource extends Resource
           ->state(fn(ProfitLoss $record): ?float => $record->calculateIncome()),
         TextColumn::make('invoice.order.trip_date')
           ->label('Tanggal')
-          ->formatStateUsing(fn(Carbon $state): string => $state->translatedFormat('d/m/Y')),
+          ->date('d/m/Y'),
         TextColumn::make('created_at')
           ->dateTime()
           ->sortable()

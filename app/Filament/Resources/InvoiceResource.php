@@ -121,7 +121,7 @@ class InvoiceResource extends Resource
           ->sortable(),
         TextColumn::make('order.trip_date')
           ->label('Tanggal')
-          ->formatStateUsing(fn(Carbon $state): string => $state->translatedFormat('d/m/Y'))
+          ->date('d/m/Y')
           ->sortable(),
         IconColumn::make('shirts')
           ->label('Baju Wisata')

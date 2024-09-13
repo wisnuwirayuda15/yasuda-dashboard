@@ -1,8 +1,9 @@
 <?php
 
-use Illuminate\Database\Migrations\Migration;
-use Illuminate\Database\Schema\Blueprint;
+use App\Enums\CustomerCategory;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Database\Migrations\Migration;
 
 return new class extends Migration
 {
@@ -18,7 +19,7 @@ return new class extends Migration
             $table->string('code')->unique()->index();
             $table->string('name')->unique()->index();
             $table->string('address');
-            $table->string('category', 50)->default('tk');
+            $table->string('category', 50)->default(CustomerCategory::TK->value);
             $table->foreignId('regency_id')->constrained()->cascadeOnDelete();
             $table->foreignId('district_id')->constrained()->cascadeOnDelete();
             $table->string('headmaster');

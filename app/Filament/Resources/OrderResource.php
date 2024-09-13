@@ -173,7 +173,7 @@ class OrderResource extends Resource
         TextColumn::make('trip_date')
           ->date()
           ->sortable()
-          ->formatStateUsing(fn(Carbon $state): string => $state->translatedFormat('d/m/Y')),
+          ->date('d/m/Y'),
         TextColumn::make('regency.name')
           ->label('Kota')
           ->searchable(),

@@ -37,6 +37,7 @@ use App\Filament\Resources\ShirtResource;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\FileUpload;
 use Filament\Tables\Actions\ExportAction;
+use Filament\Tables\Actions\ImportAction;
 use Illuminate\Database\Eloquent\Builder;
 use App\Filament\Widgets\ProfitLossWidget;
 use Filament\Http\Middleware\Authenticate;
@@ -53,6 +54,7 @@ use Filament\FontProviders\GoogleFontProvider;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Session\Middleware\StartSession;
 use App\Filament\Resources\LoyaltyPointResource;
+use Filament\Actions\Exports\Enums\ExportFormat;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Awcodes\FilamentQuickCreate\QuickCreatePlugin;
 use Filament\Tables\Actions\Action as TableAction;
@@ -63,6 +65,7 @@ use Illuminate\View\Middleware\ShareErrorsFromSession;
 use BezhanSalleh\FilamentLanguageSwitch\LanguageSwitch;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Joaopaulolndev\FilamentEditEnv\FilamentEditEnvPlugin;
+use CharrafiMed\GlobalSearchModal\GlobalSearchModalPlugin;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
 use Filament\Tables\Actions\EditAction as TableEditAction;
 use Filament\Tables\Actions\ViewAction as TableViewAction;
@@ -192,8 +195,15 @@ class AdminPanelProvider extends PanelProvider
 
     ExportAction::configureUsing(function (ExportAction $action): void {
       $action
-        ->icon('fileicon-microsoft-excel')
-        ->tooltip('Export data to Excel');
+        ->icon('fas-file-export')
+        ->tooltip('Export data to csv file')
+        ->formats([ExportFormat::Csv]);
+    });
+
+    ImportAction::configureUsing(function (ImportAction $action): void {
+      $action
+        ->icon('fas-file-import')
+        ->tooltip('Import data from csv file');
     });
 
     ApprovalStatusColumn::configureUsing(function (ApprovalStatusColumn $column) {
@@ -301,8 +311,8 @@ class AdminPanelProvider extends PanelProvider
         config('filament-logger.activity_resource')
       ])
       ->colors(fn(GeneralSettings $settings) => [
-        'primary' => Color::rgb($settings->color_primary),
-        'secondary' => Color::rgb($settings->color_secondary),
+        'primary' => Color::rgb("rgb({$settings->color_primary['value']})"),
+        'secondary' => Color::rgb("rgb({$settings->color_secondary['value']})"),
         'gray' => Color::Zinc,
         'danger' => Color::Red,
         'info' => Color::Sky,
@@ -334,6 +344,7 @@ class AdminPanelProvider extends PanelProvider
       ])
       ->plugins([
         ApprovalPlugin::make(),
+        GlobalSearchModalPlugin::make(),
         FilamentProgressbarPlugin::make(),
         FilamentFullCalendarPlugin::make()
           ->selectable(true)
@@ -355,7 +366,7 @@ class AdminPanelProvider extends PanelProvider
               ->disk('profile')
               ->visible(fn(): bool => (bool) auth()->user()->employable))
           ->myProfile(
-            // hasAvatars: true,
+            hasAvatars: false,
             shouldRegisterUserMenu: true,
             navigationGroup: NavigationGroupLabel::SETTING->getLabel(),
           ),

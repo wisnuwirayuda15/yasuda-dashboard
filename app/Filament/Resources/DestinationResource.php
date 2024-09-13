@@ -36,6 +36,8 @@ class DestinationResource extends Resource
 
   protected static ?string $navigationIcon = 'fas-map-location-dot';
 
+  protected static ?string $recordTitleAttribute = 'name';
+
   public static function getLabel(): string
   {
     return __('navigation.label.' . static::getSlug());

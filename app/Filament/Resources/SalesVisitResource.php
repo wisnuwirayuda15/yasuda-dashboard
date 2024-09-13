@@ -123,7 +123,7 @@ class SalesVisitResource extends Resource
         TextColumn::make('date')
           ->date()
           ->label('Tanggal Kunjungan')
-          ->formatStateUsing(fn(Carbon $state): string => $state->translatedFormat('d/m/Y')),
+          ->date('d/m/Y'),
         TextColumn::make('priority')
           ->badge()
           ->color(fn(string $state): string => $state === 'yes' ? 'success' : 'danger')

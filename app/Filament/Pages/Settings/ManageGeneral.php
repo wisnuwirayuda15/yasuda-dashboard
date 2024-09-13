@@ -19,11 +19,12 @@ use Filament\Forms\Components\Toggle;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
-use Filament\Forms\Components\ColorPicker;
 use Filament\Tables\Enums\ActionsPosition;
 use Filament\Forms\Components\ToggleButtons;
 use Filament\Forms\Components\Actions\Action;
+use Awcodes\Palette\Forms\Components\ColorPicker;
 use BezhanSalleh\FilamentShield\Traits\HasPageShield;
+use Awcodes\Palette\Forms\Components\ColorPickerSelect;
 
 class ManageGeneral extends SettingsPage
 {
@@ -71,7 +72,6 @@ class ManageGeneral extends SettingsPage
           ->link()
           ->requiresConfirmation()
           ->label('Reset to default')
-          ->slideOver(false)
           ->action(function (Set $set) {
             $set('site_name', env('APP_NAME', 'Yasuda Jaya Tour'));
             $set('site_font', 'Poppins');
@@ -81,7 +81,6 @@ class ManageGeneral extends SettingsPage
             $set('site_navigation', 0);
             $set('table_striped', 0);
             $set('site_spa', 0);
-
             Notification::make()
               ->warning()
               ->body('Site settings have been reset to default')
@@ -156,6 +155,8 @@ class ManageGeneral extends SettingsPage
 
   public function getColorPaletteSection(): Section
   {
+    $colors = Color::all();
+
     return Section::make('Color Palette')
       ->icon('gmdi-color-lens-r')
       ->columns(2)
@@ -164,11 +165,9 @@ class ManageGeneral extends SettingsPage
           ->link()
           ->requiresConfirmation()
           ->label('Reset to default')
-          ->slideOver(false)
           ->action(function (Set $set) {
-            $set('color_primary', 'rgb(216, 36, 49)');
-            $set('color_secondary', 'rgb(100, 38, 110)');
-
+            $set('color_primary', 'rose');
+            $set('color_secondary', 'indigo');
             Notification::make()
               ->warning()
               ->body('Color palette have been reset to default')
@@ -176,18 +175,33 @@ class ManageGeneral extends SettingsPage
           }),
       ])
       ->schema([
-        ColorPicker::make('color_primary')
-          ->required()
-          ->placeholder('rgb(216, 36, 49)')
-          ->helperText('Choose a primary color. Default: rgb(216, 36, 49)')
-          ->label('Primary Color')
-          ->rgb(),
-        ColorPicker::make('color_secondary')
-          ->required()
-          ->placeholder('rgb(100, 38, 110)')
-          ->helperText('Choose a secondary color. Default: rgb(100, 38, 110)')
-          ->label('Secondary Color')
-          ->rgb(),
+        Group::make([
+          ColorPickerSelect::make('color_primary')
+            ->required()
+            ->label('Primary Color')
+            ->colors($colors)
+            ->searchable(false)
+            ->placeholder('Rose'),
+          ColorPicker::make('color_primary')
+            ->required()
+            ->live()
+            ->hiddenLabel()
+            ->colors($colors)
+            ->helperText('Choose the primary color. Default: Rose'),
+        ]),
+        Group::make([
+          ColorPickerSelect::make('color_secondary')
+            ->required()
+            ->label('Secondary Color')
+            ->colors($colors)
+            ->searchable(false)
+            ->placeholder('Indigo'),
+          ColorPicker::make('color_secondary')
+            ->required()
+            ->hiddenLabel()
+            ->colors($colors)
+            ->helperText('Choose the primary color. Default: Indigo'),
+        ]),
       ]);
   }
 }

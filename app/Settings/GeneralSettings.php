@@ -13,11 +13,11 @@ class GeneralSettings extends Settings
   public bool $site_spa;
   public bool $site_navigation;
   public bool $table_striped;
-  public ActionsPosition|string $table_actionPosition;
   public int $site_logoHeight;
+  public ActionsPosition|string $table_actionPosition;
   public MaxWidth|string $site_maxContentWidth;
-  public string $color_primary;
-  public string $color_secondary;
+  public array $color_primary;
+  public array $color_secondary;
 
   public static function group(): string
   {

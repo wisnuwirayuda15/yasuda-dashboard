@@ -50,6 +50,8 @@ class TourTemplateResource extends Resource
 
   protected static ?string $navigationIcon = 'fontisto-holiday-village';
 
+  protected static ?string $recordTitleAttribute = 'name';
+
   public static function getLabel(): string
   {
     return __('navigation.label.' . static::getSlug());
