@@ -11,12 +11,13 @@ use Filament\Forms\Set;
 use Filament\Forms\Form;
 use App\Models\TourReport;
 use Filament\Tables\Table;
+use App\Enums\EmployeeRole;
 use App\Models\Destination;
 use Illuminate\Support\Str;
 use App\Enums\DestinationType;
-use App\Enums\EmployeeRole;
 use Filament\Resources\Resource;
 use Awcodes\TableRepeater\Header;
+use Illuminate\Support\HtmlString;
 use App\Enums\NavigationGroupLabel;
 use Filament\Tables\Actions\Action;
 use Filament\Tables\Filters\Filter;
@@ -31,9 +32,12 @@ use Filament\Forms\Components\Checkbox;
 use Filament\Forms\Components\Fieldset;
 use Filament\Tables\Actions\EditAction;
 use Filament\Tables\Actions\ViewAction;
+use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
+use Illuminate\Support\Facades\Storage;
 use Filament\Forms\Components\TextInput;
 use Filament\Tables\Actions\ActionGroup;
+use Filament\Forms\Components\FileUpload;
 use Filament\Tables\Actions\DeleteAction;
 use Filament\Tables\Actions\ExportAction;
 use Filament\Tables\Filters\SelectFilter;
@@ -47,8 +51,10 @@ use EightyNine\Approvals\Tables\Actions\RejectAction;
 use EightyNine\Approvals\Tables\Actions\SubmitAction;
 use EightyNine\Approvals\Tables\Actions\ApproveAction;
 use EightyNine\Approvals\Tables\Actions\DiscardAction;
+use Hugomyb\FilamentMediaAction\Tables\Actions\MediaAction;
 use EightyNine\Approvals\Tables\Columns\ApprovalStatusColumn;
 use App\Filament\Resources\TourReportResource\RelationManagers;
+use Joaopaulolndev\FilamentPdfViewer\Forms\Components\PdfViewerField;
 
 class TourReportResource extends Resource
 {
@@ -68,7 +74,7 @@ class TourReportResource extends Resource
     return NavigationGroupLabel::FINANCE->getLabel();
   }
 
-  public static function form(Form $form): Form
+  public static function setInvoice(Form $form): void
   {
     $record = $form->getRecord();
 
@@ -88,12 +94,18 @@ class TourReportResource extends Resource
     } else {
       static::$invoice = $record->invoice;
     }
+  }
+
+  public static function form(Form $form): Form
+  {
+    static::setInvoice($form);
 
     return $form
       ->schema([
         static::getGeneralInfoSection(),
         static::getMainCostsSection(),
         static::getOtherCostsSection(),
+        static::getDocumentUploadSection(),
         static::getSummariesSection(),
         // Checkbox::make('submission')->submission(),
         Checkbox::make('confirmation')->confirmation(),
@@ -124,6 +136,17 @@ class TourReportResource extends Resource
           ->label('Defisit / Surplus')
           ->money('IDR')
           ->sortable(),
+        IconColumn::make('document')
+          ->alignCenter()
+          ->placeholder('No document')
+          ->icon('fluentui-document-checkmark-24')
+          ->color('success')
+          ->tooltip(fn(?string $state) => blank($state) ? null : 'Preview document')
+          ->action(MediaAction::make('document_preview')
+            ->label('Preview')
+            ->modalWidth('full')
+            ->hidden(fn(TourReport $record) => blank($record->document))
+            ->media(fn(TourReport $record) => Storage::url($record->document))),
         TextColumn::make('created_at')
           ->dateTime()
           ->sortable()
@@ -596,6 +619,27 @@ class TourReportResource extends Resource
       ]);
   }
 
+  public static function getDocumentUploadSection(): Section
+  {
+    return Section::make('Document')
+      ->columnSpanFull()
+      ->schema([
+        FileUpload::make('document')
+          ->hiddenLabel()
+          ->downloadable()
+          ->maxSize(15360) // 15MB
+          ->helperText(new HtmlString('Upload dokumen hasil scan nota dalam bentuk <strong>PDF</strong>. Ukuran maksimal <strong>15MB</strong>'))
+          ->directory('tour-report-document')
+          ->acceptedFileTypes(['application/pdf'])
+          ->uploadingMessage('Uploading pdf...'),
+        PdfViewerField::make('document_preview')
+          ->label('Preview')
+          ->minHeight('80svh')
+          ->fileUrl(fn(?TourReport $record) => Storage::url($record?->document))
+          ->hidden(fn(?TourReport $record) => !str_contains($record?->document, 'pdf'))
+      ]);
+  }
+
   public static function getCostsDetailItems(): array
   {
     $inv = static::$invoice;
@@ -693,6 +737,8 @@ class TourReportResource extends Resource
 
     return $costsDetail;
   }
+
+
 
   // public static function getOtherCostItem(int|float $price = 0): array
   // {

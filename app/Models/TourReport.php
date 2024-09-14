@@ -31,6 +31,7 @@ class TourReport extends ApprovableModel
         'expense_total',
         'defisit_surplus',
         'refundable',
+        'document',
     ];
 
     /**

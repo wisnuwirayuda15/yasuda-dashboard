@@ -24,6 +24,7 @@ return new class extends Migration
             $table->bigInteger('expense_total')->default(0);
             $table->bigInteger('defisit_surplus')->default(0);
             $table->bigInteger('refundable')->default(0);
+            $table->string('document')->nullable();
             $table->timestamps();
         });
 

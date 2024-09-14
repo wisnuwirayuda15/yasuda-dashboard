@@ -217,6 +217,7 @@ models:
     expense_total: bigInteger default:0
     defisit_surplus: bigInteger default:0
     refundable: bigInteger default:0
+    document: string nullable
 
   Reward:
     customer_id: foreign constrained onDelete:cascade

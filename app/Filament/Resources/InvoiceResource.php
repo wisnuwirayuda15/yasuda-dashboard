@@ -128,12 +128,12 @@ class InvoiceResource extends Resource
           ->state(fn(Invoice $record): bool => $record->shirt()->exists())
           ->boolean()
           ->alignCenter(),
-        IconColumn::make('profitLoss')
+        IconColumn::make('profit_loss')
           ->label('Profit & Loss')
           ->state(fn(Invoice $record): bool => $record->profitLoss()->exists())
           ->boolean()
           ->alignCenter(),
-        IconColumn::make('tourReport')
+        IconColumn::make('tour_report')
           ->label('Tour Report')
           ->state(fn(Invoice $record): bool => $record->tourReport()->exists())
           ->boolean()

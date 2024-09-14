@@ -5,7 +5,6 @@ namespace App\Providers\Filament;
 use Filament\Pages;
 use Filament\Panel;
 use Filament\Widgets;
-use Filament\Forms\Set;
 use Filament\Pages\Page;
 use Filament\Tables\Table;
 use Filament\PanelProvider;
@@ -59,12 +58,12 @@ use Illuminate\Cookie\Middleware\EncryptCookies;
 use Awcodes\FilamentQuickCreate\QuickCreatePlugin;
 use Filament\Tables\Actions\Action as TableAction;
 use BezhanSalleh\FilamentShield\FilamentShieldPlugin;
+use GeoSot\FilamentEnvEditor\FilamentEnvEditorPlugin;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\AuthenticateSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 use BezhanSalleh\FilamentLanguageSwitch\LanguageSwitch;
 use Filament\Http\Middleware\DisableBladeIconComponents;
-use Joaopaulolndev\FilamentEditEnv\FilamentEditEnvPlugin;
 use CharrafiMed\GlobalSearchModal\GlobalSearchModalPlugin;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
 use Filament\Tables\Actions\EditAction as TableEditAction;
@@ -78,7 +77,6 @@ use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use EightyNine\Approvals\Tables\Columns\ApprovalStatusColumn;
 use Filament\Tables\Actions\DeleteAction as TableDeleteAction;
 use Filament\Pages\Auth\EmailVerification\EmailVerificationPrompt;
-use Joaopaulolndev\FilamentCheckSslWidget\FilamentCheckSslWidgetPlugin;
 use App\Filament\Resources\MeetingResource\Widgets\MeetingCalendarWidget;
 use App\Filament\Resources\OrderFleetResource\Widgets\OrderFleetCalendarWidget;
 
@@ -344,8 +342,12 @@ class AdminPanelProvider extends PanelProvider
       ])
       ->plugins([
         ApprovalPlugin::make(),
-        GlobalSearchModalPlugin::make(),
+        // GlobalSearchModalPlugin::make(),
         FilamentProgressbarPlugin::make(),
+        FilamentEnvEditorPlugin::make()
+          ->authorize(fn() => auth()->user()->isSuperAdmin())
+          ->navigationGroup(NavigationGroupLabel::SETTING->getLabel())
+          ->navigationIcon('eos-configuration-file'),
         FilamentFullCalendarPlugin::make()
           ->selectable(true)
           ->editable(true),

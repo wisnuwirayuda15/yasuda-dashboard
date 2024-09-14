@@ -36,6 +36,7 @@ use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Tabs\Tab;
 use Filament\Tables\Actions\EditAction;
 use Filament\Tables\Actions\ViewAction;
+use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Illuminate\Database\Eloquent\Model;
 use Filament\Forms\Components\TextInput;
@@ -75,7 +76,7 @@ class ProfitLossResource extends Resource
     return NavigationGroupLabel::FINANCE->getLabel();
   }
 
-  public static function form(Form $form): Form
+  public static function setInvoice(Form $form): void
   {
     $record = $form->getRecord();
 
@@ -91,6 +92,11 @@ class ProfitLossResource extends Resource
     } else {
       static::$invoice = $record->invoice;
     }
+  }
+
+  public static function form(Form $form): Form
+  {
+    static::setInvoice($form);
 
     return $form
       ->schema([
@@ -121,6 +127,11 @@ class ProfitLossResource extends Resource
           ->label('Net Sales')
           ->money('IDR')
           ->state(fn(ProfitLoss $record): float => $record->calculateNetSales()),
+        IconColumn::make('loyalty_point')
+          ->label('Loyalty Point')
+          ->state(fn(ProfitLoss $record): bool => $record->invoice->loyaltyPoint->exists())
+          ->boolean()
+          ->alignCenter(),
         TextColumn::make('adjusted_income')
           ->label('Income (Plan)')
           ->sortable()
