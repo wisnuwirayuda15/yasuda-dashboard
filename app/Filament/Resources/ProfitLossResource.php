@@ -129,7 +129,7 @@ class ProfitLossResource extends Resource
           ->state(fn(ProfitLoss $record): float => $record->calculateNetSales()),
         IconColumn::make('loyalty_point')
           ->label('Loyalty Point')
-          ->state(fn(ProfitLoss $record): bool => $record->invoice->loyaltyPoint->exists())
+          ->state(fn(ProfitLoss $record): bool => (bool) $record->invoice->loyaltyPoint)
           ->boolean()
           ->alignCenter(),
         TextColumn::make('adjusted_income')
