@@ -115,6 +115,7 @@ class CustomerResource extends Resource
           ->searchable(),
         TextColumn::make('email')
           ->label('Keterangan Kontak')
+          ->placeholder('No contact')
           ->sortable()
           ->searchable(),
         TextColumn::make('balance')
@@ -262,8 +263,6 @@ class CustomerResource extends Resource
           ->indonesian(),
         TextInput::make('email')
           ->label('Keterangan Kontak')
-          ->placeholder('email@example.com')
-          ->email()
           ->maxLength(255),
       ]);
   }
