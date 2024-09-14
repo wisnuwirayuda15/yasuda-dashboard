@@ -28,7 +28,7 @@ class ViewProfitLoss extends ViewRecord
   {
     $pnl = $this->getRecord();
 
-    $loyaltyPoint = $pnl->invoice->loyaltyPoint->exists();
+    $loyaltyPoint = (bool) $pnl->invoice->loyaltyPoint;
 
     $approved = $pnl->isApprovalCompleted();
 
