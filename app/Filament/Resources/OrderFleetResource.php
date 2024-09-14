@@ -141,7 +141,6 @@ class OrderFleetResource extends Resource
           ->searchable(),
         TextColumn::make('order.customer.name')
           ->sortable()
-          ->alignCenter()
           ->searchable()
           ->placeholder('No customer')
           ->tooltip(fn(OrderFleet $record) => ($record->order_id ? 'Change' : 'Select') . ' order')
@@ -150,7 +149,6 @@ class OrderFleetResource extends Resource
           ->label('Tour Leader')
           ->searchable()
           ->sortable()
-          ->alignCenter()
           ->placeholder('No tour leader')
           ->tooltip(fn(OrderFleet $record) => ($record->employee_id ? 'Change' : 'Select') . ' tour leader')
           ->action(static::getSelectTourLeaderAction()),
