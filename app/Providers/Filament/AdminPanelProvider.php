@@ -293,7 +293,7 @@ class AdminPanelProvider extends PanelProvider
       ->navigationItems([
         NavigationItem::make(__('navigation.label.pulse'))
           ->visible(fn() => config('pulse.enabled') && auth()->user()->isSuperAdmin())
-          ->group(NavigationGroupLabel::SETTING->getLabel())
+          ->group(NavigationGroupLabel::SYSTEM->getLabel())
           ->url('/' . config('pulse.path'), true)
           ->icon('gmdi-graphic-eq-r')
           ->sort(9),

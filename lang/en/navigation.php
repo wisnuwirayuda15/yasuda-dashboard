@@ -1,7 +1,7 @@
 <?php
 
-use App\Enums\NavigationGroupLabel;
 use App\Filament\Resources;
+use App\Enums\NavigationGroupLabel;
 
 return [
   'group' => [
@@ -11,6 +11,7 @@ return [
     NavigationGroupLabel::MASTER_DATA->value => 'Master Data',
     NavigationGroupLabel::SETTING->value => 'Settings',
     NavigationGroupLabel::HR->value => 'Human Resource',
+    NavigationGroupLabel::SYSTEM->value => 'System',
     NavigationGroupLabel::OTHER->value => 'Other',
   ],
   'label' => [

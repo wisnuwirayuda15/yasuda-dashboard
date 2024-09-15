@@ -31,9 +31,9 @@ class ManageGeneral extends SettingsPage
   use HasPageShield;
 
   protected static ?string $navigationIcon = 'fas-cog';
-  protected static ?string $title = 'Settings';
+  protected static ?string $title = 'General Settings';
+  protected static ?string $slug = 'general-settings';
   protected ?string $subheading = "You can configure the website's appereance on this page.";
-  protected static ?string $slug = 'settings';
   protected static string $settings = GeneralSettings::class;
 
   public static function getNavigationGroup(): ?string
@@ -81,6 +81,7 @@ class ManageGeneral extends SettingsPage
             $set('site_navigation', 0);
             $set('table_striped', 0);
             $set('site_spa', 0);
+
             Notification::make()
               ->warning()
               ->body('Site settings have been reset to default')
@@ -168,6 +169,7 @@ class ManageGeneral extends SettingsPage
           ->action(function (Set $set) {
             $set('color_primary', 'rose');
             $set('color_secondary', 'indigo');
+            
             Notification::make()
               ->warning()
               ->body('Color palette have been reset to default')

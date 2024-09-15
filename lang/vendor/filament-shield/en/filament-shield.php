@@ -33,7 +33,7 @@ return [
   |--------------------------------------------------------------------------
   */
 
-  'nav.group' => NavigationGroupLabel::SETTING->getLabel(),
+  'nav.group' => NavigationGroupLabel::HR->getLabel(),
   'nav.role.label' => 'Roles',
   'nav.role.icon' => 'heroicon-s-shield-check',
   'resource.label.role' => 'Role',

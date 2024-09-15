@@ -15,12 +15,10 @@ use Filament\Resources\Resource;
 use App\Enums\NavigationGroupLabel;
 use Filament\Tables\Filters\Filter;
 use Filament\Forms\Components\Group;
-use Illuminate\Support\Facades\Hash;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Toggle;
 use Filament\Forms\Components\Section;
-use Illuminate\Auth\Events\Registered;
 use Filament\Tables\Actions\EditAction;
 use Filament\Tables\Actions\ViewAction;
 use Filament\Tables\Columns\IconColumn;
@@ -56,7 +54,7 @@ class UserResource extends Resource
 
   public static function getNavigationGroup(): ?string
   {
-    return NavigationGroupLabel::SETTING->getLabel();
+    return NavigationGroupLabel::HR->getLabel();
   }
 
   public static function form(Form $form): Form

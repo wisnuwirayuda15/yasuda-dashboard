@@ -11,6 +11,7 @@ return [
     NavigationGroupLabel::MASTER_DATA->value => 'Data Utama',
     NavigationGroupLabel::SETTING->value => 'Pengaturan',
     NavigationGroupLabel::HR->value => 'Manajemen Karyawan',
+    NavigationGroupLabel::SYSTEM->value => 'Sistem',
     NavigationGroupLabel::OTHER->value => 'Lain-Lain',
   ],
   'label' => [
