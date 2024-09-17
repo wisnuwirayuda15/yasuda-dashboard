@@ -4,6 +4,8 @@ namespace App\Providers;
 
 // use Illuminate\Support\Facades\Gate;
 
+use App\Policies\ActivityPolicy;
+use Spatie\Activitylog\Models\Activity;
 use App\Policies\ProcessApprovalFlowPolicy;
 use RingleSoft\LaravelProcessApproval\Models\ProcessApprovalFlow;
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
@@ -18,6 +20,7 @@ class AuthServiceProvider extends ServiceProvider
   protected $policies = [
     // This policies is not registered by default, filament shield doesn't recognize it.
     ProcessApprovalFlow::class => ProcessApprovalFlowPolicy::class,
+    Activity::class => ActivityPolicy::class,
   ];
 
   /**
