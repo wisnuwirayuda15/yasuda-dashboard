@@ -20,6 +20,7 @@ use Filament\Forms\Components\Section;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
 use Filament\Tables\Enums\ActionsPosition;
+use Awcodes\FilamentVersions\VersionsWidget;
 use Filament\Forms\Components\ToggleButtons;
 use Filament\Forms\Components\Actions\Action;
 use Awcodes\Palette\Forms\Components\ColorPicker;
@@ -51,6 +52,11 @@ class ManageGeneral extends SettingsPage
       ->send();
 
     return null;
+  }
+
+  protected function getHeaderWidgets(): array
+  {
+      return [VersionsWidget::class];
   }
 
   public function form(Form $form): Form

@@ -309,8 +309,8 @@ class AdminPanelProvider extends PanelProvider
       ])
       ->widgets([
         Widgets\AccountWidget::class,
-          // Widgets\FilamentInfoWidget::class,
-          // VersionsWidget::class,
+        // Widgets\FilamentInfoWidget::class,
+        // VersionsWidget::class,
         OrderFleetCalendarWidget::class,
         MeetingCalendarWidget::class,
       ])
