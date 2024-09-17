@@ -43,25 +43,21 @@ class Destination extends ApprovableModel
     'type' => DestinationType::class,
   ];
 
-  public static function getOptionsWithPrice(): array
+  public static function getOptions(bool $withPrice = true): array
   {
-    return self::query()
-      ->select('name', 'id', 'weekday_price', 'weekend_price', 'high_season_price')
-      ->get()
-      ->mapWithKeys(function (self $destination) {
-        $weekdayPrice = idr($destination->weekday_price);
-        $weekendPrice = idr($destination->weekend_price);
-        $highSeasonPrice = idr($destination->high_season_price);
-        $name = strtoupper($destination->name);
-        // return [
-        //   $destination->id =>
-        //     view('filament.components.badges.default', ['text' => $destination->name, 'color' => 'success']) .
-        //     "Weekday: {$weekdayPrice} • Weekend: {$weekendPrice}"
-        // ];
-        return [
-          $destination->id => "{$name} • Weekday: {$weekdayPrice} • Weekend: {$weekendPrice} • High Season: {$highSeasonPrice}"
-        ];
-      })
-      ->toArray();
+    if ($withPrice) {
+      return self::query()->select('name', 'id', 'weekday_price', 'weekend_price', 'high_season_price')->get()
+        ->mapWithKeys(function (self $destination) {
+          $weekdayPrice = idr($destination->weekday_price);
+          $weekendPrice = idr($destination->weekend_price);
+          $highSeasonPrice = idr($destination->high_season_price);
+          $name = $destination->name;
+          return [
+            $destination->id => "{$name} • Weekday: {$weekdayPrice} • Weekend: {$weekendPrice} • High Season: {$highSeasonPrice}"
+          ];
+        })->toArray();
+    } else {
+      return self::pluck('name', 'id')->toArray();
+    }
   }
 }

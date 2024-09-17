@@ -228,7 +228,7 @@ if (!function_exists('RegionSelects')) {
         ->placeholder('Pilih kabupaten / kota')
         ->options(fn(Get $get) => Regency::where('province_id', $get('province_id'))->pluck('name', 'id'))
         ->afterStateUpdated(fn(Set $set) => $set('district_id', null))
-        ->loadingIndicator(),
+        ->loadingIndicator(condition: $distritcs),
       Select::make('district_id')
         ->live()
         ->required()

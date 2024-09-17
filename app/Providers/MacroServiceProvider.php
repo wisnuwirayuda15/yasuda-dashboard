@@ -67,7 +67,11 @@ class MacroServiceProvider extends ServiceProvider
       return $this;
     });
 
-    Field::macro('loadingIndicator', function (?string $label = 'Loading...', ?string $target = null, bool $onBlur = false): static {
+    Field::macro('loadingIndicator', function (?string $label = 'Loading...', ?string $target = null, bool $onBlur = false, bool $condition = true): static {
+      if (!$condition) {
+        return $this;
+      }
+
       $target = $target ?? $this->name;
 
       $html = new HtmlString(
@@ -79,9 +83,7 @@ class MacroServiceProvider extends ServiceProvider
         HTML)
       );
 
-      $this
-        ->live($onBlur)
-        ->hint($html);
+      $this->live($onBlur)->hint($html);
 
       return $this;
     });
@@ -161,23 +163,23 @@ class MacroServiceProvider extends ServiceProvider
         ->default(fn() => $code)
         ->unique(ignoreRecord: true)
         ->hiddenOn($edit)
-        ->helperText(fn($operation) => !in_array($operation, $view) ? 'Code otomatis terbuat' . ($editable ? ' dan bisa diubah.' : '.') : null)
+        ->helperText(fn(string $operation) => !in_array($operation, $view) ? 'Code otomatis terbuat' . ($editable ? ' dan bisa diubah.' : '.') : null)
         ->hintActions([
           Action::make('edit')
             ->icon('tabler-edit')
-            ->hidden(fn($operation) => $operation === 'view')
+            ->hidden(fn(string $operation) => in_array($operation, $view))
             ->visible($editable)
             ->action(fn(TextInput $component) => $component->disabled(false)),
           Action::make('generate')
             ->icon('fas-random')
-            ->hidden(fn($operation) => $operation === 'view')
+            ->hidden(fn(string $operation) => in_array($operation, $view))
             ->visible($generateable)
             ->action(function (TextInput $component, Set $set) use ($code) {
               $set($component, $code);
             }),
           Action::make('reset')
             ->icon('gmdi-restart-alt-o')
-            ->hidden(fn($operation) => $operation === 'view')
+            ->hidden(fn(string $operation) => in_array($operation, $view))
             ->visible($resetable)
             ->action(function (TextInput $component, Set $set) use ($code) {
               $set($component, $code);

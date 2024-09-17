@@ -31,6 +31,7 @@ use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\RichEditor;
 use Filament\Tables\Actions\DeleteAction;
 use Illuminate\Database\Eloquent\Builder;
+use Novadaemon\FilamentCombobox\Combobox;
 use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\Actions\Action;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
@@ -87,6 +88,13 @@ class TourTemplateResource extends Resource
                 }
               })
           ),
+        Combobox::make('destinations')
+          ->required()
+          ->live(true)
+          ->multiple()
+          ->minItems(2)
+          ->options(Destination::getOptions(false))
+          ->boxSearchs(),
         Fieldset::make('Total Harga')
           ->columns(3)
           ->visible(fn(Get $get) => filled($get('destinations')))
@@ -113,17 +121,6 @@ class TourTemplateResource extends Resource
                 return view('filament.components.badges.default', ['text' => idr($price), 'color' => 'danger', 'big' => true]);
               }),
           ]),
-        Select::make('destinations')
-          ->required()
-          ->live(true)
-          ->multiple()
-          ->allowHtml()
-          ->minItems(2)
-          ->options(Destination::getOptionsWithPrice()),
-        // Select::make('regency_id')
-        //   ->required()
-        //   ->live(true)
-        //   ->relationship('regency', 'name'),
         RegionSelects(false),
         FileUpload::make('image')
           ->image()

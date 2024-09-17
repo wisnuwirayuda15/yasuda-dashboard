@@ -57,6 +57,7 @@ use Filament\Actions\Exports\Enums\ExportFormat;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Awcodes\FilamentQuickCreate\QuickCreatePlugin;
 use Filament\Tables\Actions\Action as TableAction;
+use DiscoveryDesign\FilamentGaze\FilamentGazePlugin;
 use BezhanSalleh\FilamentShield\FilamentShieldPlugin;
 use GeoSot\FilamentEnvEditor\FilamentEnvEditorPlugin;
 use Illuminate\Routing\Middleware\SubstituteBindings;
@@ -64,7 +65,6 @@ use Illuminate\Session\Middleware\AuthenticateSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 use BezhanSalleh\FilamentLanguageSwitch\LanguageSwitch;
 use Filament\Http\Middleware\DisableBladeIconComponents;
-use CharrafiMed\GlobalSearchModal\GlobalSearchModalPlugin;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
 use Filament\Tables\Actions\EditAction as TableEditAction;
 use Filament\Tables\Actions\ViewAction as TableViewAction;
@@ -74,6 +74,7 @@ use Saade\FilamentFullCalendar\FilamentFullCalendarPlugin;
 use Filament\Forms\Components\Actions\Action as FormAction;
 use Filament\Tables\Actions\ActionGroup as TableActionGroup;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
+use DiscoveryDesign\FilamentGaze\Forms\Components\GazeBanner;
 use EightyNine\Approvals\Tables\Columns\ApprovalStatusColumn;
 use Filament\Tables\Actions\DeleteAction as TableDeleteAction;
 use Filament\Pages\Auth\EmailVerification\EmailVerificationPrompt;
@@ -248,6 +249,14 @@ class AdminPanelProvider extends PanelProvider
         ]);
     });
 
+    // GazeBanner::configureUsing(function (GazeBanner $gazeBanner) {
+    //   $gazeBanner
+    //     ->lock()
+    //     ->columnSpanFull()
+    //     ->hideOnCreate()
+    //     ->canTakeControl(fn() => auth()->user()->isSuperAdmin());
+    // });
+
     // Notification alignment
     // Notifications::alignment(Alignment::Center);
     // Notifications::verticalAlignment(VerticalAlignment::End);
@@ -342,7 +351,7 @@ class AdminPanelProvider extends PanelProvider
       ])
       ->plugins([
         ApprovalPlugin::make(),
-        // GlobalSearchModalPlugin::make(),
+        // FilamentGazePlugin::make(),
         FilamentProgressbarPlugin::make(),
         FilamentEnvEditorPlugin::make()
           ->authorize(fn() => auth()->user()->isSuperAdmin())

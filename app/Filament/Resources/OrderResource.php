@@ -77,36 +77,31 @@ class OrderResource extends Resource
           ->code(get_code(new Order, 'OR')),
         Select::make('customer_id')
           ->required()
-          ->columnSpan(fn (string $operation) => $operation === 'edit' ? 'full' : null)
+          ->columnSpan(fn(string $operation) => $operation === 'edit' ? 'full' : null)
           ->relationship('customer', 'name', fn(Builder $query) => $query->whereNot('status', CustomerStatus::CANDIDATE->value)->orderBy('created_at', 'desc'))
           ->prefixIcon(fn() => CustomerResource::getNavigationIcon()),
         Select::make('destinations')
           ->required()
           ->multiple()
           ->columnSpanFull()
-          ->options(Destination::pluck('name', 'id'))
+          ->options(Destination::getOptions(false))
           ->hintAction(Action::make('select_tour_template')
             ->label(TourTemplateResource::getModelLabel())
             ->icon(TourTemplateResource::getNavigationIcon())
-            ->hidden(fn (string $operation) => $operation === 'view')
+            ->hidden(fn(string $operation) => $operation === 'view')
             ->form([
               Select::make('tour_template')
                 ->required()
                 ->hiddenLabel()
-                ->options(TourTemplate::pluck('name', 'id')),
+                ->options(TourTemplate::pluck('name', 'id'))
             ])
-            ->action(function (array $data, Set $set) {
+            ->action(function (array $data, Set $set, Select $component) {
               $tourTemplate = TourTemplate::find($data)->toArray()[0];
               $regency = Regency::find($tourTemplate['regency_id']);
               $set('province_id', $regency->province_id);
               $set('regency_id', $tourTemplate['regency_id']);
-              $set('destinations', $tourTemplate['destinations']);
+              $set($component, $tourTemplate['destinations']);
             })),
-        // Select::make('regency_id')
-        //   ->required()
-        //   ->relationship('regency', 'name')
-        //   ->columnSpan(fn(string $operation) => in_array($operation, ['create', 'view']) ? 'full' : null)
-        //   ->columnSpanFull(),
         RegionSelects(false),
         Group::make([
           Toggle::make('change_date')
