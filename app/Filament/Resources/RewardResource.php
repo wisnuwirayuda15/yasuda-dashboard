@@ -84,6 +84,13 @@ class RewardResource extends Resource
       TextInput::make('amount')
         ->required()
         ->default(0)
+        ->afterStateUpdated(function(Set $set, ?float $state) {
+          if ($state < 0) {
+            $set('cash_status', CashFlow::IN->value);
+          } else {
+            $set('cash_status', CashFlow::OUT->value);
+          }
+        })
         ->currency(minValue: false, minusValidation: false),
       DatePicker::make('date')
         ->default(today())
@@ -91,7 +98,7 @@ class RewardResource extends Resource
       ToggleButtons::make('cash_status')
         ->required()
         ->inline()
-        ->disabled()
+        ->disabledOn('create')
         ->dehydrated()
         ->options(CashFlow::class)
         ->default(CashFlow::OUT->value),
