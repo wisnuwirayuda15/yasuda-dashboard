@@ -54,6 +54,8 @@ class RoleResource extends Resource implements HasShieldPermissions
                 ->label(__('filament-shield::filament-shield.field.name'))
                 ->unique(ignoreRecord: true)
                 ->required()
+                ->disabled(fn(?Role $record): bool => $record->id === 1)
+                ->helperText(fn(?Role $record): string|null => $record->id === 1 ? 'Demi keamanan sistem, anda tidak dapat merubah nama role ini.' : null)
                 ->maxLength(255),
               TextInput::make('guard_name')
                 ->label(__('filament-shield::filament-shield.field.guard_name'))
@@ -87,7 +89,7 @@ class RoleResource extends Resource implements HasShieldPermissions
       ->columns([
         TextColumn::make('name')
           ->label(__('filament-shield::filament-shield.column.name'))
-          ->formatStateUsing(fn($state): string => Str::headline($state))
+          ->formatStateUsing(fn(string $state): string => Str::headline($state))
           ->sortable()
           ->searchable(),
         TextColumn::make('guard_name')
@@ -125,11 +127,11 @@ class RoleResource extends Resource implements HasShieldPermissions
             ->hidden(fn(Role $record): bool => $record->users()->exists())
             ->before(function (Role $record, Tables\Actions\DeleteAction $action) {
               if ($record->users()->exists()) {
-                $permission = Str::headline($record->name);
+                $role = Str::headline($record->name);
                 Notification::make()
                   ->danger()
                   ->title('Failed')
-                  ->body("<strong>{$permission}</strong> permission cannot be deleted because it is assigned to a user.")
+                  ->body("<strong>{$role}</strong> role cannot be deleted because it is assigned to some users.")
                   ->send();
                 $action->cancel();
               }
