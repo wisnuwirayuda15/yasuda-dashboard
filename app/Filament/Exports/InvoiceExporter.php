@@ -4,6 +4,7 @@ namespace App\Filament\Exports;
 
 use Carbon\Carbon;
 use App\Models\Invoice;
+use App\Enums\InvoiceStatus;
 use Filament\Actions\Exports\Exporter;
 use Filament\Actions\Exports\ExportColumn;
 use Filament\Actions\Exports\Models\Export;
@@ -22,6 +23,11 @@ class InvoiceExporter extends Exporter
       ExportColumn::make('order.trip_date')
         ->label('Tanggal')
         ->formatStateUsing(fn(Carbon $state): string => $state->translatedFormat('d/m/Y')),
+      ExportColumn::make('total_transactions')
+        ->label('Total Tagihan')
+        ->state(fn(Invoice $record): float|int => $record->getTotalTransactions()),
+      ExportColumn::make('status')
+        ->state(fn(Invoice $record): string|null => $record->getPaymentStatus()->getLabel()),
       ExportColumn::make('created_at'),
       ExportColumn::make('updated_at'),
     ];

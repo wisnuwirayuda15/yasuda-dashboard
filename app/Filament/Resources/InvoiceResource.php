@@ -123,6 +123,13 @@ class InvoiceResource extends Resource
           ->label('Tanggal')
           ->date('d/m/Y')
           ->sortable(),
+        TextColumn::make('total_transactions')
+          ->label('Total Tagihan')
+          ->money('IDR')
+          ->state(fn(Invoice $record): float|int => $record->getTotalTransactions()),
+        TextColumn::make('status')
+          ->badge()
+          ->state(fn(Invoice $record): InvoiceStatus => $record->getPaymentStatus()),
         IconColumn::make('shirts')
           ->label('Baju Wisata')
           ->state(fn(Invoice $record): bool => $record->shirt()->exists())
@@ -637,12 +644,16 @@ class InvoiceResource extends Resource
               $total > 0 => InvoiceStatus::UNDER_PAYMENT->value,
               default => InvoiceStatus::OVER_PAYMENT->value,
             });
-            $color = $total > 0 ? 'danger' : 'warning';
+            $color = match (true) {
+              $total == 0 => 'success',
+              $total > 0 => 'danger',
+              default => 'warning',
+            };
             return view('filament.components.badges.default', ['text' => idr($total), 'color' => $color, 'big' => true]);
           }),
         ToggleButtons::make('status')
-          ->grouped()
           ->inlineLabel()
+          ->inline()
           ->disabled()
           ->options(InvoiceStatus::class)
       ]);
