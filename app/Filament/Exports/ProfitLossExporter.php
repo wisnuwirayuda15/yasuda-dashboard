@@ -28,7 +28,7 @@ class ProfitLossExporter extends Exporter
         ->label('Income (Plan)'),
       ExportColumn::make('actual_income')
         ->label('Income (Actual)')
-        ->state(fn(ProfitLoss $record): ?float => $record->calculateIncome() ?? 'No tour report'),
+        ->state(fn(ProfitLoss $record): float|string => $record->calculateIncome() ?? 'No tour report'),
       ExportColumn::make('invoice.order.trip_date')
         ->label('Tanggal')
         ->formatStateUsing(fn(Carbon $state): string => $state->translatedFormat('d/m/Y')),
