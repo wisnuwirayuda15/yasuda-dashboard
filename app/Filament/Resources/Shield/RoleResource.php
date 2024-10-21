@@ -54,8 +54,8 @@ class RoleResource extends Resource implements HasShieldPermissions
                 ->label(__('filament-shield::filament-shield.field.name'))
                 ->unique(ignoreRecord: true)
                 ->required()
-                ->disabled(fn(?Role $record): bool => $record->id === 1)
-                ->helperText(fn(?Role $record): string|null => $record->id === 1 ? 'Demi keamanan sistem, anda tidak dapat merubah nama role ini.' : null)
+                ->disabled(fn(?Role $record): bool => $record?->id === 1)
+                ->helperText(fn(?Role $record): string|null => $record?->id === 1 ? 'Demi keamanan sistem, anda tidak dapat merubah nama role ini.' : null)
                 ->maxLength(255),
               TextInput::make('guard_name')
                 ->label(__('filament-shield::filament-shield.field.guard_name'))
