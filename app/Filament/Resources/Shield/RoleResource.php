@@ -60,6 +60,7 @@ class RoleResource extends Resource implements HasShieldPermissions
               TextInput::make('guard_name')
                 ->label(__('filament-shield::filament-shield.field.guard_name'))
                 ->default(Utils::getFilamentAuthGuard() ?? 'web')
+                ->helperText('Guard name terisi secara otomatis.')
                 // ->nullable()
                 ->disabled()
                 ->dehydrated()
@@ -82,6 +83,7 @@ class RoleResource extends Resource implements HasShieldPermissions
         ]),
     ]);
   }
+
 
   public static function table(Table $table): Table
   {
@@ -122,9 +124,10 @@ class RoleResource extends Resource implements HasShieldPermissions
       ->actions([
         Tables\Actions\ActionGroup::make([
           Tables\Actions\ViewAction::make(),
-          Tables\Actions\EditAction::make(),
+          Tables\Actions\EditAction::make()
+            ->hidden(fn(Role $record): bool => $record->id === 1),
           Tables\Actions\DeleteAction::make()
-            ->hidden(fn(Role $record): bool => $record->users()->exists())
+            ->hidden(fn(Role $record): bool => $record->users()->exists() || $record->id === 1)
             ->before(function (Role $record, Tables\Actions\DeleteAction $action) {
               if ($record->users()->exists()) {
                 $role = Str::headline($record->name);
